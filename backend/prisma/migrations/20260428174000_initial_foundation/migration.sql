@@ -1,0 +1,4 @@
+-- Initial foundation migration scaffold.
+-- Generate environment-specific SQL with:
+--   npx prisma migrate dev --name initial_foundation
+-- This placeholder exists to establish the migration directory and phase-0 workflow.
