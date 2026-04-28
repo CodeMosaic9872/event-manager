@@ -10,6 +10,8 @@ type AccessTokenPayload = {
 
 type RefreshTokenPayload = {
   sub: string;
+  ver: number;
+  jti: string;
   tokenType: 'refresh';
 };
 

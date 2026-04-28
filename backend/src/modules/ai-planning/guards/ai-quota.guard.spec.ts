@@ -26,7 +26,7 @@ describe('AiQuotaGuard', () => {
 
   it('blocks anonymous requests above quota', async () => {
     const prisma = {
-      anonymousSession: { findUnique: jest.fn().mockResolvedValue({ id: 'anon_session_1' }) },
+      anonymousSession: { findUnique: jest.fn().mockResolvedValue({ id: 'anon_session_1' }), update: jest.fn() },
       aiUsageCounter: { findUnique: jest.fn().mockResolvedValue({ messageCount: 10 }) },
     } as any;
     const guard = new AiQuotaGuard(prisma);
@@ -34,6 +34,26 @@ describe('AiQuotaGuard', () => {
     await expect(
       guard.canActivate(
         makeContext({
+          body: { anonymousToken: 'anon_token' },
+        }),
+      ),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it('blocks when fingerprint hash does not match existing session fingerprint', async () => {
+    const prisma = {
+      anonymousSession: {
+        findUnique: jest.fn().mockResolvedValue({ id: 'anon_session_1', fingerprintHash: 'fp_known', ipHash: null }),
+        update: jest.fn(),
+      },
+      aiUsageCounter: { findUnique: jest.fn().mockResolvedValue({ messageCount: 1 }) },
+    } as any;
+    const guard = new AiQuotaGuard(prisma);
+
+    await expect(
+      guard.canActivate(
+        makeContext({
+          headers: { 'x-anon-fingerprint-hash': 'fp_other' },
           body: { anonymousToken: 'anon_token' },
         }),
       ),

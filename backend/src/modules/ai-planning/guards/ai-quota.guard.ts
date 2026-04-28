@@ -31,6 +31,19 @@ export class AiQuotaGuard implements CanActivate {
       throw new ForbiddenException('Invalid anonymous session');
     }
 
+    const headers = request.headers ?? {};
+    const fingerprintHeader = headers['x-anon-fingerprint-hash'];
+    const ipHeader = headers['x-anon-ip-hash'];
+    const fingerprint = Array.isArray(fingerprintHeader) ? fingerprintHeader[0] : fingerprintHeader;
+    const ipHash = Array.isArray(ipHeader) ? ipHeader[0] : ipHeader;
+
+    if (session.fingerprintHash && fingerprint && session.fingerprintHash !== fingerprint) {
+      throw new ForbiddenException('Anonymous session fingerprint mismatch');
+    }
+    if (session.ipHash && ipHash && session.ipHash !== ipHash) {
+      throw new ForbiddenException('Anonymous session origin mismatch');
+    }
+
     const usage = await this.prisma.aiUsageCounter.findUnique({
       where: { anonymousSessionId: session.id },
     });
@@ -38,6 +51,11 @@ export class AiQuotaGuard implements CanActivate {
     if ((usage?.messageCount ?? 0) >= 10) {
       throw new ForbiddenException('Registration required to continue AI planning');
     }
+
+    await this.prisma.anonymousSession.update({
+      where: { id: session.id },
+      data: { lastSeenAt: new Date() },
+    });
 
     return true;
   }

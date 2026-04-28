@@ -70,6 +70,8 @@ model User {
   phone       String?     @unique
   passwordHash String?
   refreshTokenHash String?
+  refreshTokenVersion Int  @default(0)
+  refreshTokenCompromisedAt DateTime?
   status      UserStatus  @default(ACTIVE)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
