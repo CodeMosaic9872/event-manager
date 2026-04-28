@@ -249,3 +249,20 @@ export class UpdateFilterDefinitionDto {
   @IsBoolean()
   isActive?: boolean;
 }
+
+export class ModerateJobApplicationDto {
+  @ApiProperty({
+    description: 'New application status set by admin',
+    enum: ['SUBMITTED', 'SHORTLISTED', 'REJECTED', 'WITHDRAWN'],
+    example: 'SHORTLISTED',
+  })
+  @IsString()
+  @IsIn(['SUBMITTED', 'SHORTLISTED', 'REJECTED', 'WITHDRAWN'])
+  status!: 'SUBMITTED' | 'SHORTLISTED' | 'REJECTED' | 'WITHDRAWN';
+
+  @ApiPropertyOptional({ description: 'Optional moderation reason', example: 'Missing required availability details' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  reason?: string;
+}

@@ -10,6 +10,7 @@ export class AiQuotaGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<{
       headers: Record<string, string | string[] | undefined>;
       body?: { anonymousToken?: string };
+      params?: { id?: string };
       user?: AuthUser;
     }>();
 
@@ -49,6 +50,29 @@ export class AiQuotaGuard implements CanActivate {
     });
 
     if ((usage?.messageCount ?? 0) >= 10) {
+      const conversationId = request.params?.id;
+      if (conversationId) {
+        const conversation = await this.prisma.aiConversation.findUnique({
+          where: { id: conversationId },
+          select: { id: true },
+        });
+        if (conversation) {
+          const message = await this.prisma.aiMessage.create({
+            data: {
+              conversationId,
+              role: 'SYSTEM',
+              content: 'Quota blocked anonymous user; registration required.',
+            },
+          });
+          await this.prisma.aiRecommendationLog.create({
+            data: {
+              conversationId,
+              messageId: message.id,
+              failureTag: 'quota_blocked',
+            },
+          });
+        }
+      }
       throw new ForbiddenException('Registration required to continue AI planning');
     }
 

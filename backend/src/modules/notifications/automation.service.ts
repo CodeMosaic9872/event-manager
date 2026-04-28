@@ -23,5 +23,35 @@ export class AutomationService {
         data: event.payload,
       });
     }
+
+    if (event.type === 'job.material.updated') {
+      const supplierIds = Array.isArray(event.payload.supplierIds)
+        ? event.payload.supplierIds.filter((id): id is string => typeof id === 'string')
+        : [];
+      await Promise.all(
+        supplierIds.map((supplierId) =>
+          this.notificationsService.enqueueEmail({
+            recipientSupplierId: supplierId,
+            templateKey: 'job.material.updated',
+            data: event.payload,
+          }),
+        ),
+      );
+    }
+
+    if (event.type === 'job.matching.published') {
+      const supplierIds = Array.isArray(event.payload.supplierIds)
+        ? event.payload.supplierIds.filter((id): id is string => typeof id === 'string')
+        : [];
+      await Promise.all(
+        supplierIds.map((supplierId) =>
+          this.notificationsService.enqueueEmail({
+            recipientSupplierId: supplierId,
+            templateKey: 'job.matching.published',
+            data: event.payload,
+          }),
+        ),
+      );
+    }
   }
 }

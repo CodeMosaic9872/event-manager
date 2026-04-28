@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -66,11 +66,124 @@ export class AdminService {
   }
 
   aiFailures() {
-    return { failures: [] };
+    return this.prisma.aiRecommendationLog.groupBy({
+      by: ['failureTag'],
+      where: { failureTag: { not: null } },
+      _count: { _all: true },
+      _avg: { latencyMs: true },
+      orderBy: { _count: { failureTag: 'desc' } },
+      take: 20,
+    });
+  }
+
+  aiTopRecommendations() {
+    return this.prisma.aiRecommendationLog.groupBy({
+      by: ['supplierId'],
+      where: { supplierId: { not: null } },
+      _count: { _all: true },
+      _avg: { score: true },
+      orderBy: { _count: { supplierId: 'desc' } },
+      take: 20,
+    });
+  }
+
+  async aiRecommendationQuality() {
+    const [totals, clicked, accepted] = await this.prisma.$transaction([
+      this.prisma.aiRecommendationLog.count({ where: { supplierId: { not: null } } }),
+      this.prisma.aiRecommendationLog.count({ where: { clickedAt: { not: null } } }),
+      this.prisma.aiRecommendationLog.count({ where: { acceptedAt: { not: null } } }),
+    ]);
+
+    return {
+      totalRecommendations: totals,
+      clickedRecommendations: clicked,
+      acceptedRecommendations: accepted,
+      clickThroughRate: totals > 0 ? Number((clicked / totals).toFixed(4)) : 0,
+      acceptanceRate: totals > 0 ? Number((accepted / totals).toFixed(4)) : 0,
+    };
+  }
+
+  async aiPerformance() {
+    const [totalLogs, failedLogs, avgLatency, distinctConversations] = await this.prisma.$transaction([
+      this.prisma.aiRecommendationLog.count(),
+      this.prisma.aiRecommendationLog.count({ where: { failureTag: { not: null } } }),
+      this.prisma.aiRecommendationLog.aggregate({ _avg: { latencyMs: true } }),
+      this.prisma.aiRecommendationLog.groupBy({
+        by: ['conversationId'],
+        _count: { _all: true },
+        orderBy: { conversationId: 'asc' },
+      }),
+    ]);
+
+    const retrievalHitRate = totalLogs > 0 ? Number(((totalLogs - failedLogs) / totalLogs).toFixed(4)) : 0;
+    const averageRecommendationsPerConversation =
+      distinctConversations.length > 0
+        ? Number((totalLogs / distinctConversations.length).toFixed(2))
+        : 0;
+
+    return {
+      totalLogs,
+      failedLogs,
+      retrievalHitRate,
+      avgLatencyMs: avgLatency._avg.latencyMs ?? 0,
+      averageRecommendationsPerConversation,
+    };
   }
 
   notifications() {
     return this.prisma.notification.findMany({ orderBy: { createdAt: 'desc' }, take: 100 });
+  }
+
+  listJobs() {
+    return this.prisma.jobPost.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+    });
+  }
+
+  listJobApplications(jobId?: string) {
+    return this.prisma.jobApplication.findMany({
+      where: { jobPostId: jobId ?? undefined },
+      include: { supplier: true, jobPost: true },
+      orderBy: { submittedAt: 'desc' },
+      take: 200,
+    });
+  }
+
+  archiveJob(jobId: string) {
+    return this.prisma.jobPost.update({
+      where: { id: jobId },
+      data: { status: 'ARCHIVED' },
+    });
+  }
+
+  async moderateJobApplication(
+    applicationId: string,
+    status: 'SUBMITTED' | 'SHORTLISTED' | 'REJECTED' | 'WITHDRAWN',
+    reason?: string,
+    actorAdminId?: string,
+  ) {
+    const application = await this.prisma.jobApplication.findUnique({ where: { id: applicationId } });
+    if (!application) {
+      throw new NotFoundException('Application not found');
+    }
+    return this.prisma.$transaction(async (tx) => {
+      const updated = await tx.jobApplication.update({
+        where: { id: applicationId },
+        data: { status },
+      });
+      await tx.jobApplicationHistory.create({
+        data: {
+          jobApplicationId: applicationId,
+          fromStatus: application.status,
+          toStatus: status,
+          reason: reason ?? null,
+          actorType: 'ADMIN',
+          actorId: actorAdminId ?? null,
+        },
+      });
+      return updated;
+    });
   }
 
   retryNotification(id: string) {

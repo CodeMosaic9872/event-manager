@@ -49,3 +49,23 @@ export class ShareTrackResponseDto {
   @ApiProperty({ example: 'supplier_profile_header' })
   context!: string;
 }
+
+export class SupplierDraftResponseDto {
+  @ApiProperty({ example: 'draft_1' })
+  id!: string;
+
+  @ApiProperty({ example: 'sup_1' })
+  supplierId!: string;
+
+  @ApiProperty({ example: 'service_areas' })
+  stepKey!: string;
+
+  @ApiProperty({ example: 45 })
+  completionPercent!: number;
+
+  @ApiProperty({ example: { serviceAreas: [{ regionCode: 'north' }] } })
+  payloadJson!: Record<string, unknown>;
+
+  @ApiProperty({ example: 2 })
+  version!: number;
+}

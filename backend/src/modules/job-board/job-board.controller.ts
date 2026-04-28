@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JobBoardService } from './job-board.service';
 import { JobPublishGuard } from './guards/job-publish.guard';
@@ -8,7 +8,12 @@ import { AuthUser } from '../../common/interfaces/auth-user.interface';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { ApiProtectedErrors } from '../../common/swagger/api-error-responses.decorator';
 import { ApplyJobDto, CreateJobDto, UpdateJobApplicationStatusDto, UpdateJobDto } from './dto/job-board.dto';
-import { CreatedJobResponseDto, JobApplicationResponseDto, JobSummaryResponseDto } from './dto/job-board-response.dto';
+import {
+  CreatedJobResponseDto,
+  JobApplicationResponseDto,
+  JobSummaryResponseDto,
+  RecommendedJobResponseDto,
+} from './dto/job-board-response.dto';
 
 @ApiTags('Job Board')
 @ApiProtectedErrors()
@@ -86,6 +91,18 @@ export class JobBoardController {
     return this.jobBoardService.closeJob(id, userId);
   }
 
+  @Post(':id/archive')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Archive own job post' })
+  @UseGuards(AuthGuard)
+  archive(@CurrentUser() user: AuthUser | undefined, @Param('id') id: string) {
+    const userId = user?.id;
+    if (!userId || userId.startsWith('anonymous:')) {
+      throw new UnauthorizedException('Authenticated user required');
+    }
+    return this.jobBoardService.archiveJob(id, userId);
+  }
+
   @Post(':id/applications')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Apply to job as supplier' })
@@ -100,6 +117,18 @@ export class JobBoardController {
       throw new UnauthorizedException('Authenticated supplier required');
     }
     return this.jobBoardService.applyForUser(id, userId, body.message);
+  }
+
+  @Post(':id/applications/withdraw')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Withdraw own application for a job' })
+  @UseGuards(AuthGuard, SupplierOnlyGuard)
+  withdraw(@CurrentUser() user: AuthUser | undefined, @Param('id') id: string) {
+    const userId = user?.id;
+    if (!userId || userId.startsWith('anonymous:')) {
+      throw new UnauthorizedException('Authenticated supplier required');
+    }
+    return this.jobBoardService.withdrawForUser(id, userId);
   }
 
   @Get(':id/applications')
@@ -123,6 +152,12 @@ export class JobApplicationController {
   ) {
     return this.jobBoardService.updateApplicationStatus(id, body.status);
   }
+
+  @Get(':id/history')
+  @ApiOperation({ summary: 'Get status timeline/history for a job application' })
+  history(@Param('id') id: string) {
+    return this.jobBoardService.listApplicationHistory(id);
+  }
 }
 
 @ApiTags('Job Board')
@@ -144,8 +179,19 @@ export class JobQueryController {
   }
 
   @Get('supplier/jobs/recommended')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'List recommended jobs for supplier dashboard' })
-  supplierRecommendedJobs(@Query('supplierId') supplierId: string) {
-    return { supplierId, jobs: [], note: 'Recommendation endpoint scaffolded for ranking logic.' };
+  @ApiOkResponse({
+    description: 'Recommended jobs sorted by match score',
+    type: RecommendedJobResponseDto,
+    isArray: true,
+  })
+  @UseGuards(AuthGuard, SupplierOnlyGuard)
+  supplierRecommendedJobs(@CurrentUser() user: AuthUser | undefined) {
+    const userId = user?.id;
+    if (!userId || userId.startsWith('anonymous:')) {
+      throw new UnauthorizedException('Authenticated supplier required');
+    }
+    return this.jobBoardService.listRecommendedJobsForUser(userId);
   }
 }

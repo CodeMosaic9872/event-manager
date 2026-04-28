@@ -44,6 +44,28 @@ class SendMessageUsageDto {
   totalTokens!: number;
 }
 
+class RecommendationItemDto {
+  @ApiProperty({ example: 'sup_123' })
+  supplierId!: string;
+
+  @ApiProperty({ example: 'verified, category fit, location fit' })
+  reason!: string;
+
+  @ApiProperty({ example: 0.83 })
+  confidence!: number;
+}
+
+class DecisionTraceDto {
+  @ApiProperty({ example: 17 })
+  retrievalCandidates!: number;
+
+  @ApiProperty({ example: null, nullable: true })
+  failureTag!: string | null;
+
+  @ApiProperty({ example: 'wedding', nullable: true })
+  eventTypeResolved!: string | null;
+}
+
 export class SendMessageResponseDto {
   @ApiProperty({ example: 'conv_123' })
   conversationId!: string;
@@ -53,4 +75,21 @@ export class SendMessageResponseDto {
 
   @ApiProperty({ type: SendMessageUsageDto })
   usage!: SendMessageUsageDto;
+
+  @ApiProperty({ type: [RecommendationItemDto] })
+  recommendations!: RecommendationItemDto[];
+
+  @ApiProperty({ type: [String], example: ['cat_music', 'cat_photo'] })
+  suggestedCategories!: string[];
+
+  @ApiProperty({
+    example: {
+      openMarketplace: true,
+      publishJob: false,
+    },
+  })
+  hints!: Record<string, boolean>;
+
+  @ApiProperty({ type: DecisionTraceDto })
+  decisionTrace!: DecisionTraceDto;
 }

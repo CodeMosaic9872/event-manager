@@ -1,11 +1,15 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ListSuppliersQueryDto } from './dto/list-suppliers-query.dto';
+import { MediaStorageService } from './media-storage.service';
 
 @Injectable()
 export class SuppliersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mediaStorage: MediaStorageService,
+  ) {}
 
   async list(query: ListSuppliersQueryDto) {
     const startedAt = Date.now();
@@ -263,6 +267,54 @@ export class SuppliersService {
     });
   }
 
+  async createMediaUploadUrl(userId: string, payload: { fileName: string; contentType: string }) {
+    const supplier = await this.prisma.supplier.findUnique({ where: { ownerUserId: userId } });
+    if (!supplier) {
+      throw new NotFoundException('Supplier profile not found');
+    }
+    return this.mediaStorage.createUploadUrl({
+      supplierId: supplier.id,
+      fileName: payload.fileName,
+      contentType: payload.contentType,
+    });
+  }
+
+  async verifyMediaUpload(userId: string, payload: { key: string }) {
+    const supplier = await this.prisma.supplier.findUnique({ where: { ownerUserId: userId } });
+    if (!supplier) {
+      throw new NotFoundException('Supplier profile not found');
+    }
+    return this.mediaStorage.verifyUpload({
+      supplierId: supplier.id,
+      key: payload.key,
+    });
+  }
+
+  async completeMediaUpload(
+    userId: string,
+    payload: { key: string; mediaType: string; sortOrder?: number; metadataJson?: Record<string, unknown> },
+  ) {
+    const supplier = await this.prisma.supplier.findUnique({ where: { ownerUserId: userId } });
+    if (!supplier) {
+      throw new NotFoundException('Supplier profile not found');
+    }
+
+    const verified = await this.mediaStorage.verifyUpload({
+      supplierId: supplier.id,
+      key: payload.key,
+    });
+
+    return this.prisma.supplierMedia.create({
+      data: {
+        supplierId: supplier.id,
+        mediaType: payload.mediaType,
+        url: verified.publicUrl,
+        sortOrder: payload.sortOrder ?? 0,
+        metadataJson: (payload.metadataJson ?? {}) as Prisma.InputJsonValue,
+      },
+    });
+  }
+
   async deleteMedia(userId: string, mediaId: string) {
     const supplier = await this.prisma.supplier.findUnique({ where: { ownerUserId: userId } });
     if (!supplier) {
@@ -478,32 +530,59 @@ export class SuppliersService {
     });
   }
 
-  async upsertDraft(
-    supplierId: string,
+  async upsertDraftForUser(
+    userId: string,
     payload: { stepKey: string; completionPercent: number; payloadJson: Record<string, unknown>; version?: number },
   ) {
-    return this.prisma.supplierDraft.upsert({
-      where: { supplierId },
-      create: {
-        supplierId,
+    const supplier = await this.prisma.supplier.findUnique({
+      where: { ownerUserId: userId },
+      select: { id: true },
+    });
+    if (!supplier) {
+      throw new NotFoundException('Supplier profile not found for user');
+    }
+    const existing = await this.prisma.supplierDraft.findUnique({
+      where: { supplierId: supplier.id },
+    });
+    if (!existing) {
+      if (payload.version !== undefined && payload.version !== 1) {
+        throw new ConflictException('Draft version mismatch');
+      }
+      return this.prisma.supplierDraft.create({
+        data: {
+          supplierId: supplier.id,
+          stepKey: payload.stepKey,
+          completionPercent: payload.completionPercent,
+          payloadJson: payload.payloadJson as Prisma.InputJsonValue,
+          version: 1,
+        },
+      });
+    }
+    if (payload.version !== undefined && payload.version !== existing.version) {
+      throw new ConflictException('Draft version mismatch');
+    }
+    return this.prisma.supplierDraft.update({
+      where: { supplierId: supplier.id },
+      data: {
         stepKey: payload.stepKey,
         completionPercent: payload.completionPercent,
         payloadJson: payload.payloadJson as Prisma.InputJsonValue,
-        version: payload.version ?? 1,
-      },
-      update: {
-        stepKey: payload.stepKey,
-        completionPercent: payload.completionPercent,
-        payloadJson: payload.payloadJson as Prisma.InputJsonValue,
-        version: payload.version ? { increment: 1 } : undefined,
+        version: { increment: 1 },
         lastAutosaveAt: new Date(),
       },
     });
   }
 
-  getDraft(supplierId: string) {
+  async getDraftForUser(userId: string) {
+    const supplier = await this.prisma.supplier.findUnique({
+      where: { ownerUserId: userId },
+      select: { id: true },
+    });
+    if (!supplier) {
+      throw new NotFoundException('Supplier profile not found for user');
+    }
     return this.prisma.supplierDraft.findUnique({
-      where: { supplierId },
+      where: { supplierId: supplier.id },
     });
   }
 }

@@ -132,6 +132,7 @@ model Supplier {
   approvalHistory SupplierApprovalHistory[]
   applications   JobApplication[]
   favorites      FavoriteSupplier[]
+  recommendationLogs AiRecommendationLog[]
 }
 
 model SupplierDraft {
@@ -326,8 +327,24 @@ model JobApplication {
 
   jobPost     JobPost              @relation(fields: [jobPostId], references: [id], onDelete: Cascade)
   supplier    Supplier             @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  history     JobApplicationHistory[]
 
   @@unique([jobPostId, supplierId])
+}
+
+model JobApplicationHistory {
+  id               String               @id @default(cuid())
+  jobApplicationId String
+  fromStatus       JobApplicationStatus?
+  toStatus         JobApplicationStatus
+  reason           String?
+  actorType        String
+  actorId          String?
+  createdAt        DateTime             @default(now())
+
+  application      JobApplication       @relation(fields: [jobApplicationId], references: [id], onDelete: Cascade)
+
+  @@index([jobApplicationId, createdAt])
 }
 
 model AiConversation {
@@ -342,6 +359,7 @@ model AiConversation {
   user               User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
   anonymousSession   AnonymousSession?    @relation(fields: [anonymousSessionId], references: [id], onDelete: SetNull)
   messages           AiMessage[]
+  recommendationLogs AiRecommendationLog[]
 }
 
 model AiMessage {
@@ -354,6 +372,7 @@ model AiMessage {
   createdAt      DateTime @default(now())
 
   conversation   AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  recommendationLogs AiRecommendationLog[]
 }
 
 model AiUsageCounter {
@@ -364,6 +383,28 @@ model AiUsageCounter {
   periodStartAt      DateTime @default(now())
   periodEndAt        DateTime?
   updatedAt          DateTime @updatedAt
+}
+
+model AiRecommendationLog {
+  id             String   @id @default(cuid())
+  conversationId String
+  messageId      String
+  supplierId     String?
+  score          Decimal? @db.Decimal(5, 4)
+  reasonsJson    Json?
+  failureTag     String?
+  latencyMs      Int?
+  clickedAt      DateTime?
+  acceptedAt     DateTime?
+  createdAt      DateTime @default(now())
+
+  conversation   AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  message        AiMessage      @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  supplier       Supplier?      @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+
+  @@index([conversationId, createdAt])
+  @@index([failureTag, createdAt])
+  @@index([supplierId, createdAt])
 }
 
 model FavoriteSupplier {

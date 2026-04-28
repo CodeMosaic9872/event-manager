@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { ApiProtectedErrors } from '../../common/swagger/api-error-responses.decorator';
@@ -9,6 +9,7 @@ import {
   CreateFilterDefinitionDto,
   CreateSubcategoryDto,
   RejectSupplierDto,
+  ModerateJobApplicationDto,
   UpdateAutomationRuleDto,
   UpdateCategoryDto,
   UpdateEventTypeDto,
@@ -83,10 +84,52 @@ export class AdminController {
     return this.adminService.aiConversations();
   }
 
+  @Get('ai/recommendations/top')
+  @ApiOperation({ summary: 'Get top recommended suppliers by AI logs' })
+  aiTopRecommendations() {
+    return this.adminService.aiTopRecommendations();
+  }
+
+  @Get('ai/recommendations/quality')
+  @ApiOperation({ summary: 'Get AI recommendation quality metrics (CTR/acceptance)' })
+  aiRecommendationQuality() {
+    return this.adminService.aiRecommendationQuality();
+  }
+
+  @Get('ai/performance')
+  @ApiOperation({ summary: 'Get AI retrieval performance metrics and hit-rate' })
+  aiPerformance() {
+    return this.adminService.aiPerformance();
+  }
+
   @Get('notifications')
   @ApiOperation({ summary: 'List notifications and statuses for admin' })
   notifications() {
     return this.adminService.notifications();
+  }
+
+  @Get('jobs')
+  @ApiOperation({ summary: 'List all job posts for admin moderation' })
+  jobs() {
+    return this.adminService.listJobs();
+  }
+
+  @Get('jobs/applications')
+  @ApiOperation({ summary: 'List job applications for admin moderation' })
+  jobApplications(@Query('jobId') jobId?: string) {
+    return this.adminService.listJobApplications(jobId);
+  }
+
+  @Post('jobs/:id/archive')
+  @ApiOperation({ summary: 'Archive a job post as admin' })
+  archiveJob(@Param('id') id: string) {
+    return this.adminService.archiveJob(id);
+  }
+
+  @Post('jobs/applications/:id/status')
+  @ApiOperation({ summary: 'Moderate job application status with optional reason' })
+  moderateJobApplication(@Param('id') id: string, @Body() body: ModerateJobApplicationDto) {
+    return this.adminService.moderateJobApplication(id, body.status, body.reason);
   }
 
   @Post('notifications/retry/:id')

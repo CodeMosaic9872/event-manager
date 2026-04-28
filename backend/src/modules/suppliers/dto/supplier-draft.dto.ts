@@ -3,10 +3,6 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsInt, IsObject, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class UpsertSupplierDraftDto {
-  @ApiProperty({ description: 'Supplier id owning the draft', example: 'sup_123' })
-  @IsString()
-  supplierId!: string;
-
   @ApiProperty({ description: 'Onboarding step key', example: 'service_areas' })
   @IsString()
   stepKey!: string;

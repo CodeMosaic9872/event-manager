@@ -63,4 +63,18 @@ export class AiPlanningController {
       ...body,
     });
   }
+
+  @Post(':id/recommendations/:supplierId/click')
+  @ApiOperation({ summary: 'Track recommendation click-through signal' })
+  @UseGuards(OptionalAuthGuard)
+  trackRecommendationClick(@Param('id') id: string, @Param('supplierId') supplierId: string) {
+    return this.aiPlanningService.trackRecommendationClick(id, supplierId);
+  }
+
+  @Post(':id/recommendations/:supplierId/accept')
+  @ApiOperation({ summary: 'Track recommendation acceptance signal' })
+  @UseGuards(OptionalAuthGuard)
+  trackRecommendationAccept(@Param('id') id: string, @Param('supplierId') supplierId: string) {
+    return this.aiPlanningService.trackRecommendationAccept(id, supplierId);
+  }
 }
