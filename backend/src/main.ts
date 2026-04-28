@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { TraceIdInterceptor } from './common/interceptors/trace-id.interceptor';
@@ -25,6 +26,16 @@ async function bootstrap() {
     new RateLimitInterceptor(),
     new RequestLoggingInterceptor(),
   );
+
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('Event Marketplace Backend API')
+    .setDescription('Backend APIs for supplier marketplace, AI planning, jobs, and admin operations.')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('docs', app, swaggerDocument);
+
   await app.get(PrismaService).enableShutdownHooks(app);
 
   await app.listen(process.env.PORT ? Number(process.env.PORT) : 3001);

@@ -1,0 +1,33 @@
+import { ApiProperty } from '@nestjs/swagger';
+
+class AuthUserSummaryDto {
+  @ApiProperty({ example: 'usr_123' })
+  id!: string;
+
+  @ApiProperty({ example: 'user@example.com' })
+  email!: string;
+
+  @ApiProperty({ example: ['USER', 'SUPPLIER'], type: [String] })
+  roles!: string[];
+}
+
+export class AuthTokensResponseDto {
+  @ApiProperty({ example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' })
+  accessToken!: string;
+
+  @ApiProperty({ example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' })
+  refreshToken!: string;
+
+  @ApiProperty({ type: AuthUserSummaryDto })
+  user!: AuthUserSummaryDto;
+}
+
+export class RefreshTokensResponseDto {
+  @ApiProperty({ example: 'new_access_token' })
+  accessToken!: string;
+
+  @ApiProperty({ example: 'new_refresh_token' })
+  refreshToken!: string;
+}
+
+export class MeResponseDto extends AuthUserSummaryDto {}

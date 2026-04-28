@@ -1,27 +1,62 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
+import { ApiProtectedErrors } from '../../common/swagger/api-error-responses.decorator';
+import {
+  ApproveSupplierDto,
+  CreateCategoryDto,
+  CreateEventTypeDto,
+  CreateFilterDefinitionDto,
+  CreateSubcategoryDto,
+  RejectSupplierDto,
+  UpdateAutomationRuleDto,
+  UpdateCategoryDto,
+  UpdateEventTypeDto,
+  UpdateFilterDefinitionDto,
+  UpdateSubcategoryDto,
+} from './dto/admin.dto';
+import {
+  AdminApproveSupplierResponseDto,
+  AdminEventTypeResponseDto,
+  AdminSupplierReviewDto,
+} from './dto/admin-response.dto';
 
+@ApiTags('Admin')
+@ApiProtectedErrors()
 @Controller('admin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @Get('suppliers')
+  @ApiOperation({ summary: 'List suppliers for admin review' })
+  @ApiOkResponse({
+    description: 'Supplier records for moderation',
+    type: AdminSupplierReviewDto,
+    isArray: true,
+  })
   suppliers() {
     return this.adminService.listSuppliers();
   }
 
   @Get('suppliers/incomplete')
+  @ApiOperation({ summary: 'List incomplete supplier onboarding records' })
   incompleteSuppliers() {
     return this.adminService.listIncompleteSuppliers();
   }
 
   @Post('suppliers/:id/approve')
-  approve(@Param('id') id: string, @Body() body: { adminUserId?: string }) {
+  @ApiOperation({ summary: 'Approve supplier profile' })
+  @ApiOkResponse({
+    description: 'Approved supplier',
+    type: AdminApproveSupplierResponseDto,
+  })
+  approve(@Param('id') id: string, @Body() body: ApproveSupplierDto) {
     return this.adminService.approveSupplier(id, body.adminUserId);
   }
 
   @Post('suppliers/:id/reject')
-  reject(@Param('id') id: string, @Body() body: { reason?: string; adminUserId?: string }) {
+  @ApiOperation({ summary: 'Reject supplier profile with optional reason' })
+  reject(@Param('id') id: string, @Body() body: RejectSupplierDto) {
     return this.adminService.rejectSupplier(id, body.reason, body.adminUserId);
   }
 
@@ -31,26 +66,31 @@ export class AdminController {
   }
 
   @Get('ai/usage')
+  @ApiOperation({ summary: 'Get AI usage telemetry for admin' })
   aiUsage() {
     return this.adminService.aiUsage();
   }
 
   @Get('ai/failures')
+  @ApiOperation({ summary: 'Get AI failure summary for admin' })
   aiFailures() {
     return this.adminService.aiFailures();
   }
 
   @Get('ai/conversations')
+  @ApiOperation({ summary: 'Get AI conversations snapshot for admin' })
   aiConversations() {
     return this.adminService.aiConversations();
   }
 
   @Get('notifications')
+  @ApiOperation({ summary: 'List notifications and statuses for admin' })
   notifications() {
     return this.adminService.notifications();
   }
 
   @Post('notifications/retry/:id')
+  @ApiOperation({ summary: 'Retry failed/pending notification by id' })
   retryNotification(@Param('id') id: string) {
     return this.adminService.retryNotification(id);
   }
@@ -61,7 +101,7 @@ export class AdminController {
   }
 
   @Patch('automations/rules/:id')
-  updateAutomationRule(@Param('id') id: string, @Body() body: Record<string, unknown>) {
+  updateAutomationRule(@Param('id') id: string, @Body() body: UpdateAutomationRuleDto) {
     return { id, updated: true, body };
   }
 
@@ -71,20 +111,24 @@ export class AdminController {
   }
 
   @Post('taxonomy/event-types')
-  createEventType(@Body() body: Record<string, unknown>) {
+  @ApiCreatedResponse({
+    description: 'Created event type',
+    type: AdminEventTypeResponseDto,
+  })
+  createEventType(@Body() body: CreateEventTypeDto) {
     return this.adminService.createEventType({
-      key: String(body.key),
-      name: String(body.name),
-      isActive: body.isActive === undefined ? true : Boolean(body.isActive),
+      key: body.key,
+      name: body.name,
+      isActive: body.isActive,
     });
   }
 
   @Patch('taxonomy/event-types/:id')
-  updateEventType(@Param('id') id: string, @Body() body: Record<string, unknown>) {
+  updateEventType(@Param('id') id: string, @Body() body: UpdateEventTypeDto) {
     return this.adminService.updateEventType(id, {
-      key: body.key ? String(body.key) : undefined,
-      name: body.name ? String(body.name) : undefined,
-      isActive: body.isActive === undefined ? undefined : Boolean(body.isActive),
+      key: body.key,
+      name: body.name,
+      isActive: body.isActive,
     });
   }
 
@@ -94,22 +138,22 @@ export class AdminController {
   }
 
   @Post('taxonomy/categories')
-  createCategory(@Body() body: Record<string, unknown>) {
+  createCategory(@Body() body: CreateCategoryDto) {
     return this.adminService.createCategory({
-      key: String(body.key),
-      name: String(body.name),
-      sortOrder: body.sortOrder === undefined ? 0 : Number(body.sortOrder),
-      isActive: body.isActive === undefined ? true : Boolean(body.isActive),
+      key: body.key,
+      name: body.name,
+      sortOrder: body.sortOrder,
+      isActive: body.isActive,
     });
   }
 
   @Patch('taxonomy/categories/:id')
-  updateCategory(@Param('id') id: string, @Body() body: Record<string, unknown>) {
+  updateCategory(@Param('id') id: string, @Body() body: UpdateCategoryDto) {
     return this.adminService.updateCategory(id, {
-      key: body.key ? String(body.key) : undefined,
-      name: body.name ? String(body.name) : undefined,
-      sortOrder: body.sortOrder === undefined ? undefined : Number(body.sortOrder),
-      isActive: body.isActive === undefined ? undefined : Boolean(body.isActive),
+      key: body.key,
+      name: body.name,
+      sortOrder: body.sortOrder,
+      isActive: body.isActive,
     });
   }
 
@@ -119,24 +163,24 @@ export class AdminController {
   }
 
   @Post('taxonomy/subcategories')
-  createSubcategory(@Body() body: Record<string, unknown>) {
+  createSubcategory(@Body() body: CreateSubcategoryDto) {
     return this.adminService.createSubcategory({
-      categoryId: String(body.categoryId),
-      key: String(body.key),
-      name: String(body.name),
-      sortOrder: body.sortOrder === undefined ? 0 : Number(body.sortOrder),
-      isActive: body.isActive === undefined ? true : Boolean(body.isActive),
+      categoryId: body.categoryId,
+      key: body.key,
+      name: body.name,
+      sortOrder: body.sortOrder,
+      isActive: body.isActive,
     });
   }
 
   @Patch('taxonomy/subcategories/:id')
-  updateSubcategory(@Param('id') id: string, @Body() body: Record<string, unknown>) {
+  updateSubcategory(@Param('id') id: string, @Body() body: UpdateSubcategoryDto) {
     return this.adminService.updateSubcategory(id, {
-      categoryId: body.categoryId ? String(body.categoryId) : undefined,
-      key: body.key ? String(body.key) : undefined,
-      name: body.name ? String(body.name) : undefined,
-      sortOrder: body.sortOrder === undefined ? undefined : Number(body.sortOrder),
-      isActive: body.isActive === undefined ? undefined : Boolean(body.isActive),
+      categoryId: body.categoryId,
+      key: body.key,
+      name: body.name,
+      sortOrder: body.sortOrder,
+      isActive: body.isActive,
     });
   }
 
@@ -146,30 +190,30 @@ export class AdminController {
   }
 
   @Post('taxonomy/filter-definitions')
-  createFilterDefinition(@Body() body: Record<string, unknown>) {
+  createFilterDefinition(@Body() body: CreateFilterDefinitionDto) {
     return this.adminService.createFilterDefinition({
-      scope: String(body.scope),
-      categoryId: body.categoryId ? String(body.categoryId) : undefined,
-      key: String(body.key),
-      label: String(body.label),
-      type: String(body.type),
+      scope: body.scope,
+      categoryId: body.categoryId,
+      key: body.key,
+      label: body.label,
+      type: body.type,
       optionsJson: body.optionsJson,
-      sortOrder: body.sortOrder === undefined ? 0 : Number(body.sortOrder),
-      isActive: body.isActive === undefined ? true : Boolean(body.isActive),
+      sortOrder: body.sortOrder,
+      isActive: body.isActive,
     });
   }
 
   @Patch('taxonomy/filter-definitions/:id')
-  updateFilterDefinition(@Param('id') id: string, @Body() body: Record<string, unknown>) {
+  updateFilterDefinition(@Param('id') id: string, @Body() body: UpdateFilterDefinitionDto) {
     return this.adminService.updateFilterDefinition(id, {
-      scope: body.scope ? String(body.scope) : undefined,
-      categoryId: body.categoryId === undefined ? undefined : body.categoryId === null ? null : String(body.categoryId),
-      key: body.key ? String(body.key) : undefined,
-      label: body.label ? String(body.label) : undefined,
-      type: body.type ? String(body.type) : undefined,
+      scope: body.scope,
+      categoryId: body.categoryId,
+      key: body.key,
+      label: body.label,
+      type: body.type,
       optionsJson: body.optionsJson,
-      sortOrder: body.sortOrder === undefined ? undefined : Number(body.sortOrder),
-      isActive: body.isActive === undefined ? undefined : Boolean(body.isActive),
+      sortOrder: body.sortOrder,
+      isActive: body.isActive,
     });
   }
 

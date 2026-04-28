@@ -1,10 +1,12 @@
 import { Body, Controller, Delete, Get, Headers, Param, Patch, Post, Query, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SuppliersService } from './suppliers.service';
 import { verifyAccessToken } from '../../common/utils/jwt.util';
 import { AuthGuard } from '../../common/guards/auth.guard';
 import { AuthUser } from '../../common/interfaces/auth-user.interface';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { ApiProtectedErrors } from '../../common/swagger/api-error-responses.decorator';
 import { ListSuppliersQueryDto } from './dto/list-suppliers-query.dto';
 import { SupplierSuggestionsQueryDto } from './dto/supplier-suggestions-query.dto';
 import { UpsertSupplierProfileDto } from './dto/upsert-supplier-profile.dto';
@@ -15,7 +17,14 @@ import {
   UpdateSupplierAttributesDto,
   UpdateSupplierServiceAreasDto,
 } from './dto/supplier-private-profile.dto';
+import {
+  ShareTrackResponseDto,
+  SupplierProfileResponseDto,
+  SuppliersListResponseDto,
+} from './dto/suppliers-response.dto';
 
+@ApiTags('Suppliers')
+@ApiProtectedErrors()
 @Controller()
 export class SuppliersController {
   constructor(
@@ -24,16 +33,27 @@ export class SuppliersController {
   ) {}
 
   @Get('suppliers')
+  @ApiOperation({ summary: 'List marketplace suppliers with layered filters' })
+  @ApiOkResponse({
+    description: 'Paginated supplier list with facets',
+    type: SuppliersListResponseDto,
+  })
   listSuppliers(@Query() query: ListSuppliersQueryDto) {
     return this.suppliersService.list(query);
   }
 
   @Get('suppliers/:slugOrId')
+  @ApiOperation({ summary: 'Get public supplier profile by id or slug' })
+  @ApiOkResponse({
+    description: 'Public supplier profile',
+    type: SupplierProfileResponseDto,
+  })
   getSupplier(@Param('slugOrId') slugOrId: string) {
     return this.suppliersService.getByIdOrSlug(slugOrId);
   }
 
   @Get('search/suggestions')
+  @ApiOperation({ summary: 'Get supplier/category/subcategory typeahead suggestions' })
   async suggestions(@Query() query: SupplierSuggestionsQueryDto) {
     const q = query.q ?? '';
     if (!q) {
@@ -43,6 +63,12 @@ export class SuppliersController {
   }
 
   @Post('supplier/profile')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create supplier profile for authenticated user' })
+  @ApiCreatedResponse({
+    description: 'Created or updated supplier profile',
+    type: SupplierProfileResponseDto,
+  })
   @UseGuards(AuthGuard)
   createProfile(
     @CurrentUser() user: AuthUser | undefined,
@@ -56,6 +82,8 @@ export class SuppliersController {
   }
 
   @Patch('supplier/profile')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update supplier profile for authenticated user' })
   @UseGuards(AuthGuard)
   patchProfile(
     @CurrentUser() user: AuthUser | undefined,
@@ -69,6 +97,8 @@ export class SuppliersController {
   }
 
   @Post('supplier/media')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Add media item to supplier profile' })
   @UseGuards(AuthGuard)
   addMedia(@CurrentUser() user: AuthUser | undefined, @Body() body: AddSupplierMediaDto) {
     const userId = user?.id;
@@ -79,6 +109,8 @@ export class SuppliersController {
   }
 
   @Delete('supplier/media/:id')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete media item from supplier profile' })
   @UseGuards(AuthGuard)
   deleteMedia(@CurrentUser() user: AuthUser | undefined, @Param('id') id: string) {
     const userId = user?.id;
@@ -89,6 +121,8 @@ export class SuppliersController {
   }
 
   @Patch('supplier/attributes')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update supplier private attributes and capabilities' })
   @UseGuards(AuthGuard)
   updateAttributes(@CurrentUser() user: AuthUser | undefined, @Body() body: UpdateSupplierAttributesDto) {
     const userId = user?.id;
@@ -99,6 +133,8 @@ export class SuppliersController {
   }
 
   @Patch('supplier/service-areas')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Replace supplier service areas list' })
   @UseGuards(AuthGuard)
   updateServiceAreas(@CurrentUser() user: AuthUser | undefined, @Body() body: UpdateSupplierServiceAreasDto) {
     const userId = user?.id;
@@ -109,12 +145,18 @@ export class SuppliersController {
   }
 
   @Post('suppliers/:id/favorite')
+  @ApiOperation({ summary: 'Save supplier as favorite (user or anonymous actor)' })
   async favorite(@Param('id') supplierId: string, @Headers('authorization') authorization?: string) {
     const { userId, anonymousSessionId } = await this.resolveActor(authorization);
     return this.suppliersService.saveFavorite(userId, anonymousSessionId, supplierId);
   }
 
   @Post('suppliers/:id/share')
+  @ApiOperation({ summary: 'Track supplier share metadata (channel/context)' })
+  @ApiCreatedResponse({
+    description: 'Share telemetry persisted',
+    type: ShareTrackResponseDto,
+  })
   async share(
     @Param('id') supplierId: string,
     @Headers('authorization') authorization?: string,
@@ -125,23 +167,27 @@ export class SuppliersController {
   }
 
   @Delete('suppliers/:id/favorite')
+  @ApiOperation({ summary: 'Remove supplier from favorites' })
   async unfavorite(@Param('id') supplierId: string, @Headers('authorization') authorization?: string) {
     const { userId, anonymousSessionId } = await this.resolveActor(authorization);
     return this.suppliersService.removeFavorite(userId, anonymousSessionId, supplierId);
   }
 
   @Get('users/me/favorites')
+  @ApiOperation({ summary: 'List current actor favorite suppliers' })
   async listFavorites(@Headers('authorization') authorization?: string) {
     const { userId, anonymousSessionId } = await this.resolveActor(authorization);
     return this.suppliersService.listFavorites(userId, anonymousSessionId);
   }
 
   @Post('supplier/draft')
+  @ApiOperation({ summary: 'Save supplier onboarding draft step payload' })
   saveDraft(@Body() body: UpsertSupplierDraftDto) {
     return this.suppliersService.upsertDraft(body.supplierId, body);
   }
 
   @Get('supplier/draft/:supplierId')
+  @ApiOperation({ summary: 'Get supplier onboarding draft by supplier id' })
   getDraft(@Param('supplierId') supplierId: string) {
     return this.suppliersService.getDraft(supplierId);
   }

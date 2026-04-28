@@ -79,7 +79,18 @@ export class AiPlanningService {
       },
     });
 
-    if (conversation.anonymousSessionId) {
+    if (conversation.userId) {
+      await this.prisma.aiUsageCounter.upsert({
+        where: { userId: conversation.userId },
+        create: {
+          userId: conversation.userId,
+          messageCount: 1,
+        },
+        update: {
+          messageCount: { increment: 1 },
+        },
+      });
+    } else if (conversation.anonymousSessionId) {
       await this.prisma.aiUsageCounter.upsert({
         where: { anonymousSessionId: conversation.anonymousSessionId },
         create: {

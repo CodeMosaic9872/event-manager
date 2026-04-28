@@ -1,49 +1,62 @@
 import { Type } from 'class-transformer';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsBoolean, IsObject, IsOptional, IsString, IsUrl, MaxLength, ValidateNested } from 'class-validator';
 
 export class AddSupplierMediaDto {
+  @ApiProperty({ description: 'Media type', example: 'image' })
   @IsString()
   @MaxLength(64)
   mediaType!: string;
 
+  @ApiProperty({ description: 'Public media URL', example: 'https://cdn.example.com/supplier/image-1.jpg' })
   @IsUrl()
   url!: string;
 
+  @ApiPropertyOptional({ description: 'Sort order in gallery', example: 1 })
   @IsOptional()
   sortOrder?: number;
 
+  @ApiPropertyOptional({ description: 'Optional media metadata object' })
   @IsOptional()
   @IsObject()
   metadataJson?: Record<string, unknown>;
 }
 
 export class UpdateSupplierAttributesDto {
+  @ApiPropertyOptional({ description: 'Supplier has business insurance', example: true })
   @IsOptional()
   @IsBoolean()
   insurance?: boolean;
 
+  @ApiPropertyOptional({ description: 'Supplier supports accessibility requirements', example: true })
   @IsOptional()
   @IsBoolean()
   accessibility?: boolean;
 
+  @ApiPropertyOptional({ description: 'Kosher options payload' })
   @IsOptional()
   kosherOptions?: unknown;
 
+  @ApiPropertyOptional({ description: 'Languages payload' })
   @IsOptional()
   languagesJson?: unknown;
 
+  @ApiPropertyOptional({ description: 'Working days payload' })
   @IsOptional()
   workingDaysJson?: unknown;
 
+  @ApiPropertyOptional({ description: 'Certifications payload' })
   @IsOptional()
   certificationsJson?: unknown;
 }
 
-export class ServiceAreaItemDto {
+class ServiceAreaItemDto {
+  @ApiProperty({ description: 'Region code', example: 'north' })
   @IsString()
   @MaxLength(32)
   regionCode!: string;
 
+  @ApiPropertyOptional({ description: 'Optional city code', example: 'haifa' })
   @IsOptional()
   @IsString()
   @MaxLength(32)
@@ -51,6 +64,10 @@ export class ServiceAreaItemDto {
 }
 
 export class UpdateSupplierServiceAreasDto {
+  @ApiProperty({
+    description: 'Complete replacement of supplier service areas',
+    type: [ServiceAreaItemDto],
+  })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ServiceAreaItemDto)
