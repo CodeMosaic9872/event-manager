@@ -1,1 +1,0 @@
-ALTER TYPE "NotificationChannel" ADD VALUE IF NOT EXISTS 'PUSH';
