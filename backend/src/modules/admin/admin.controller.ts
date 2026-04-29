@@ -145,12 +145,28 @@ export class AdminController {
 
   @Patch('automations/rules/:id')
   updateAutomationRule(@Param('id') id: string, @Body() body: UpdateAutomationRuleDto) {
-    return { id, updated: true, body };
+    return this.adminService.updateAutomationRule(id, {
+      isActive: body.isActive,
+      config: body.config,
+    });
   }
 
   @Get('automations/runs')
   automationRuns() {
     return this.adminService.automationRuns();
+  }
+
+  @Post('automations/runs/process')
+  @ApiOperation({ summary: 'Process pending automation notification runs' })
+  processAutomationRuns(@Query('limit') limit?: string) {
+    const parsed = Number(limit);
+    return this.adminService.processAutomationRuns(Number.isFinite(parsed) && parsed > 0 ? parsed : 50);
+  }
+
+  @Get('automations/metrics')
+  @ApiOperation({ summary: 'Get automation queue metrics' })
+  automationMetrics() {
+    return this.adminService.automationMetrics();
   }
 
   @Post('taxonomy/event-types')

@@ -56,6 +56,7 @@ enum NotificationChannel {
   EMAIL
   SMS
   WHATSAPP
+  PUSH
 }
 
 enum NotificationStatus {
@@ -82,6 +83,8 @@ model User {
   jobPosts    JobPost[]
   conversations AiConversation[]
   favorites   FavoriteSupplier[]
+  pushTokens  PushDeviceToken[]
+  notificationPreference NotificationPreference?
 }
 
 model UserRole {
@@ -133,6 +136,7 @@ model Supplier {
   applications   JobApplication[]
   favorites      FavoriteSupplier[]
   recommendationLogs AiRecommendationLog[]
+  pushTokens     PushDeviceToken[]
 }
 
 model SupplierDraft {
@@ -446,4 +450,33 @@ model Notification {
   scheduledAt      DateTime?
   sentAt           DateTime?
   createdAt        DateTime            @default(now())
+}
+
+model PushDeviceToken {
+  id          String    @id @default(cuid())
+  userId      String?
+  supplierId  String?
+  token       String    @unique
+  platform    String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  lastSeenAt  DateTime  @default(now())
+
+  user        User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  supplier    Supplier? @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isActive])
+  @@index([supplierId, isActive])
+}
+
+model NotificationPreference {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  emailEnabled    Boolean  @default(true)
+  pushEnabled     Boolean  @default(true)
+  mutedTemplatesJson Json?
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

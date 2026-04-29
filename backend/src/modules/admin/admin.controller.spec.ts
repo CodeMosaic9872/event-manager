@@ -10,6 +10,8 @@ describe('AdminController (contract)', () => {
   let app: INestApplication;
   const adminServiceMock = {
     moderateJobApplication: jest.fn(),
+    updateAutomationRule: jest.fn(),
+    processAutomationRuns: jest.fn(),
   };
 
   beforeAll(async () => {
@@ -52,5 +54,40 @@ describe('AdminController (contract)', () => {
       'REJECTED',
       'Missing required availability details',
     );
+  });
+
+  it('PATCH /v1/admin/automations/rules/:id updates automation rule config', async () => {
+    adminServiceMock.updateAutomationRule.mockResolvedValueOnce({
+      id: 'tmpl_1',
+      isActive: false,
+    });
+
+    await request(app.getHttpServer())
+      .patch('/v1/admin/automations/rules/tmpl_1')
+      .send({
+        isActive: false,
+        config: { digest: 'daily' },
+      })
+      .expect(200);
+
+    expect(adminServiceMock.updateAutomationRule).toHaveBeenCalledWith('tmpl_1', {
+      isActive: false,
+      config: { digest: 'daily' },
+    });
+  });
+
+  it('POST /v1/admin/automations/runs/process forwards parsed limit', async () => {
+    adminServiceMock.processAutomationRuns.mockResolvedValueOnce({
+      attempted: 3,
+      sent: 2,
+      failed: 1,
+    });
+
+    await request(app.getHttpServer())
+      .post('/v1/admin/automations/runs/process')
+      .query({ limit: '25' })
+      .expect(201);
+
+    expect(adminServiceMock.processAutomationRuns).toHaveBeenCalledWith(25);
   });
 });

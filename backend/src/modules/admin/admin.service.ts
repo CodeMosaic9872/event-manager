@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   listSuppliers() {
     return this.prisma.supplier.findMany({ orderBy: { createdAt: 'desc' } });
@@ -194,11 +198,46 @@ export class AdminService {
   }
 
   automationRules() {
-    return { rules: [] };
+    return this.prisma.notificationTemplate.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+  }
+
+  updateAutomationRule(id: string, payload: { isActive?: boolean; config?: Record<string, unknown> }) {
+    return this.prisma.notificationTemplate.update({
+      where: { id },
+      data: {
+        isActive: payload.isActive ?? undefined,
+        bodyTemplate: payload.config ? JSON.stringify(payload.config) : undefined,
+        version: { increment: 1 },
+      },
+    });
   }
 
   automationRuns() {
-    return { runs: [] };
+    return this.prisma.notification.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+    });
+  }
+
+  processAutomationRuns(limit = 50) {
+    return this.notificationsService.dispatchPendingEmails(limit);
+  }
+
+  async automationMetrics() {
+    const [pending, sent, failed] = await this.prisma.$transaction([
+      this.prisma.notification.count({ where: { status: 'PENDING' } }),
+      this.prisma.notification.count({ where: { status: 'SENT' } }),
+      this.prisma.notification.count({ where: { status: 'FAILED' } }),
+    ]);
+    return {
+      pending,
+      sent,
+      failed,
+      total: pending + sent + failed,
+    };
   }
 
   createEventType(payload: { key: string; name: string; isActive?: boolean }) {
