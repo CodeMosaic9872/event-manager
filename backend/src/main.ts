@@ -6,6 +6,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { TraceIdInterceptor } from './common/interceptors/trace-id.interceptor';
 import { RequestLoggingInterceptor } from './common/interceptors/request-logging.interceptor';
 import { RateLimitInterceptor } from './common/interceptors/rate-limit.interceptor';
+import { SuccessStatusInterceptor } from './common/interceptors/success-status.interceptor';
 import { PrismaService } from './prisma/prisma.service';
 
 async function bootstrap() {
@@ -22,6 +23,7 @@ async function bootstrap() {
   );
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(
+    new SuccessStatusInterceptor(),
     new TraceIdInterceptor(),
     new RateLimitInterceptor(),
     new RequestLoggingInterceptor(),
