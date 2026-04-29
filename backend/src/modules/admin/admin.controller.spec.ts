@@ -5,6 +5,8 @@ import { Test } from '@nestjs/testing';
 import * as request from 'supertest';
 import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
+import { AuthGuard } from '../../common/guards/auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
 
 describe('AdminController (contract)', () => {
   let app: INestApplication;
@@ -15,10 +17,13 @@ describe('AdminController (contract)', () => {
   };
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
+    const moduleBuilder = Test.createTestingModule({
       controllers: [AdminController],
       providers: [{ provide: AdminService, useValue: adminServiceMock }],
-    }).compile();
+    });
+    moduleBuilder.overrideGuard(AuthGuard).useValue({ canActivate: () => true });
+    moduleBuilder.overrideGuard(RolesGuard).useValue({ canActivate: () => true });
+    const moduleRef = await moduleBuilder.compile();
 
     app = moduleRef.createNestApplication();
     app.setGlobalPrefix('v1');

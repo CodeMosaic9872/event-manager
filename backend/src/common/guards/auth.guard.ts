@@ -53,11 +53,14 @@ export class AuthGuard implements CanActivate {
     if (!user) {
       throw new UnauthorizedException('Invalid user token');
     }
+    if (user.status !== 'ACTIVE') {
+      throw new UnauthorizedException('User account is not active');
+    }
 
     request.user = {
       id: user.id,
       email: user.email ?? undefined,
-      roles: decoded.roles,
+      roles: user.roles.map((roleRow) => roleRow.role),
     };
     return true;
   }

@@ -1,7 +1,10 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { ApiProtectedErrors } from '../../common/swagger/api-error-responses.decorator';
+import { AuthGuard } from '../../common/guards/auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import {
   ApproveSupplierDto,
   CreateCategoryDto,
@@ -24,6 +27,8 @@ import {
 
 @ApiTags('Admin')
 @ApiProtectedErrors()
+@UseGuards(AuthGuard, RolesGuard)
+@Roles('ADMIN')
 @Controller('admin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}

@@ -2,6 +2,7 @@ import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/commo
 import { Prisma } from '@prisma/client';
 import { App, cert, getApps, initializeApp } from 'firebase-admin/app';
 import { getMessaging } from 'firebase-admin/messaging';
+import nodemailer, { Transporter } from 'nodemailer';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
@@ -10,6 +11,7 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
   private workerTimer: NodeJS.Timeout | null = null;
   private isDispatching = false;
   private firebaseApp: App | null = null;
+  private smtpTransporter: Transporter | null = null;
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -39,6 +41,7 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
     recipientSupplierId?: string;
     templateKey: string;
     data: Record<string, unknown>;
+    scheduledAt?: Date;
   }) {
     const allowed = await this.shouldEnqueueChannel({
       templateKey: payload.templateKey,
@@ -56,6 +59,7 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
         channel: 'EMAIL',
         templateKey: payload.templateKey,
         payloadJson: payload.data as Prisma.InputJsonValue,
+        scheduledAt: payload.scheduledAt ?? null,
       },
     });
     this.logger.log(`notification.queued ${notification.id}`);
@@ -67,6 +71,7 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
     recipientSupplierId?: string;
     templateKey: string;
     data: Record<string, unknown>;
+    scheduledAt?: Date;
   }) {
     const allowed = await this.shouldEnqueueChannel({
       templateKey: payload.templateKey,
@@ -84,6 +89,7 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
         channel: 'PUSH',
         templateKey: payload.templateKey,
         payloadJson: payload.data as Prisma.InputJsonValue,
+        scheduledAt: payload.scheduledAt ?? null,
       },
     });
     this.logger.log(`notification.queued ${notification.id}`);
@@ -314,33 +320,36 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
     if (payload.channel === 'PUSH') {
       return this.sendPushViaProvider(payload, provider);
     }
-    if (provider !== 'webhook') {
+    if (provider !== 'smtp') {
       return `mock_email_${payload.notificationId}`;
     }
-    const url = process.env.NOTIFICATION_WEBHOOK_URL;
-    if (!url) {
-      throw new Error('NOTIFICATION_WEBHOOK_URL not configured');
+
+    const host = process.env.NOTIFICATION_SMTP_HOST;
+    const port = Number(process.env.NOTIFICATION_SMTP_PORT ?? 587);
+    const user = process.env.NOTIFICATION_SMTP_USER;
+    const pass = process.env.NOTIFICATION_SMTP_PASS;
+    const from = process.env.NOTIFICATION_SMTP_FROM;
+    const to = await this.resolveEmailRecipient(payload);
+    if (!host || !user || !pass || !from || !to) {
+      throw new Error('SMTP email provider is not fully configured');
     }
-    const token = process.env.NOTIFICATION_WEBHOOK_TOKEN;
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        ...(token ? { authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify({
-        notificationId: payload.notificationId,
-        templateKey: payload.templateKey,
-        subject: payload.subject,
-        body: payload.body,
-        payload: payload.payload,
-      }),
+
+    if (!this.smtpTransporter) {
+      this.smtpTransporter = nodemailer.createTransport({
+        host,
+        port,
+        secure: port === 465,
+        auth: { user, pass },
+      });
+    }
+
+    const result = await this.smtpTransporter.sendMail({
+      from,
+      to,
+      subject: payload.subject || 'Event Marketplace',
+      text: payload.body,
     });
-    if (!response.ok) {
-      throw new Error(`Webhook provider failed (${response.status})`);
-    }
-    const data = (await response.json().catch(() => ({}))) as { messageId?: string };
-    return data.messageId ?? `webhook_email_${payload.notificationId}`;
+    return result.messageId ?? `smtp_email_${payload.notificationId}`;
   }
 
   private async sendPushViaProvider(
@@ -532,5 +541,35 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
 
   private readMutedTemplates(value: unknown) {
     return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
+  }
+
+  private async resolveEmailRecipient(payload: {
+    payload: Record<string, unknown>;
+    recipientUserId?: string;
+    recipientSupplierId?: string;
+  }) {
+    const direct = payload.payload.email;
+    if (typeof direct === 'string' && direct.includes('@')) {
+      return direct;
+    }
+    if (payload.recipientUserId) {
+      const user = await this.prisma.user.findUnique({
+        where: { id: payload.recipientUserId },
+        select: { email: true },
+      });
+      if (user?.email) {
+        return user.email;
+      }
+    }
+    if (payload.recipientSupplierId) {
+      const supplier = await this.prisma.supplier.findUnique({
+        where: { id: payload.recipientSupplierId },
+        include: { owner: { select: { email: true } } },
+      });
+      if (supplier?.owner?.email) {
+        return supplier.owner.email;
+      }
+    }
+    return null;
   }
 }

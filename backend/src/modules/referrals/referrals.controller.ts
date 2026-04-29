@@ -1,8 +1,14 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ReferralsService } from './referrals.service';
 import { PatchReferralRewardDto, SupplierIdQueryDto } from './dto/referrals.dto';
 import { ApiProtectedErrors } from '../../common/swagger/api-error-responses.decorator';
+import { AuthGuard } from '../../common/guards/auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { SupplierOnlyGuard } from '../job-board/guards/supplier-only.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { AuthUser } from '../../common/interfaces/auth-user.interface';
 import {
   PatchReferralRewardResponseDto,
   ReferralAttributionResponseDto,
@@ -11,6 +17,7 @@ import {
 
 @ApiTags('Referrals')
 @ApiProtectedErrors()
+@UseGuards(AuthGuard, SupplierOnlyGuard)
 @Controller('supplier/referrals')
 export class ReferralsController {
   constructor(private readonly referralsService: ReferralsService) {}
@@ -21,13 +28,21 @@ export class ReferralsController {
     description: 'Supplier referral link',
     type: SupplierReferralLinkResponseDto,
   })
-  link(@Query() query: SupplierIdQueryDto) {
+  link(@CurrentUser() user: AuthUser | undefined, @Query() query: SupplierIdQueryDto) {
+    const userId = user?.id;
+    if (!userId || userId.startsWith('anonymous:')) {
+      throw new UnauthorizedException('Authenticated supplier required');
+    }
     return this.referralsService.getLink(query.supplierId);
   }
 
   @Post('link/regenerate')
   @ApiOperation({ summary: 'Regenerate supplier referral link' })
-  regenerate(@Query() query: SupplierIdQueryDto) {
+  regenerate(@CurrentUser() user: AuthUser | undefined, @Query() query: SupplierIdQueryDto) {
+    const userId = user?.id;
+    if (!userId || userId.startsWith('anonymous:')) {
+      throw new UnauthorizedException('Authenticated supplier required');
+    }
     return this.referralsService.regenerateLink(query.supplierId);
   }
 
@@ -38,25 +53,37 @@ export class ReferralsController {
     type: ReferralAttributionResponseDto,
     isArray: true,
   })
-  attributions(@Query() query: SupplierIdQueryDto) {
+  attributions(@CurrentUser() user: AuthUser | undefined, @Query() query: SupplierIdQueryDto) {
+    const userId = user?.id;
+    if (!userId || userId.startsWith('anonymous:')) {
+      throw new UnauthorizedException('Authenticated supplier required');
+    }
     return this.referralsService.listAttributions(query.supplierId);
   }
 
   @Get('rewards')
   @ApiOperation({ summary: 'List supplier referral rewards' })
-  rewards(@Query() query: SupplierIdQueryDto) {
+  rewards(@CurrentUser() user: AuthUser | undefined, @Query() query: SupplierIdQueryDto) {
+    const userId = user?.id;
+    if (!userId || userId.startsWith('anonymous:')) {
+      throw new UnauthorizedException('Authenticated supplier required');
+    }
     return this.referralsService.listRewards(query.supplierId);
   }
 }
 
 @ApiTags('Referrals')
 @ApiProtectedErrors()
+@UseGuards(AuthGuard, RolesGuard)
+@Roles('ADMIN')
 @Controller('admin/referrals')
 export class AdminReferralsController {
+  constructor(private readonly referralsService: ReferralsService) {}
+
   @Get()
   @ApiOperation({ summary: 'List referral records for admin' })
   list() {
-    return { referrals: [] };
+    return this.referralsService.adminList();
   }
 
   @Patch('rewards/:id')
@@ -66,6 +93,6 @@ export class AdminReferralsController {
     type: PatchReferralRewardResponseDto,
   })
   patchReward(@Param('id') id: string, @Body() body: PatchReferralRewardDto) {
-    return { id, updated: true, body };
+    return this.referralsService.patchReward(id, body);
   }
 }

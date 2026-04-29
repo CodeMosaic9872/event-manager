@@ -1,14 +1,16 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ListSuppliersQueryDto } from './dto/list-suppliers-query.dto';
 import { MediaStorageService } from './media-storage.service';
+import { AutomationService } from '../notifications/automation.service';
 
 @Injectable()
 export class SuppliersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly mediaStorage: MediaStorageService,
+    @Optional() private readonly automationService?: AutomationService,
   ) {}
 
   async list(query: ListSuppliersQueryDto) {
@@ -497,15 +499,26 @@ export class SuppliersService {
       throw new NotFoundException('Supplier not found');
     }
 
+    const event = await this.prisma.supplierShareEvent.create({
+      data: {
+        supplierId,
+        userId: userId ?? null,
+        anonymousSessionId: anonymousSessionId ?? null,
+        channel: payload?.channel ?? 'unknown',
+        context: payload?.context ?? null,
+      },
+    });
+
     return {
       tracked: true,
+      id: event.id,
       supplierId,
       actor: {
         userId,
         anonymousSessionId,
       },
-      channel: payload?.channel ?? 'unknown',
-      context: payload?.context ?? null,
+      channel: event.channel,
+      context: event.context,
     };
   }
 
@@ -548,7 +561,7 @@ export class SuppliersService {
       if (payload.version !== undefined && payload.version !== 1) {
         throw new ConflictException('Draft version mismatch');
       }
-      return this.prisma.supplierDraft.create({
+      const draft = await this.prisma.supplierDraft.create({
         data: {
           supplierId: supplier.id,
           stepKey: payload.stepKey,
@@ -557,11 +570,19 @@ export class SuppliersService {
           version: 1,
         },
       });
+      await this.maybePublishOnboardingAbandonedEvent({
+        userId,
+        supplierId: supplier.id,
+        stepKey: payload.stepKey,
+        completionPercent: payload.completionPercent,
+        version: draft.version,
+      });
+      return draft;
     }
     if (payload.version !== undefined && payload.version !== existing.version) {
       throw new ConflictException('Draft version mismatch');
     }
-    return this.prisma.supplierDraft.update({
+    const draft = await this.prisma.supplierDraft.update({
       where: { supplierId: supplier.id },
       data: {
         stepKey: payload.stepKey,
@@ -571,6 +592,14 @@ export class SuppliersService {
         lastAutosaveAt: new Date(),
       },
     });
+    await this.maybePublishOnboardingAbandonedEvent({
+      userId,
+      supplierId: supplier.id,
+      stepKey: payload.stepKey,
+      completionPercent: payload.completionPercent,
+      version: draft.version,
+    });
+    return draft;
   }
 
   async getDraftForUser(userId: string) {
@@ -583,6 +612,29 @@ export class SuppliersService {
     }
     return this.prisma.supplierDraft.findUnique({
       where: { supplierId: supplier.id },
+    });
+  }
+
+  private async maybePublishOnboardingAbandonedEvent(payload: {
+    userId: string;
+    supplierId: string;
+    stepKey: string;
+    completionPercent: number;
+    version: number;
+  }) {
+    if (payload.completionPercent >= 100) {
+      return;
+    }
+
+    await this.automationService?.publish({
+      eventId: `evt_supplier_onboarding_abandoned_${payload.supplierId}_${payload.version}`,
+      type: 'supplier.onboarding.abandoned',
+      payload: {
+        userId: payload.userId,
+        supplierId: payload.supplierId,
+        stepKey: payload.stepKey,
+        completionPercent: payload.completionPercent,
+      },
     });
   }
 }

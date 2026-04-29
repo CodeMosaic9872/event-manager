@@ -8,15 +8,17 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 
-const WINDOW_MS = 60_000;
-const MAX_REQUESTS = 120;
+const WINDOW_MS = Number(process.env.RATE_LIMIT_WINDOW_MS ?? 60_000);
+const MAX_REQUESTS = Number(process.env.RATE_LIMIT_MAX_REQUESTS ?? 120);
 const buckets = new Map<string, { count: number; resetAt: number }>();
 
 @Injectable()
 export class RateLimitInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest<{ ip?: string; headers: Record<string, string | undefined> }>();
-    const key = request.ip ?? request.headers['x-forwarded-for'] ?? 'unknown';
+    const forwardedFor = request.headers['x-forwarded-for']?.split(',')[0]?.trim();
+    const realIp = request.headers['x-real-ip']?.trim();
+    const key = forwardedFor || realIp || request.ip || 'unknown';
     const now = Date.now();
     const current = buckets.get(key);
 

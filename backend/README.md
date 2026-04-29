@@ -39,4 +39,13 @@ Services:
 
 The API container runs:
 - `prisma migrate deploy`
-- then starts `node dist/main.js`
+- then starts `node dist/src/main.js`
+
+## Security and runtime hardening
+
+- Configure CORS allowlist via `CORS_ALLOWED_ORIGINS` (comma-separated origins).
+- Set strong JWT secrets (`JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`); in production startup fails if missing.
+- Tune in-process rate limiting with:
+  - `RATE_LIMIT_WINDOW_MS`
+  - `RATE_LIMIT_MAX_REQUESTS`
+- Notification worker and provider behavior are controlled by `.env` provider keys.

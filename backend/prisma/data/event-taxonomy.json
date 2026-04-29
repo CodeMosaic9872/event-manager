@@ -1,0 +1,3138 @@
+[
+  {
+    "eventType": "חתונה",
+    "eventTypeEn": "Wedding",
+    "mainCategory": "אוכל",
+    "mainCategoryEn": "Food",
+    "subCategories": [
+      "קייטרינג בשרי",
+      "קייטרינג טבעוני / צמחוני",
+      "בר מתוקים קינוחים ועגלות",
+      "בר פירות",
+      "עמדות אוכל ודוכני מזון"
+    ],
+    "subCategoriesEn": [
+      "Meat Catering",
+      "Vegan / Vegetarian Catering",
+      "Dessert Bar, Sweets & Carts",
+      "Fruit Bar",
+      "Food Stations & Stalls"
+    ]
+  },
+  {
+    "eventType": "חתונה",
+    "eventTypeEn": "Wedding",
+    "mainCategory": "שתייה",
+    "mainCategoryEn": "Beverages",
+    "subCategories": [
+      "בר אקטיבי",
+      "בר קוקטיילים",
+      "בר יין",
+      "מיצים / שייקים"
+    ],
+    "subCategoriesEn": [
+      "Active Bar Service",
+      "Cocktail Bar",
+      "Wine Bar",
+      "Juices / Smoothies"
+    ]
+  },
+  {
+    "eventType": "חתונה",
+    "eventTypeEn": "Wedding",
+    "mainCategory": "מקומות",
+    "mainCategoryEn": "Venues",
+    "subCategories": [
+      "אולמות וגני אירועים"
+    ],
+    "subCategoriesEn": [
+      "Event Halls & Gardens"
+    ]
+  },
+  {
+    "eventType": "חתונה",
+    "eventTypeEn": "Wedding",
+    "mainCategory": "צילום ותיעוד",
+    "mainCategoryEn": "Photography & Documentation",
+    "subCategories": [
+      "מנהלות סושיאל",
+      "צלמי סטילס",
+      "צלמי וידאו / קליפים",
+      "עמדות צילום מיוחדות",
+      "צלמי בוק",
+      "צלמי מגנטים",
+      "צילומי רחפן"
+    ],
+    "subCategoriesEn": [
+      "Social Media Managers",
+      "Still Photographers",
+      "Video / Clip Photographers",
+      "Special Photo Booths",
+      "Portfolio Photographers",
+      "Magnet Photo Vendors",
+      "Drone Photography"
+    ]
+  },
+  {
+    "eventType": "חתונה",
+    "eventTypeEn": "Wedding",
+    "mainCategory": "אטרקציות, תוכן פעיל וסיורים",
+    "mainCategoryEn": "Attractions, Interactive Content & Tours",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "חתונה",
+    "eventTypeEn": "Wedding",
+    "mainCategory": "לוגיסטיקה והשכרות",
+    "mainCategoryEn": "Logistics & Rentals",
+    "subCategories": [
+      "אוהלים ופתרונות הצללה",
+      "הגברה ותאורה",
+      "גנרטורים ומיזוג נייד",
+      "הסעות",
+      "אבטחה וסדרנות",
+      "שירותים ופסולת",
+      "רפואה / מהנדסי בטיחות"
+    ],
+    "subCategoriesEn": [
+      "Tents & Shading Solutions",
+      "Sound & Lighting",
+      "Generators & Portable Air Conditioning",
+      "Transportation Services",
+      "Security & Ushers",
+      "Sanitation & Waste Services",
+      "Medical / Safety Engineering"
+    ]
+  },
+  {
+    "eventType": "חתונה",
+    "eventTypeEn": "Wedding",
+    "mainCategory": "מתנות ומזכרות מעוצבות",
+    "mainCategoryEn": "Gifts & Branded Keepsakes",
+    "subCategories": [
+      "מתנות ממותגות"
+    ],
+    "subCategoriesEn": [
+      "Branded Gifts"
+    ]
+  },
+  {
+    "eventType": "חתונה",
+    "eventTypeEn": "Wedding",
+    "mainCategory": "עיצוב ומיתוג",
+    "mainCategoryEn": "Design & Branding",
+    "subCategories": [
+      "מעצבי אירועים",
+      "תפאורה וקונספטים",
+      "עיצובי בלונים",
+      "מעצבים גרפיים",
+      "בתי דפוס ומיתוג גרפי",
+      "מעצבי שמלות/חליפות",
+      "מאפרות ומעצבי שיער"
+    ],
+    "subCategoriesEn": [
+      "Event Designers",
+      "Set Design & Concepts",
+      "Balloon Designs",
+      "Graphic Designers",
+      "Printing Houses & Graphic Branding",
+      "Dress/Suit Designers",
+      "Makeup Artists & Hair Stylists"
+    ]
+  },
+  {
+    "eventType": "חתונה",
+    "eventTypeEn": "Wedding",
+    "mainCategory": "ניהול הפקה",
+    "mainCategoryEn": "Production Management",
+    "subCategories": [
+      "מפיקים",
+      "מנהלי אירוע",
+      "דיילות וצוותי רישום"
+    ],
+    "subCategoriesEn": [
+      "Producers",
+      "Event Managers",
+      "Hostesses & Registration Teams"
+    ]
+  },
+  {
+    "eventType": "חתונה",
+    "eventTypeEn": "Wedding",
+    "mainCategory": "הרצאות סדנאות ותוכן",
+    "mainCategoryEn": "Lectures, Workshops & Content",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "חתונה",
+    "eventTypeEn": "Wedding",
+    "mainCategory": "מוזיקה",
+    "mainCategoryEn": "Music",
+    "subCategories": [
+      "דיג'יי מיינסטרים וכלליים",
+      "דיג'יי טכנו/טראנס/אלקטרוני",
+      "להקות חיות / קאברים / קבלות פנים",
+      "זמרים / זמרי חופה וטקס",
+      "נגני סולו / להקות אינסטרומנטליות",
+      "מוזיקה דתית / חסידית"
+    ],
+    "subCategoriesEn": [
+      "Mainstream / General DJs",
+      "Techno / Trance / Electronic DJs",
+      "Live Bands / Covers / Reception Music",
+      "Singers / Ceremony & Chuppah Singers",
+      "Solo Musicians / Instrumental Bands",
+      "Religious / Hasidic Music"
+    ]
+  },
+  {
+    "eventType": "חתונה",
+    "eventTypeEn": "Wedding",
+    "mainCategory": "אנשי דת",
+    "mainCategoryEn": "Religious Officiants",
+    "subCategories": [
+      "רבנים"
+    ],
+    "subCategoriesEn": [
+      "Rabbis"
+    ]
+  },
+  {
+    "eventType": "בר / בת מצווה",
+    "eventTypeEn": "Bar/Bat Mitzvah",
+    "mainCategory": "אוכל",
+    "mainCategoryEn": "Food",
+    "subCategories": [
+      "קייטרינג חלבי",
+      "קייטרינג בשרי",
+      "קייטרינג טבעוני / צמחוני",
+      "בר מתוקים קינוחים ועגלות",
+      "בר פירות",
+      "עמדות אוכל ודוכני מזון",
+      "מגשי אירוח"
+    ],
+    "subCategoriesEn": [
+      "Dairy Catering",
+      "Meat Catering",
+      "Vegan / Vegetarian Catering",
+      "Dessert Bar, Sweets & Carts",
+      "Fruit Bar",
+      "Food Stations & Stalls",
+      "Hospitality Trays"
+    ]
+  },
+  {
+    "eventType": "בר / בת מצווה",
+    "eventTypeEn": "Bar/Bat Mitzvah",
+    "mainCategory": "שתייה",
+    "mainCategoryEn": "Beverages",
+    "subCategories": [
+      "בר אקטיבי",
+      "עגלות קפה",
+      "מיצים / שייקים"
+    ],
+    "subCategoriesEn": [
+      "Active Bar Service",
+      "Coffee Carts",
+      "Juices / Smoothies"
+    ]
+  },
+  {
+    "eventType": "בר / בת מצווה",
+    "eventTypeEn": "Bar/Bat Mitzvah",
+    "mainCategory": "מקומות",
+    "mainCategoryEn": "Venues",
+    "subCategories": [
+      "אולמות וגני אירועים",
+      "וילות"
+    ],
+    "subCategoriesEn": [
+      "Event Halls & Gardens",
+      "Villas"
+    ]
+  },
+  {
+    "eventType": "בר / בת מצווה",
+    "eventTypeEn": "Bar/Bat Mitzvah",
+    "mainCategory": "צילום ותיעוד",
+    "mainCategoryEn": "Photography & Documentation",
+    "subCategories": [
+      "מנהלות סושיאל",
+      "צלמי סטילס",
+      "צלמי וידאו / קליפים",
+      "עמדות צילום מיוחדות",
+      "צלמי בוק",
+      "צלמי מגנטים",
+      "צילומי רחפן"
+    ],
+    "subCategoriesEn": [
+      "Social Media Managers",
+      "Still Photographers",
+      "Video / Clip Photographers",
+      "Special Photo Booths",
+      "Portfolio Photographers",
+      "Magnet Photo Vendors",
+      "Drone Photography"
+    ]
+  },
+  {
+    "eventType": "בר / בת מצווה",
+    "eventTypeEn": "Bar/Bat Mitzvah",
+    "mainCategory": "אטרקציות, תוכן פעיל וסיורים",
+    "mainCategoryEn": "Attractions, Interactive Content & Tours",
+    "subCategories": [
+      "עמדות גיימינג ו-VR"
+    ],
+    "subCategoriesEn": [
+      "Gaming & VR Stations"
+    ]
+  },
+  {
+    "eventType": "בר / בת מצווה",
+    "eventTypeEn": "Bar/Bat Mitzvah",
+    "mainCategory": "לוגיסטיקה והשכרות",
+    "mainCategoryEn": "Logistics & Rentals",
+    "subCategories": [
+      "הקרנה ומסכי לדים",
+      "הסעות"
+    ],
+    "subCategoriesEn": [
+      "Projection & LED Screens",
+      "Transportation Services"
+    ]
+  },
+  {
+    "eventType": "בר / בת מצווה",
+    "eventTypeEn": "Bar/Bat Mitzvah",
+    "mainCategory": "מתנות ומזכרות מעוצבות",
+    "mainCategoryEn": "Gifts & Branded Keepsakes",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "בר / בת מצווה",
+    "eventTypeEn": "Bar/Bat Mitzvah",
+    "mainCategory": "עיצוב ומיתוג",
+    "mainCategoryEn": "Design & Branding",
+    "subCategories": [
+      "מעצבי אירועים",
+      "תפאורה וקונספטים",
+      "עיצובי בלונים",
+      "מעצבים גרפיים",
+      "בתי דפוס ומיתוג גרפי"
+    ],
+    "subCategoriesEn": [
+      "Event Designers",
+      "Set Design & Concepts",
+      "Balloon Designs",
+      "Graphic Designers",
+      "Printing Houses & Graphic Branding"
+    ]
+  },
+  {
+    "eventType": "בר / בת מצווה",
+    "eventTypeEn": "Bar/Bat Mitzvah",
+    "mainCategory": "ניהול הפקה",
+    "mainCategoryEn": "Production Management",
+    "subCategories": [
+      "מנהלי אירוע",
+      "דיילות וצוותי רישום"
+    ],
+    "subCategoriesEn": [
+      "Event Managers",
+      "Hostesses & Registration Teams"
+    ]
+  },
+  {
+    "eventType": "בר / בת מצווה",
+    "eventTypeEn": "Bar/Bat Mitzvah",
+    "mainCategory": "הרצאות סדנאות ותוכן",
+    "mainCategoryEn": "Lectures, Workshops & Content",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "בר / בת מצווה",
+    "eventTypeEn": "Bar/Bat Mitzvah",
+    "mainCategory": "מוזיקה",
+    "mainCategoryEn": "Music",
+    "subCategories": [
+      "דיג'יי מיינסטרים וכלליים",
+      "דיג'יי לאירועי ילדים ונוער"
+    ],
+    "subCategoriesEn": [
+      "Mainstream / General DJs",
+      "DJs for Kids & Teen Events"
+    ]
+  },
+  {
+    "eventType": "בר / בת מצווה",
+    "eventTypeEn": "Bar/Bat Mitzvah",
+    "mainCategory": "אנשי דת",
+    "mainCategoryEn": "Religious Officiants",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "בריתות",
+    "eventTypeEn": "Brit Milah / Brit Bat",
+    "mainCategory": "אוכל",
+    "mainCategoryEn": "Food",
+    "subCategories": [
+      "קייטרינג חלבי",
+      "קייטרינג בשרי",
+      "קייטרינג טבעוני / צמחוני",
+      "בר מתוקים קינוחים ועגלות",
+      "בר פירות",
+      "עמדות אוכל ודוכני מזון",
+      "מגשי אירוח"
+    ],
+    "subCategoriesEn": [
+      "Dairy Catering",
+      "Meat Catering",
+      "Vegan / Vegetarian Catering",
+      "Dessert Bar, Sweets & Carts",
+      "Fruit Bar",
+      "Food Stations & Stalls",
+      "Hospitality Trays"
+    ]
+  },
+  {
+    "eventType": "בריתות",
+    "eventTypeEn": "Brit Milah / Brit Bat",
+    "mainCategory": "שתייה",
+    "mainCategoryEn": "Beverages",
+    "subCategories": [
+      "בר אקטיבי",
+      "בר יין",
+      "עגלות קפה",
+      "מיצים / שייקים"
+    ],
+    "subCategoriesEn": [
+      "Active Bar Service",
+      "Wine Bar",
+      "Coffee Carts",
+      "Juices / Smoothies"
+    ]
+  },
+  {
+    "eventType": "בריתות",
+    "eventTypeEn": "Brit Milah / Brit Bat",
+    "mainCategory": "מקומות",
+    "mainCategoryEn": "Venues",
+    "subCategories": [
+      "אולמות וגני אירועים",
+      "וילות"
+    ],
+    "subCategoriesEn": [
+      "Event Halls & Gardens",
+      "Villas"
+    ]
+  },
+  {
+    "eventType": "בריתות",
+    "eventTypeEn": "Brit Milah / Brit Bat",
+    "mainCategory": "צילום ותיעוד",
+    "mainCategoryEn": "Photography & Documentation",
+    "subCategories": [
+      "מנהלות סושיאל",
+      "צלמי סטילס",
+      "צלמי וידאו / קליפים",
+      "עמדות צילום מיוחדות",
+      "צלמי בוק",
+      "צלמי מגנטים",
+      "צילומי רחפן"
+    ],
+    "subCategoriesEn": [
+      "Social Media Managers",
+      "Still Photographers",
+      "Video / Clip Photographers",
+      "Special Photo Booths",
+      "Portfolio Photographers",
+      "Magnet Photo Vendors",
+      "Drone Photography"
+    ]
+  },
+  {
+    "eventType": "בריתות",
+    "eventTypeEn": "Brit Milah / Brit Bat",
+    "mainCategory": "אטרקציות, תוכן פעיל וסיורים",
+    "mainCategoryEn": "Attractions, Interactive Content & Tours",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "בריתות",
+    "eventTypeEn": "Brit Milah / Brit Bat",
+    "mainCategory": "לוגיסטיקה והשכרות",
+    "mainCategoryEn": "Logistics & Rentals",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "בריתות",
+    "eventTypeEn": "Brit Milah / Brit Bat",
+    "mainCategory": "מתנות ומזכרות מעוצבות",
+    "mainCategoryEn": "Gifts & Branded Keepsakes",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "בריתות",
+    "eventTypeEn": "Brit Milah / Brit Bat",
+    "mainCategory": "עיצוב ומיתוג",
+    "mainCategoryEn": "Design & Branding",
+    "subCategories": [
+      "מעצבי אירועים",
+      "תפאורה וקונספטים",
+      "עיצובי בלונים",
+      "מעצבים גרפיים",
+      "בתי דפוס ומיתוג גרפי"
+    ],
+    "subCategoriesEn": [
+      "Event Designers",
+      "Set Design & Concepts",
+      "Balloon Designs",
+      "Graphic Designers",
+      "Printing Houses & Graphic Branding"
+    ]
+  },
+  {
+    "eventType": "בריתות",
+    "eventTypeEn": "Brit Milah / Brit Bat",
+    "mainCategory": "ניהול הפקה",
+    "mainCategoryEn": "Production Management",
+    "subCategories": [
+      "מנהלי אירוע",
+      "דיילות וצוותי רישום"
+    ],
+    "subCategoriesEn": [
+      "Event Managers",
+      "Hostesses & Registration Teams"
+    ]
+  },
+  {
+    "eventType": "בריתות",
+    "eventTypeEn": "Brit Milah / Brit Bat",
+    "mainCategory": "הרצאות סדנאות ותוכן",
+    "mainCategoryEn": "Lectures, Workshops & Content",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "בריתות",
+    "eventTypeEn": "Brit Milah / Brit Bat",
+    "mainCategory": "מוזיקה",
+    "mainCategoryEn": "Music",
+    "subCategories": [
+      "דיג'יי מיינסטרים וכלליים",
+      "להקות חיות / קאברים / קבלות פנים",
+      "זמרים / זמרי חופה וטקס",
+      "נגני סולו / להקות אינסטרומנטליות",
+      "מוזיקה דתית / חסידית"
+    ],
+    "subCategoriesEn": [
+      "Mainstream / General DJs",
+      "Live Bands / Covers / Reception Music",
+      "Singers / Ceremony & Chuppah Singers",
+      "Solo Musicians / Instrumental Bands",
+      "Religious / Hasidic Music"
+    ]
+  },
+  {
+    "eventType": "בריתות",
+    "eventTypeEn": "Brit Milah / Brit Bat",
+    "mainCategory": "אנשי דת",
+    "mainCategoryEn": "Religious Officiants",
+    "subCategories": [
+      "רבנים",
+      "רבניות",
+      "מוהלים",
+      "מנחים דתיים"
+    ],
+    "subCategoriesEn": [
+      "Rabbis",
+      "Rabbanits",
+      "Mohels",
+      "Religious Facilitators"
+    ]
+  },
+  {
+    "eventType": "ימי הולדת",
+    "eventTypeEn": "Birthday Parties",
+    "mainCategory": "אוכל",
+    "mainCategoryEn": "Food",
+    "subCategories": [
+      "קייטרינג חלבי",
+      "קייטרינג בשרי",
+      "ארוחות שף",
+      "קייטרינג טבעוני / צמחוני",
+      "בר מתוקים קינוחים ועגלות",
+      "בר פירות",
+      "עמדות אוכל ודוכני מזון",
+      "מגשי אירוח"
+    ],
+    "subCategoriesEn": [
+      "Dairy Catering",
+      "Meat Catering",
+      "Chef Meals",
+      "Vegan / Vegetarian Catering",
+      "Dessert Bar, Sweets & Carts",
+      "Fruit Bar",
+      "Food Stations & Stalls",
+      "Hospitality Trays"
+    ]
+  },
+  {
+    "eventType": "ימי הולדת",
+    "eventTypeEn": "Birthday Parties",
+    "mainCategory": "שתייה",
+    "mainCategoryEn": "Beverages",
+    "subCategories": [
+      "בר אקטיבי",
+      "בר קוקטיילים",
+      "בר יין",
+      "עגלות קפה",
+      "מיצים / שייקים"
+    ],
+    "subCategoriesEn": [
+      "Active Bar Service",
+      "Cocktail Bar",
+      "Wine Bar",
+      "Coffee Carts",
+      "Juices / Smoothies"
+    ]
+  },
+  {
+    "eventType": "ימי הולדת",
+    "eventTypeEn": "Birthday Parties",
+    "mainCategory": "מקומות",
+    "mainCategoryEn": "Venues",
+    "subCategories": [
+      "וילות",
+      "מועדונים וברים"
+    ],
+    "subCategoriesEn": [
+      "Villas",
+      "Clubs & Bars"
+    ]
+  },
+  {
+    "eventType": "ימי הולדת",
+    "eventTypeEn": "Birthday Parties",
+    "mainCategory": "צילום ותיעוד",
+    "mainCategoryEn": "Photography & Documentation",
+    "subCategories": [
+      "מנהלות סושיאל",
+      "צלמי סטילס",
+      "צלמי וידאו / קליפים",
+      "עמדות צילום מיוחדות",
+      "צלמי מגנטים"
+    ],
+    "subCategoriesEn": [
+      "Social Media Managers",
+      "Still Photographers",
+      "Video / Clip Photographers",
+      "Special Photo Booths",
+      "Magnet Photo Vendors"
+    ]
+  },
+  {
+    "eventType": "ימי הולדת",
+    "eventTypeEn": "Birthday Parties",
+    "mainCategory": "אטרקציות, תוכן פעיל וסיורים",
+    "mainCategoryEn": "Attractions, Interactive Content & Tours",
+    "subCategories": [
+      "עמדות גיימינג ו-VR",
+      "מתנפחים ומתקנים",
+      "אמנים ומפעילים",
+      "סדנאות יצירה"
+    ],
+    "subCategoriesEn": [
+      "Gaming & VR Stations",
+      "Inflatables & Facilities",
+      "Performers & Activity Operators",
+      "Creative Workshops"
+    ]
+  },
+  {
+    "eventType": "ימי הולדת",
+    "eventTypeEn": "Birthday Parties",
+    "mainCategory": "לוגיסטיקה והשכרות",
+    "mainCategoryEn": "Logistics & Rentals",
+    "subCategories": [
+      "השכרות ציוד",
+      "השכרות ריהוט",
+      "אוהלים ופתרונות הצללה",
+      "הגברה ותאורה",
+      "גנרטורים ומיזוג נייד",
+      "הקרנה ומסכי לדים"
+    ],
+    "subCategoriesEn": [
+      "Equipment Rentals",
+      "Furniture Rentals",
+      "Tents & Shading Solutions",
+      "Sound & Lighting",
+      "Generators & Portable Air Conditioning",
+      "Projection & LED Screens"
+    ]
+  },
+  {
+    "eventType": "ימי הולדת",
+    "eventTypeEn": "Birthday Parties",
+    "mainCategory": "מתנות ומזכרות מעוצבות",
+    "mainCategoryEn": "Gifts & Branded Keepsakes",
+    "subCategories": [
+      "מתנות",
+      "מתנות ממותגות",
+      "מתנות מאוירות"
+    ],
+    "subCategoriesEn": [
+      "Gifts",
+      "Branded Gifts",
+      "Illustrated Gifts"
+    ]
+  },
+  {
+    "eventType": "ימי הולדת",
+    "eventTypeEn": "Birthday Parties",
+    "mainCategory": "עיצוב ומיתוג",
+    "mainCategoryEn": "Design & Branding",
+    "subCategories": [
+      "מעצבי אירועים",
+      "תפאורה וקונספטים",
+      "עיצובי בלונים",
+      "מעצבים גרפיים",
+      "בתי דפוס ומיתוג גרפי"
+    ],
+    "subCategoriesEn": [
+      "Event Designers",
+      "Set Design & Concepts",
+      "Balloon Designs",
+      "Graphic Designers",
+      "Printing Houses & Graphic Branding"
+    ]
+  },
+  {
+    "eventType": "ימי הולדת",
+    "eventTypeEn": "Birthday Parties",
+    "mainCategory": "ניהול הפקה",
+    "mainCategoryEn": "Production Management",
+    "subCategories": [
+      "מפיקים",
+      "מנהלי אירוע",
+      "דיילות וצוותי רישום"
+    ],
+    "subCategoriesEn": [
+      "Producers",
+      "Event Managers",
+      "Hostesses & Registration Teams"
+    ]
+  },
+  {
+    "eventType": "ימי הולדת",
+    "eventTypeEn": "Birthday Parties",
+    "mainCategory": "הרצאות סדנאות ותוכן",
+    "mainCategoryEn": "Lectures, Workshops & Content",
+    "subCategories": [
+      "וולנס",
+      "סדנאות",
+      "ODT"
+    ],
+    "subCategoriesEn": [
+      "Wellness",
+      "Workshops",
+      "ODT (Outdoor Team Activities)"
+    ]
+  },
+  {
+    "eventType": "ימי הולדת",
+    "eventTypeEn": "Birthday Parties",
+    "mainCategory": "מוזיקה",
+    "mainCategoryEn": "Music",
+    "subCategories": [
+      "דיג'יי מיינסטרים וכלליים",
+      "דיג'יי לאירועי ילדים ונוער",
+      "דיג'יי טכנו/טראנס/אלקטרוני"
+    ],
+    "subCategoriesEn": [
+      "Mainstream / General DJs",
+      "DJs for Kids & Teen Events",
+      "Techno / Trance / Electronic DJs"
+    ]
+  },
+  {
+    "eventType": "ימי הולדת",
+    "eventTypeEn": "Birthday Parties",
+    "mainCategory": "אנשי דת",
+    "mainCategoryEn": "Religious Officiants",
+    "subCategories": [
+      "מנחים דתיים"
+    ],
+    "subCategoriesEn": [
+      "Religious Facilitators"
+    ]
+  },
+  {
+    "eventType": "רווקים / רווקות",
+    "eventTypeEn": "Singles Events",
+    "mainCategory": "אוכל",
+    "mainCategoryEn": "Food",
+    "subCategories": [
+      "קייטרינג חלבי",
+      "ארוחות שף",
+      "קייטרינג טבעוני / צמחוני",
+      "בר מתוקים קינוחים ועגלות",
+      "בר פירות",
+      "מגשי אירוח"
+    ],
+    "subCategoriesEn": [
+      "Dairy Catering",
+      "Chef Meals",
+      "Vegan / Vegetarian Catering",
+      "Dessert Bar, Sweets & Carts",
+      "Fruit Bar",
+      "Hospitality Trays"
+    ]
+  },
+  {
+    "eventType": "רווקים / רווקות",
+    "eventTypeEn": "Singles Events",
+    "mainCategory": "שתייה",
+    "mainCategoryEn": "Beverages",
+    "subCategories": [
+      "בר אקטיבי",
+      "בר קוקטיילים",
+      "בר יין",
+      "עגלות קפה",
+      "מיצים / שייקים"
+    ],
+    "subCategoriesEn": [
+      "Active Bar Service",
+      "Cocktail Bar",
+      "Wine Bar",
+      "Coffee Carts",
+      "Juices / Smoothies"
+    ]
+  },
+  {
+    "eventType": "רווקים / רווקות",
+    "eventTypeEn": "Singles Events",
+    "mainCategory": "מקומות",
+    "mainCategoryEn": "Venues",
+    "subCategories": [
+      "וילות"
+    ],
+    "subCategoriesEn": [
+      "Villas"
+    ]
+  },
+  {
+    "eventType": "רווקים / רווקות",
+    "eventTypeEn": "Singles Events",
+    "mainCategory": "צילום ותיעוד",
+    "mainCategoryEn": "Photography & Documentation",
+    "subCategories": [
+      "מנהלות סושיאל",
+      "צלמי סטילס",
+      "צלמי וידאו / קליפים",
+      "עמדות צילום מיוחדות"
+    ],
+    "subCategoriesEn": [
+      "Social Media Managers",
+      "Still Photographers",
+      "Video / Clip Photographers",
+      "Special Photo Booths"
+    ]
+  },
+  {
+    "eventType": "רווקים / רווקות",
+    "eventTypeEn": "Singles Events",
+    "mainCategory": "אטרקציות, תוכן פעיל וסיורים",
+    "mainCategoryEn": "Attractions, Interactive Content & Tours",
+    "subCategories": [
+      "סדנאות יצירה"
+    ],
+    "subCategoriesEn": [
+      "Creative Workshops"
+    ]
+  },
+  {
+    "eventType": "רווקים / רווקות",
+    "eventTypeEn": "Singles Events",
+    "mainCategory": "לוגיסטיקה והשכרות",
+    "mainCategoryEn": "Logistics & Rentals",
+    "subCategories": [
+      "השכרות ציוד",
+      "השכרות ריהוט"
+    ],
+    "subCategoriesEn": [
+      "Equipment Rentals",
+      "Furniture Rentals"
+    ]
+  },
+  {
+    "eventType": "רווקים / רווקות",
+    "eventTypeEn": "Singles Events",
+    "mainCategory": "מתנות ומזכרות מעוצבות",
+    "mainCategoryEn": "Gifts & Branded Keepsakes",
+    "subCategories": [
+      "מתנות",
+      "מתנות ממותגות",
+      "מתנות מאוירות"
+    ],
+    "subCategoriesEn": [
+      "Gifts",
+      "Branded Gifts",
+      "Illustrated Gifts"
+    ]
+  },
+  {
+    "eventType": "רווקים / רווקות",
+    "eventTypeEn": "Singles Events",
+    "mainCategory": "עיצוב ומיתוג",
+    "mainCategoryEn": "Design & Branding",
+    "subCategories": [
+      "מעצבי אירועים",
+      "תפאורה וקונספטים",
+      "עיצובי בלונים",
+      "מעצבים גרפיים",
+      "בתי דפוס ומיתוג גרפי"
+    ],
+    "subCategoriesEn": [
+      "Event Designers",
+      "Set Design & Concepts",
+      "Balloon Designs",
+      "Graphic Designers",
+      "Printing Houses & Graphic Branding"
+    ]
+  },
+  {
+    "eventType": "רווקים / רווקות",
+    "eventTypeEn": "Singles Events",
+    "mainCategory": "ניהול הפקה",
+    "mainCategoryEn": "Production Management",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "רווקים / רווקות",
+    "eventTypeEn": "Singles Events",
+    "mainCategory": "הרצאות סדנאות ותוכן",
+    "mainCategoryEn": "Lectures, Workshops & Content",
+    "subCategories": [
+      "וולנס",
+      "סדנאות"
+    ],
+    "subCategoriesEn": [
+      "Wellness",
+      "Workshops"
+    ]
+  },
+  {
+    "eventType": "רווקים / רווקות",
+    "eventTypeEn": "Singles Events",
+    "mainCategory": "מוזיקה",
+    "mainCategoryEn": "Music",
+    "subCategories": [
+      "דיג'יי מיינסטרים וכלליים",
+      "דיג'יי טכנו/טראנס/אלקטרוני"
+    ],
+    "subCategoriesEn": [
+      "Mainstream / General DJs",
+      "Techno / Trance / Electronic DJs"
+    ]
+  },
+  {
+    "eventType": "רווקים / רווקות",
+    "eventTypeEn": "Singles Events",
+    "mainCategory": "אנשי דת",
+    "mainCategoryEn": "Religious Officiants",
+    "subCategories": [
+      "מנחים דתיים"
+    ],
+    "subCategoriesEn": [
+      "Religious Facilitators"
+    ]
+  },
+  {
+    "eventType": "בוטיק ויוקרה",
+    "eventTypeEn": "Boutique & Luxury",
+    "mainCategory": "אוכל",
+    "mainCategoryEn": "Food",
+    "subCategories": [
+      "קייטרינג חלבי",
+      "קייטרינג בשרי",
+      "ארוחות שף",
+      "קייטרינג טבעוני / צמחוני",
+      "בר מתוקים קינוחים ועגלות",
+      "בר פירות",
+      "עמדות אוכל ודוכני מזון"
+    ],
+    "subCategoriesEn": [
+      "Dairy Catering",
+      "Meat Catering",
+      "Chef Meals",
+      "Vegan / Vegetarian Catering",
+      "Dessert Bar, Sweets & Carts",
+      "Fruit Bar",
+      "Food Stations & Stalls"
+    ]
+  },
+  {
+    "eventType": "בוטיק ויוקרה",
+    "eventTypeEn": "Boutique & Luxury",
+    "mainCategory": "שתייה",
+    "mainCategoryEn": "Beverages",
+    "subCategories": [
+      "בר אקטיבי",
+      "בר קוקטיילים",
+      "בר יין",
+      "עגלות קפה",
+      "מיצים / שייקים"
+    ],
+    "subCategoriesEn": [
+      "Active Bar Service",
+      "Cocktail Bar",
+      "Wine Bar",
+      "Coffee Carts",
+      "Juices / Smoothies"
+    ]
+  },
+  {
+    "eventType": "בוטיק ויוקרה",
+    "eventTypeEn": "Boutique & Luxury",
+    "mainCategory": "מקומות",
+    "mainCategoryEn": "Venues",
+    "subCategories": [
+      "אולמות וגני אירועים",
+      "וילות"
+    ],
+    "subCategoriesEn": [
+      "Event Halls & Gardens",
+      "Villas"
+    ]
+  },
+  {
+    "eventType": "בוטיק ויוקרה",
+    "eventTypeEn": "Boutique & Luxury",
+    "mainCategory": "צילום ותיעוד",
+    "mainCategoryEn": "Photography & Documentation",
+    "subCategories": [
+      "מנהלות סושיאל",
+      "צלמי סטילס",
+      "צלמי וידאו / קליפים",
+      "עמדות צילום מיוחדות",
+      "צלמי מגנטים",
+      "צילומי רחפן"
+    ],
+    "subCategoriesEn": [
+      "Social Media Managers",
+      "Still Photographers",
+      "Video / Clip Photographers",
+      "Special Photo Booths",
+      "Magnet Photo Vendors",
+      "Drone Photography"
+    ]
+  },
+  {
+    "eventType": "בוטיק ויוקרה",
+    "eventTypeEn": "Boutique & Luxury",
+    "mainCategory": "אטרקציות, תוכן פעיל וסיורים",
+    "mainCategoryEn": "Attractions, Interactive Content & Tours",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "בוטיק ויוקרה",
+    "eventTypeEn": "Boutique & Luxury",
+    "mainCategory": "לוגיסטיקה והשכרות",
+    "mainCategoryEn": "Logistics & Rentals",
+    "subCategories": [
+      "השכרות ציוד",
+      "השכרות ריהוט",
+      "אוהלים ופתרונות הצללה",
+      "הגברה ותאורה",
+      "גנרטורים ומיזוג נייד",
+      "הקרנה ומסכי לדים",
+      "הסעות",
+      "אבטחה וסדרנות"
+    ],
+    "subCategoriesEn": [
+      "Equipment Rentals",
+      "Furniture Rentals",
+      "Tents & Shading Solutions",
+      "Sound & Lighting",
+      "Generators & Portable Air Conditioning",
+      "Projection & LED Screens",
+      "Transportation Services",
+      "Security & Ushers"
+    ]
+  },
+  {
+    "eventType": "בוטיק ויוקרה",
+    "eventTypeEn": "Boutique & Luxury",
+    "mainCategory": "מתנות ומזכרות מעוצבות",
+    "mainCategoryEn": "Gifts & Branded Keepsakes",
+    "subCategories": [
+      "מתנות",
+      "מתנות ממותגות",
+      "מתנות מאוירות"
+    ],
+    "subCategoriesEn": [
+      "Gifts",
+      "Branded Gifts",
+      "Illustrated Gifts"
+    ]
+  },
+  {
+    "eventType": "בוטיק ויוקרה",
+    "eventTypeEn": "Boutique & Luxury",
+    "mainCategory": "עיצוב ומיתוג",
+    "mainCategoryEn": "Design & Branding",
+    "subCategories": [
+      "מעצבי אירועים",
+      "תפאורה וקונספטים",
+      "עיצובי בלונים",
+      "מעצבים גרפיים",
+      "בתי דפוס ומיתוג גרפי"
+    ],
+    "subCategoriesEn": [
+      "Event Designers",
+      "Set Design & Concepts",
+      "Balloon Designs",
+      "Graphic Designers",
+      "Printing Houses & Graphic Branding"
+    ]
+  },
+  {
+    "eventType": "בוטיק ויוקרה",
+    "eventTypeEn": "Boutique & Luxury",
+    "mainCategory": "ניהול הפקה",
+    "mainCategoryEn": "Production Management",
+    "subCategories": [
+      "מפיקים",
+      "מנהלי אירוע",
+      "דיילות וצוותי רישום"
+    ],
+    "subCategoriesEn": [
+      "Producers",
+      "Event Managers",
+      "Hostesses & Registration Teams"
+    ]
+  },
+  {
+    "eventType": "בוטיק ויוקרה",
+    "eventTypeEn": "Boutique & Luxury",
+    "mainCategory": "הרצאות סדנאות ותוכן",
+    "mainCategoryEn": "Lectures, Workshops & Content",
+    "subCategories": [
+      "הרצאות",
+      "וולנס",
+      "סדנאות",
+      "סטנדאפיסטים",
+      "ODT"
+    ],
+    "subCategoriesEn": [
+      "Lectures",
+      "Wellness",
+      "Workshops",
+      "Stand-up Comedians",
+      "ODT (Outdoor Team Activities)"
+    ]
+  },
+  {
+    "eventType": "בוטיק ויוקרה",
+    "eventTypeEn": "Boutique & Luxury",
+    "mainCategory": "מוזיקה",
+    "mainCategoryEn": "Music",
+    "subCategories": [
+      "דיג'יי מיינסטרים וכלליים",
+      "דיג'יי טכנו/טראנס/אלקטרוני",
+      "להקות חיות / קאברים / קבלות פנים",
+      "נגני סולו / להקות אינסטרומנטליות",
+      "מוזיקה דתית / חסידית"
+    ],
+    "subCategoriesEn": [
+      "Mainstream / General DJs",
+      "Techno / Trance / Electronic DJs",
+      "Live Bands / Covers / Reception Music",
+      "Solo Musicians / Instrumental Bands",
+      "Religious / Hasidic Music"
+    ]
+  },
+  {
+    "eventType": "בוטיק ויוקרה",
+    "eventTypeEn": "Boutique & Luxury",
+    "mainCategory": "אנשי דת",
+    "mainCategoryEn": "Religious Officiants",
+    "subCategories": [
+      "מנחים דתיים"
+    ],
+    "subCategoriesEn": [
+      "Religious Facilitators"
+    ]
+  },
+  {
+    "eventType": "חינה",
+    "eventTypeEn": "Henna Ceremony",
+    "mainCategory": "אוכל",
+    "mainCategoryEn": "Food",
+    "subCategories": [
+      "קייטרינג חלבי",
+      "קייטרינג בשרי",
+      "ארוחות שף",
+      "קייטרינג טבעוני / צמחוני",
+      "בר מתוקים קינוחים ועגלות",
+      "בר פירות",
+      "מגשי אירוח"
+    ],
+    "subCategoriesEn": [
+      "Dairy Catering",
+      "Meat Catering",
+      "Chef Meals",
+      "Vegan / Vegetarian Catering",
+      "Dessert Bar, Sweets & Carts",
+      "Fruit Bar",
+      "Hospitality Trays"
+    ]
+  },
+  {
+    "eventType": "חינה",
+    "eventTypeEn": "Henna Ceremony",
+    "mainCategory": "שתייה",
+    "mainCategoryEn": "Beverages",
+    "subCategories": [
+      "בר אקטיבי",
+      "בר קוקטיילים",
+      "בר יין",
+      "עגלות קפה",
+      "מיצים / שייקים"
+    ],
+    "subCategoriesEn": [
+      "Active Bar Service",
+      "Cocktail Bar",
+      "Wine Bar",
+      "Coffee Carts",
+      "Juices / Smoothies"
+    ]
+  },
+  {
+    "eventType": "חינה",
+    "eventTypeEn": "Henna Ceremony",
+    "mainCategory": "מקומות",
+    "mainCategoryEn": "Venues",
+    "subCategories": [
+      "אולמות וגני אירועים",
+      "וילות"
+    ],
+    "subCategoriesEn": [
+      "Event Halls & Gardens",
+      "Villas"
+    ]
+  },
+  {
+    "eventType": "חינה",
+    "eventTypeEn": "Henna Ceremony",
+    "mainCategory": "צילום ותיעוד",
+    "mainCategoryEn": "Photography & Documentation",
+    "subCategories": [
+      "מנהלות סושיאל",
+      "צלמי סטילס",
+      "צלמי וידאו / קליפים",
+      "עמדות צילום מיוחדות",
+      "צלמי מגנטים"
+    ],
+    "subCategoriesEn": [
+      "Social Media Managers",
+      "Still Photographers",
+      "Video / Clip Photographers",
+      "Special Photo Booths",
+      "Magnet Photo Vendors"
+    ]
+  },
+  {
+    "eventType": "חינה",
+    "eventTypeEn": "Henna Ceremony",
+    "mainCategory": "אטרקציות, תוכן פעיל וסיורים",
+    "mainCategoryEn": "Attractions, Interactive Content & Tours",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "חינה",
+    "eventTypeEn": "Henna Ceremony",
+    "mainCategory": "לוגיסטיקה והשכרות",
+    "mainCategoryEn": "Logistics & Rentals",
+    "subCategories": [
+      "השכרות ריהוט"
+    ],
+    "subCategoriesEn": [
+      "Furniture Rentals"
+    ]
+  },
+  {
+    "eventType": "חינה",
+    "eventTypeEn": "Henna Ceremony",
+    "mainCategory": "מתנות ומזכרות מעוצבות",
+    "mainCategoryEn": "Gifts & Branded Keepsakes",
+    "subCategories": [
+      "מתנות",
+      "מתנות ממותגות",
+      "מתנות מאוירות"
+    ],
+    "subCategoriesEn": [
+      "Gifts",
+      "Branded Gifts",
+      "Illustrated Gifts"
+    ]
+  },
+  {
+    "eventType": "חינה",
+    "eventTypeEn": "Henna Ceremony",
+    "mainCategory": "עיצוב ומיתוג",
+    "mainCategoryEn": "Design & Branding",
+    "subCategories": [
+      "מעצבי אירועים",
+      "תפאורה וקונספטים",
+      "עיצובי בלונים",
+      "מעצבים גרפיים",
+      "בתי דפוס ומיתוג גרפי",
+      "מעצבי שמלות/חליפות",
+      "השכרות ביגוד והלבשה",
+      "מאפרות ומעצבי שיער"
+    ],
+    "subCategoriesEn": [
+      "Event Designers",
+      "Set Design & Concepts",
+      "Balloon Designs",
+      "Graphic Designers",
+      "Printing Houses & Graphic Branding",
+      "Dress/Suit Designers",
+      "Clothing & Attire Rentals",
+      "Makeup Artists & Hair Stylists"
+    ]
+  },
+  {
+    "eventType": "חינה",
+    "eventTypeEn": "Henna Ceremony",
+    "mainCategory": "ניהול הפקה",
+    "mainCategoryEn": "Production Management",
+    "subCategories": [
+      "מפיקים",
+      "מנהלי אירוע",
+      "דיילות וצוותי רישום"
+    ],
+    "subCategoriesEn": [
+      "Producers",
+      "Event Managers",
+      "Hostesses & Registration Teams"
+    ]
+  },
+  {
+    "eventType": "חינה",
+    "eventTypeEn": "Henna Ceremony",
+    "mainCategory": "הרצאות סדנאות ותוכן",
+    "mainCategoryEn": "Lectures, Workshops & Content",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "חינה",
+    "eventTypeEn": "Henna Ceremony",
+    "mainCategory": "מוזיקה",
+    "mainCategoryEn": "Music",
+    "subCategories": [
+      "דיג'יי מיינסטרים וכלליים",
+      "דיג'יי טכנו/טראנס/אלקטרוני",
+      "להקות חיות / קאברים / קבלות פנים",
+      "מוזיקה דתית / חסידית"
+    ],
+    "subCategoriesEn": [
+      "Mainstream / General DJs",
+      "Techno / Trance / Electronic DJs",
+      "Live Bands / Covers / Reception Music",
+      "Religious / Hasidic Music"
+    ]
+  },
+  {
+    "eventType": "חינה",
+    "eventTypeEn": "Henna Ceremony",
+    "mainCategory": "אנשי דת",
+    "mainCategoryEn": "Religious Officiants",
+    "subCategories": [
+      "מנחים דתיים"
+    ],
+    "subCategoriesEn": [
+      "Religious Facilitators"
+    ]
+  },
+  {
+    "eventType": "הפרשת חלה",
+    "eventTypeEn": "Challah Separation Ceremony",
+    "mainCategory": "אוכל",
+    "mainCategoryEn": "Food",
+    "subCategories": [
+      "קייטרינג חלבי",
+      "ארוחות שף",
+      "קייטרינג טבעוני / צמחוני",
+      "בר מתוקים קינוחים ועגלות",
+      "בר פירות",
+      "מגשי אירוח"
+    ],
+    "subCategoriesEn": [
+      "Dairy Catering",
+      "Chef Meals",
+      "Vegan / Vegetarian Catering",
+      "Dessert Bar, Sweets & Carts",
+      "Fruit Bar",
+      "Hospitality Trays"
+    ]
+  },
+  {
+    "eventType": "הפרשת חלה",
+    "eventTypeEn": "Challah Separation Ceremony",
+    "mainCategory": "שתייה",
+    "mainCategoryEn": "Beverages",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "הפרשת חלה",
+    "eventTypeEn": "Challah Separation Ceremony",
+    "mainCategory": "מקומות",
+    "mainCategoryEn": "Venues",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "הפרשת חלה",
+    "eventTypeEn": "Challah Separation Ceremony",
+    "mainCategory": "צילום ותיעוד",
+    "mainCategoryEn": "Photography & Documentation",
+    "subCategories": [
+      "מנהלות סושיאל",
+      "צלמי סטילס",
+      "צלמי וידאו / קליפים"
+    ],
+    "subCategoriesEn": [
+      "Social Media Managers",
+      "Still Photographers",
+      "Video / Clip Photographers"
+    ]
+  },
+  {
+    "eventType": "הפרשת חלה",
+    "eventTypeEn": "Challah Separation Ceremony",
+    "mainCategory": "אטרקציות, תוכן פעיל וסיורים",
+    "mainCategoryEn": "Attractions, Interactive Content & Tours",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "הפרשת חלה",
+    "eventTypeEn": "Challah Separation Ceremony",
+    "mainCategory": "לוגיסטיקה והשכרות",
+    "mainCategoryEn": "Logistics & Rentals",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "הפרשת חלה",
+    "eventTypeEn": "Challah Separation Ceremony",
+    "mainCategory": "מתנות ומזכרות מעוצבות",
+    "mainCategoryEn": "Gifts & Branded Keepsakes",
+    "subCategories": [
+      "מתנות",
+      "מתנות ממותגות",
+      "מתנות מאוירות"
+    ],
+    "subCategoriesEn": [
+      "Gifts",
+      "Branded Gifts",
+      "Illustrated Gifts"
+    ]
+  },
+  {
+    "eventType": "הפרשת חלה",
+    "eventTypeEn": "Challah Separation Ceremony",
+    "mainCategory": "עיצוב ומיתוג",
+    "mainCategoryEn": "Design & Branding",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "הפרשת חלה",
+    "eventTypeEn": "Challah Separation Ceremony",
+    "mainCategory": "ניהול הפקה",
+    "mainCategoryEn": "Production Management",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "הפרשת חלה",
+    "eventTypeEn": "Challah Separation Ceremony",
+    "mainCategory": "הרצאות סדנאות ותוכן",
+    "mainCategoryEn": "Lectures, Workshops & Content",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "הפרשת חלה",
+    "eventTypeEn": "Challah Separation Ceremony",
+    "mainCategory": "מוזיקה",
+    "mainCategoryEn": "Music",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "הפרשת חלה",
+    "eventTypeEn": "Challah Separation Ceremony",
+    "mainCategory": "אנשי דת",
+    "mainCategoryEn": "Religious Officiants",
+    "subCategories": [
+      "רבניות",
+      "מנחים דתיים"
+    ],
+    "subCategoriesEn": [
+      "Rabbanits",
+      "Religious Facilitators"
+    ]
+  },
+  {
+    "eventType": "ימי גיבוש",
+    "eventTypeEn": "Team-Building Days",
+    "mainCategory": "אוכל",
+    "mainCategoryEn": "Food",
+    "subCategories": [
+      "קייטרינג חלבי",
+      "קייטרינג בשרי",
+      "ארוחות שף",
+      "קייטרינג טבעוני / צמחוני",
+      "בר מתוקים קינוחים ועגלות",
+      "בר פירות",
+      "עמדות אוכל ודוכני מזון",
+      "מגשי אירוח"
+    ],
+    "subCategoriesEn": [
+      "Dairy Catering",
+      "Meat Catering",
+      "Chef Meals",
+      "Vegan / Vegetarian Catering",
+      "Dessert Bar, Sweets & Carts",
+      "Fruit Bar",
+      "Food Stations & Stalls",
+      "Hospitality Trays"
+    ]
+  },
+  {
+    "eventType": "ימי גיבוש",
+    "eventTypeEn": "Team-Building Days",
+    "mainCategory": "שתייה",
+    "mainCategoryEn": "Beverages",
+    "subCategories": [
+      "בר אקטיבי",
+      "בר קוקטיילים",
+      "בר יין",
+      "עגלות קפה",
+      "מיצים / שייקים"
+    ],
+    "subCategoriesEn": [
+      "Active Bar Service",
+      "Cocktail Bar",
+      "Wine Bar",
+      "Coffee Carts",
+      "Juices / Smoothies"
+    ]
+  },
+  {
+    "eventType": "ימי גיבוש",
+    "eventTypeEn": "Team-Building Days",
+    "mainCategory": "מקומות",
+    "mainCategoryEn": "Venues",
+    "subCategories": [
+      "וילות",
+      "מלונות",
+      "חללים לכנסים והרצאות"
+    ],
+    "subCategoriesEn": [
+      "Villas",
+      "Hotels",
+      "Conference & Lecture Spaces"
+    ]
+  },
+  {
+    "eventType": "ימי גיבוש",
+    "eventTypeEn": "Team-Building Days",
+    "mainCategory": "צילום ותיעוד",
+    "mainCategoryEn": "Photography & Documentation",
+    "subCategories": [
+      "מנהלות סושיאל",
+      "צלמי סטילס",
+      "צלמי וידאו / קליפים",
+      "עמדות צילום מיוחדות",
+      "צלמי מגנטים",
+      "צילומי רחפן"
+    ],
+    "subCategoriesEn": [
+      "Social Media Managers",
+      "Still Photographers",
+      "Video / Clip Photographers",
+      "Special Photo Booths",
+      "Magnet Photo Vendors",
+      "Drone Photography"
+    ]
+  },
+  {
+    "eventType": "ימי גיבוש",
+    "eventTypeEn": "Team-Building Days",
+    "mainCategory": "אטרקציות, תוכן פעיל וסיורים",
+    "mainCategoryEn": "Attractions, Interactive Content & Tours",
+    "subCategories": [
+      "עמדות גיימינג ו-VR",
+      "מתנפחים ומתקנים",
+      "אמנים ומפעילים",
+      "סדנאות יצירה",
+      "סיורים"
+    ],
+    "subCategoriesEn": [
+      "Gaming & VR Stations",
+      "Inflatables & Facilities",
+      "Performers & Activity Operators",
+      "Creative Workshops",
+      "Tours"
+    ]
+  },
+  {
+    "eventType": "ימי גיבוש",
+    "eventTypeEn": "Team-Building Days",
+    "mainCategory": "לוגיסטיקה והשכרות",
+    "mainCategoryEn": "Logistics & Rentals",
+    "subCategories": [
+      "השכרות ציוד",
+      "השכרות ריהוט",
+      "אוהלים ופתרונות הצללה",
+      "הגברה ותאורה",
+      "גנרטורים ומיזוג נייד",
+      "הקרנה ומסכי לדים",
+      "הסעות",
+      "אבטחה וסדרנות",
+      "שירותים ופסולת",
+      "רפואה / מהנדסי בטיחות"
+    ],
+    "subCategoriesEn": [
+      "Equipment Rentals",
+      "Furniture Rentals",
+      "Tents & Shading Solutions",
+      "Sound & Lighting",
+      "Generators & Portable Air Conditioning",
+      "Projection & LED Screens",
+      "Transportation Services",
+      "Security & Ushers",
+      "Sanitation & Waste Services",
+      "Medical / Safety Engineering"
+    ]
+  },
+  {
+    "eventType": "ימי גיבוש",
+    "eventTypeEn": "Team-Building Days",
+    "mainCategory": "מתנות ומזכרות מעוצבות",
+    "mainCategoryEn": "Gifts & Branded Keepsakes",
+    "subCategories": [
+      "מתנות",
+      "מתנות ממותגות",
+      "מתנות מאוירות"
+    ],
+    "subCategoriesEn": [
+      "Gifts",
+      "Branded Gifts",
+      "Illustrated Gifts"
+    ]
+  },
+  {
+    "eventType": "ימי גיבוש",
+    "eventTypeEn": "Team-Building Days",
+    "mainCategory": "עיצוב ומיתוג",
+    "mainCategoryEn": "Design & Branding",
+    "subCategories": [
+      "מעצבי אירועים",
+      "תפאורה וקונספטים",
+      "עיצובי בלונים",
+      "מעצבים גרפיים",
+      "בתי דפוס ומיתוג גרפי",
+      "השכרות ביגוד והלבשה"
+    ],
+    "subCategoriesEn": [
+      "Event Designers",
+      "Set Design & Concepts",
+      "Balloon Designs",
+      "Graphic Designers",
+      "Printing Houses & Graphic Branding",
+      "Clothing & Attire Rentals"
+    ]
+  },
+  {
+    "eventType": "ימי גיבוש",
+    "eventTypeEn": "Team-Building Days",
+    "mainCategory": "ניהול הפקה",
+    "mainCategoryEn": "Production Management",
+    "subCategories": [
+      "מפיקים",
+      "מנהלי אירוע",
+      "דיילות וצוותי רישום"
+    ],
+    "subCategoriesEn": [
+      "Producers",
+      "Event Managers",
+      "Hostesses & Registration Teams"
+    ]
+  },
+  {
+    "eventType": "ימי גיבוש",
+    "eventTypeEn": "Team-Building Days",
+    "mainCategory": "הרצאות סדנאות ותוכן",
+    "mainCategoryEn": "Lectures, Workshops & Content",
+    "subCategories": [
+      "הרצאות",
+      "וולנס",
+      "סדנאות",
+      "סטנדאפיסטים",
+      "ODT"
+    ],
+    "subCategoriesEn": [
+      "Lectures",
+      "Wellness",
+      "Workshops",
+      "Stand-up Comedians",
+      "ODT (Outdoor Team Activities)"
+    ]
+  },
+  {
+    "eventType": "ימי גיבוש",
+    "eventTypeEn": "Team-Building Days",
+    "mainCategory": "מוזיקה",
+    "mainCategoryEn": "Music",
+    "subCategories": [
+      "דיג'יי מיינסטרים וכלליים",
+      "דיג'יי טכנו/טראנס/אלקטרוני",
+      "להקות חיות / קאברים / קבלות פנים",
+      "נגני סולו / להקות אינסטרומנטליות",
+      "מוזיקה דתית / חסידית"
+    ],
+    "subCategoriesEn": [
+      "Mainstream / General DJs",
+      "Techno / Trance / Electronic DJs",
+      "Live Bands / Covers / Reception Music",
+      "Solo Musicians / Instrumental Bands",
+      "Religious / Hasidic Music"
+    ]
+  },
+  {
+    "eventType": "ימי גיבוש",
+    "eventTypeEn": "Team-Building Days",
+    "mainCategory": "אנשי דת",
+    "mainCategoryEn": "Religious Officiants",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "נופש",
+    "eventTypeEn": "Retreat / Vacation Event",
+    "mainCategory": "אוכל",
+    "mainCategoryEn": "Food",
+    "subCategories": [
+      "קייטרינג חלבי",
+      "קייטרינג בשרי",
+      "ארוחות שף",
+      "קייטרינג טבעוני / צמחוני",
+      "בר מתוקים קינוחים ועגלות",
+      "בר פירות",
+      "עמדות אוכל ודוכני מזון"
+    ],
+    "subCategoriesEn": [
+      "Dairy Catering",
+      "Meat Catering",
+      "Chef Meals",
+      "Vegan / Vegetarian Catering",
+      "Dessert Bar, Sweets & Carts",
+      "Fruit Bar",
+      "Food Stations & Stalls"
+    ]
+  },
+  {
+    "eventType": "נופש",
+    "eventTypeEn": "Retreat / Vacation Event",
+    "mainCategory": "שתייה",
+    "mainCategoryEn": "Beverages",
+    "subCategories": [
+      "בר אקטיבי",
+      "בר קוקטיילים",
+      "בר יין",
+      "עגלות קפה",
+      "מיצים / שייקים"
+    ],
+    "subCategoriesEn": [
+      "Active Bar Service",
+      "Cocktail Bar",
+      "Wine Bar",
+      "Coffee Carts",
+      "Juices / Smoothies"
+    ]
+  },
+  {
+    "eventType": "נופש",
+    "eventTypeEn": "Retreat / Vacation Event",
+    "mainCategory": "מקומות",
+    "mainCategoryEn": "Venues",
+    "subCategories": [
+      "מלונות"
+    ],
+    "subCategoriesEn": [
+      "Hotels"
+    ]
+  },
+  {
+    "eventType": "נופש",
+    "eventTypeEn": "Retreat / Vacation Event",
+    "mainCategory": "צילום ותיעוד",
+    "mainCategoryEn": "Photography & Documentation",
+    "subCategories": [
+      "מנהלות סושיאל",
+      "צלמי סטילס",
+      "צלמי וידאו / קליפים",
+      "עמדות צילום מיוחדות",
+      "צלמי מגנטים",
+      "צילומי רחפן"
+    ],
+    "subCategoriesEn": [
+      "Social Media Managers",
+      "Still Photographers",
+      "Video / Clip Photographers",
+      "Special Photo Booths",
+      "Magnet Photo Vendors",
+      "Drone Photography"
+    ]
+  },
+  {
+    "eventType": "נופש",
+    "eventTypeEn": "Retreat / Vacation Event",
+    "mainCategory": "אטרקציות, תוכן פעיל וסיורים",
+    "mainCategoryEn": "Attractions, Interactive Content & Tours",
+    "subCategories": [
+      "עמדות גיימינג ו-VR",
+      "מתנפחים ומתקנים",
+      "אמנים ומפעילים",
+      "סדנאות יצירה",
+      "סיורים"
+    ],
+    "subCategoriesEn": [
+      "Gaming & VR Stations",
+      "Inflatables & Facilities",
+      "Performers & Activity Operators",
+      "Creative Workshops",
+      "Tours"
+    ]
+  },
+  {
+    "eventType": "נופש",
+    "eventTypeEn": "Retreat / Vacation Event",
+    "mainCategory": "לוגיסטיקה והשכרות",
+    "mainCategoryEn": "Logistics & Rentals",
+    "subCategories": [
+      "השכרות ציוד",
+      "השכרות ריהוט",
+      "אוהלים ופתרונות הצללה",
+      "הגברה ותאורה",
+      "גנרטורים ומיזוג נייד",
+      "הקרנה ומסכי לדים",
+      "הסעות",
+      "אבטחה וסדרנות",
+      "שירותים ופסולת",
+      "רפואה / מהנדסי בטיחות"
+    ],
+    "subCategoriesEn": [
+      "Equipment Rentals",
+      "Furniture Rentals",
+      "Tents & Shading Solutions",
+      "Sound & Lighting",
+      "Generators & Portable Air Conditioning",
+      "Projection & LED Screens",
+      "Transportation Services",
+      "Security & Ushers",
+      "Sanitation & Waste Services",
+      "Medical / Safety Engineering"
+    ]
+  },
+  {
+    "eventType": "נופש",
+    "eventTypeEn": "Retreat / Vacation Event",
+    "mainCategory": "מתנות ומזכרות מעוצבות",
+    "mainCategoryEn": "Gifts & Branded Keepsakes",
+    "subCategories": [
+      "מתנות",
+      "מתנות ממותגות",
+      "מתנות מאוירות"
+    ],
+    "subCategoriesEn": [
+      "Gifts",
+      "Branded Gifts",
+      "Illustrated Gifts"
+    ]
+  },
+  {
+    "eventType": "נופש",
+    "eventTypeEn": "Retreat / Vacation Event",
+    "mainCategory": "עיצוב ומיתוג",
+    "mainCategoryEn": "Design & Branding",
+    "subCategories": [
+      "מעצבי אירועים",
+      "תפאורה וקונספטים",
+      "עיצובי בלונים",
+      "מעצבים גרפיים",
+      "בתי דפוס ומיתוג גרפי",
+      "השכרות ביגוד והלבשה"
+    ],
+    "subCategoriesEn": [
+      "Event Designers",
+      "Set Design & Concepts",
+      "Balloon Designs",
+      "Graphic Designers",
+      "Printing Houses & Graphic Branding",
+      "Clothing & Attire Rentals"
+    ]
+  },
+  {
+    "eventType": "נופש",
+    "eventTypeEn": "Retreat / Vacation Event",
+    "mainCategory": "ניהול הפקה",
+    "mainCategoryEn": "Production Management",
+    "subCategories": [
+      "מפיקים",
+      "מנהלי אירוע",
+      "דיילות וצוותי רישום"
+    ],
+    "subCategoriesEn": [
+      "Producers",
+      "Event Managers",
+      "Hostesses & Registration Teams"
+    ]
+  },
+  {
+    "eventType": "נופש",
+    "eventTypeEn": "Retreat / Vacation Event",
+    "mainCategory": "הרצאות סדנאות ותוכן",
+    "mainCategoryEn": "Lectures, Workshops & Content",
+    "subCategories": [
+      "הרצאות",
+      "וולנס",
+      "סדנאות",
+      "סטנדאפיסטים",
+      "ODT"
+    ],
+    "subCategoriesEn": [
+      "Lectures",
+      "Wellness",
+      "Workshops",
+      "Stand-up Comedians",
+      "ODT (Outdoor Team Activities)"
+    ]
+  },
+  {
+    "eventType": "נופש",
+    "eventTypeEn": "Retreat / Vacation Event",
+    "mainCategory": "מוזיקה",
+    "mainCategoryEn": "Music",
+    "subCategories": [
+      "דיג'יי מיינסטרים וכלליים",
+      "דיג'יי טכנו/טראנס/אלקטרוני",
+      "להקות חיות / קאברים / קבלות פנים",
+      "נגני סולו / להקות אינסטרומנטליות",
+      "מוזיקה דתית / חסידית"
+    ],
+    "subCategoriesEn": [
+      "Mainstream / General DJs",
+      "Techno / Trance / Electronic DJs",
+      "Live Bands / Covers / Reception Music",
+      "Solo Musicians / Instrumental Bands",
+      "Religious / Hasidic Music"
+    ]
+  },
+  {
+    "eventType": "נופש",
+    "eventTypeEn": "Retreat / Vacation Event",
+    "mainCategory": "אנשי דת",
+    "mainCategoryEn": "Religious Officiants",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "כנסים",
+    "eventTypeEn": "Conferences",
+    "mainCategory": "אוכל",
+    "mainCategoryEn": "Food",
+    "subCategories": [
+      "קייטרינג חלבי",
+      "קייטרינג בשרי",
+      "ארוחות שף",
+      "קייטרינג טבעוני / צמחוני",
+      "בר מתוקים קינוחים ועגלות",
+      "בר פירות",
+      "עמדות אוכל ודוכני מזון",
+      "מגשי אירוח"
+    ],
+    "subCategoriesEn": [
+      "Dairy Catering",
+      "Meat Catering",
+      "Chef Meals",
+      "Vegan / Vegetarian Catering",
+      "Dessert Bar, Sweets & Carts",
+      "Fruit Bar",
+      "Food Stations & Stalls",
+      "Hospitality Trays"
+    ]
+  },
+  {
+    "eventType": "כנסים",
+    "eventTypeEn": "Conferences",
+    "mainCategory": "שתייה",
+    "mainCategoryEn": "Beverages",
+    "subCategories": [
+      "בר יין",
+      "עגלות קפה",
+      "מיצים / שייקים"
+    ],
+    "subCategoriesEn": [
+      "Wine Bar",
+      "Coffee Carts",
+      "Juices / Smoothies"
+    ]
+  },
+  {
+    "eventType": "כנסים",
+    "eventTypeEn": "Conferences",
+    "mainCategory": "מקומות",
+    "mainCategoryEn": "Venues",
+    "subCategories": [
+      "אולמות וגני אירועים",
+      "מלונות",
+      "חללים לכנסים והרצאות"
+    ],
+    "subCategoriesEn": [
+      "Event Halls & Gardens",
+      "Hotels",
+      "Conference & Lecture Spaces"
+    ]
+  },
+  {
+    "eventType": "כנסים",
+    "eventTypeEn": "Conferences",
+    "mainCategory": "צילום ותיעוד",
+    "mainCategoryEn": "Photography & Documentation",
+    "subCategories": [
+      "מנהלות סושיאל",
+      "צלמי סטילס",
+      "צלמי וידאו / קליפים",
+      "עמדות צילום מיוחדות",
+      "צלמי מגנטים",
+      "צילומי רחפן"
+    ],
+    "subCategoriesEn": [
+      "Social Media Managers",
+      "Still Photographers",
+      "Video / Clip Photographers",
+      "Special Photo Booths",
+      "Magnet Photo Vendors",
+      "Drone Photography"
+    ]
+  },
+  {
+    "eventType": "כנסים",
+    "eventTypeEn": "Conferences",
+    "mainCategory": "אטרקציות, תוכן פעיל וסיורים",
+    "mainCategoryEn": "Attractions, Interactive Content & Tours",
+    "subCategories": [
+      "אמנים ומפעילים"
+    ],
+    "subCategoriesEn": [
+      "Performers & Activity Operators"
+    ]
+  },
+  {
+    "eventType": "כנסים",
+    "eventTypeEn": "Conferences",
+    "mainCategory": "לוגיסטיקה והשכרות",
+    "mainCategoryEn": "Logistics & Rentals",
+    "subCategories": [
+      "השכרות ציוד",
+      "השכרות ריהוט"
+    ],
+    "subCategoriesEn": [
+      "Equipment Rentals",
+      "Furniture Rentals"
+    ]
+  },
+  {
+    "eventType": "כנסים",
+    "eventTypeEn": "Conferences",
+    "mainCategory": "מתנות ומזכרות מעוצבות",
+    "mainCategoryEn": "Gifts & Branded Keepsakes",
+    "subCategories": [
+      "מתנות",
+      "מתנות ממותגות",
+      "מתנות מאוירות"
+    ],
+    "subCategoriesEn": [
+      "Gifts",
+      "Branded Gifts",
+      "Illustrated Gifts"
+    ]
+  },
+  {
+    "eventType": "כנסים",
+    "eventTypeEn": "Conferences",
+    "mainCategory": "עיצוב ומיתוג",
+    "mainCategoryEn": "Design & Branding",
+    "subCategories": [
+      "מעצבי אירועים",
+      "תפאורה וקונספטים",
+      "עיצובי בלונים",
+      "מעצבים גרפיים",
+      "בתי דפוס ומיתוג גרפי"
+    ],
+    "subCategoriesEn": [
+      "Event Designers",
+      "Set Design & Concepts",
+      "Balloon Designs",
+      "Graphic Designers",
+      "Printing Houses & Graphic Branding"
+    ]
+  },
+  {
+    "eventType": "כנסים",
+    "eventTypeEn": "Conferences",
+    "mainCategory": "ניהול הפקה",
+    "mainCategoryEn": "Production Management",
+    "subCategories": [
+      "מפיקים",
+      "מנהלי אירוע",
+      "דיילות וצוותי רישום"
+    ],
+    "subCategoriesEn": [
+      "Producers",
+      "Event Managers",
+      "Hostesses & Registration Teams"
+    ]
+  },
+  {
+    "eventType": "כנסים",
+    "eventTypeEn": "Conferences",
+    "mainCategory": "הרצאות סדנאות ותוכן",
+    "mainCategoryEn": "Lectures, Workshops & Content",
+    "subCategories": [
+      "הרצאות"
+    ],
+    "subCategoriesEn": [
+      "Lectures"
+    ]
+  },
+  {
+    "eventType": "כנסים",
+    "eventTypeEn": "Conferences",
+    "mainCategory": "מוזיקה",
+    "mainCategoryEn": "Music",
+    "subCategories": [
+      "דיג'יי מיינסטרים וכלליים",
+      "להקות חיות / קאברים / קבלות פנים",
+      "זמרים / זמרי חופה וטקס",
+      "נגני סולו / להקות אינסטרומנטליות",
+      "מוזיקה דתית / חסידית"
+    ],
+    "subCategoriesEn": [
+      "Mainstream / General DJs",
+      "Live Bands / Covers / Reception Music",
+      "Singers / Ceremony & Chuppah Singers",
+      "Solo Musicians / Instrumental Bands",
+      "Religious / Hasidic Music"
+    ]
+  },
+  {
+    "eventType": "כנסים",
+    "eventTypeEn": "Conferences",
+    "mainCategory": "אנשי דת",
+    "mainCategoryEn": "Religious Officiants",
+    "subCategories": [
+      "מנחים דתיים"
+    ],
+    "subCategoriesEn": [
+      "Religious Facilitators"
+    ]
+  },
+  {
+    "eventType": "שיווק",
+    "eventTypeEn": "Marketing Events",
+    "mainCategory": "אוכל",
+    "mainCategoryEn": "Food",
+    "subCategories": [
+      "קייטרינג חלבי",
+      "קייטרינג בשרי",
+      "ארוחות שף",
+      "קייטרינג טבעוני / צמחוני",
+      "בר מתוקים קינוחים ועגלות",
+      "בר פירות",
+      "עמדות אוכל ודוכני מזון"
+    ],
+    "subCategoriesEn": [
+      "Dairy Catering",
+      "Meat Catering",
+      "Chef Meals",
+      "Vegan / Vegetarian Catering",
+      "Dessert Bar, Sweets & Carts",
+      "Fruit Bar",
+      "Food Stations & Stalls"
+    ]
+  },
+  {
+    "eventType": "שיווק",
+    "eventTypeEn": "Marketing Events",
+    "mainCategory": "שתייה",
+    "mainCategoryEn": "Beverages",
+    "subCategories": [
+      "בר אקטיבי",
+      "בר קוקטיילים",
+      "בר יין",
+      "עגלות קפה",
+      "מיצים / שייקים"
+    ],
+    "subCategoriesEn": [
+      "Active Bar Service",
+      "Cocktail Bar",
+      "Wine Bar",
+      "Coffee Carts",
+      "Juices / Smoothies"
+    ]
+  },
+  {
+    "eventType": "שיווק",
+    "eventTypeEn": "Marketing Events",
+    "mainCategory": "מקומות",
+    "mainCategoryEn": "Venues",
+    "subCategories": [
+      "אולמות וגני אירועים",
+      "מלונות",
+      "חללים לכנסים והרצאות"
+    ],
+    "subCategoriesEn": [
+      "Event Halls & Gardens",
+      "Hotels",
+      "Conference & Lecture Spaces"
+    ]
+  },
+  {
+    "eventType": "שיווק",
+    "eventTypeEn": "Marketing Events",
+    "mainCategory": "צילום ותיעוד",
+    "mainCategoryEn": "Photography & Documentation",
+    "subCategories": [
+      "מנהלות סושיאל",
+      "צלמי סטילס",
+      "צלמי וידאו / קליפים",
+      "עמדות צילום מיוחדות",
+      "צלמי מגנטים",
+      "צילומי רחפן"
+    ],
+    "subCategoriesEn": [
+      "Social Media Managers",
+      "Still Photographers",
+      "Video / Clip Photographers",
+      "Special Photo Booths",
+      "Magnet Photo Vendors",
+      "Drone Photography"
+    ]
+  },
+  {
+    "eventType": "שיווק",
+    "eventTypeEn": "Marketing Events",
+    "mainCategory": "אטרקציות, תוכן פעיל וסיורים",
+    "mainCategoryEn": "Attractions, Interactive Content & Tours",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "שיווק",
+    "eventTypeEn": "Marketing Events",
+    "mainCategory": "לוגיסטיקה והשכרות",
+    "mainCategoryEn": "Logistics & Rentals",
+    "subCategories": [
+      "השכרות ציוד",
+      "השכרות ריהוט"
+    ],
+    "subCategoriesEn": [
+      "Equipment Rentals",
+      "Furniture Rentals"
+    ]
+  },
+  {
+    "eventType": "שיווק",
+    "eventTypeEn": "Marketing Events",
+    "mainCategory": "מתנות ומזכרות מעוצבות",
+    "mainCategoryEn": "Gifts & Branded Keepsakes",
+    "subCategories": [
+      "מתנות",
+      "מתנות ממותגות",
+      "מתנות מאוירות"
+    ],
+    "subCategoriesEn": [
+      "Gifts",
+      "Branded Gifts",
+      "Illustrated Gifts"
+    ]
+  },
+  {
+    "eventType": "שיווק",
+    "eventTypeEn": "Marketing Events",
+    "mainCategory": "עיצוב ומיתוג",
+    "mainCategoryEn": "Design & Branding",
+    "subCategories": [
+      "מעצבי אירועים",
+      "תפאורה וקונספטים",
+      "עיצובי בלונים",
+      "מעצבים גרפיים",
+      "בתי דפוס ומיתוג גרפי"
+    ],
+    "subCategoriesEn": [
+      "Event Designers",
+      "Set Design & Concepts",
+      "Balloon Designs",
+      "Graphic Designers",
+      "Printing Houses & Graphic Branding"
+    ]
+  },
+  {
+    "eventType": "שיווק",
+    "eventTypeEn": "Marketing Events",
+    "mainCategory": "ניהול הפקה",
+    "mainCategoryEn": "Production Management",
+    "subCategories": [
+      "מפיקים",
+      "מנהלי אירוע",
+      "דיילות וצוותי רישום"
+    ],
+    "subCategoriesEn": [
+      "Producers",
+      "Event Managers",
+      "Hostesses & Registration Teams"
+    ]
+  },
+  {
+    "eventType": "שיווק",
+    "eventTypeEn": "Marketing Events",
+    "mainCategory": "הרצאות סדנאות ותוכן",
+    "mainCategoryEn": "Lectures, Workshops & Content",
+    "subCategories": [
+      "הרצאות",
+      "וולנס",
+      "סדנאות",
+      "סטנדאפיסטים"
+    ],
+    "subCategoriesEn": [
+      "Lectures",
+      "Wellness",
+      "Workshops",
+      "Stand-up Comedians"
+    ]
+  },
+  {
+    "eventType": "שיווק",
+    "eventTypeEn": "Marketing Events",
+    "mainCategory": "מוזיקה",
+    "mainCategoryEn": "Music",
+    "subCategories": [
+      "דיג'יי מיינסטרים וכלליים",
+      "דיג'יי טכנו/טראנס/אלקטרוני",
+      "להקות חיות / קאברים / קבלות פנים",
+      "נגני סולו / להקות אינסטרומנטליות",
+      "מוזיקה דתית / חסידית"
+    ],
+    "subCategoriesEn": [
+      "Mainstream / General DJs",
+      "Techno / Trance / Electronic DJs",
+      "Live Bands / Covers / Reception Music",
+      "Solo Musicians / Instrumental Bands",
+      "Religious / Hasidic Music"
+    ]
+  },
+  {
+    "eventType": "שיווק",
+    "eventTypeEn": "Marketing Events",
+    "mainCategory": "אנשי דת",
+    "mainCategoryEn": "Religious Officiants",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "אירוע יום / ערב",
+    "eventTypeEn": "Day / Evening Event",
+    "mainCategory": "אוכל",
+    "mainCategoryEn": "Food",
+    "subCategories": [
+      "קייטרינג חלבי",
+      "קייטרינג בשרי",
+      "ארוחות שף",
+      "קייטרינג טבעוני / צמחוני",
+      "בר מתוקים קינוחים ועגלות",
+      "בר פירות",
+      "עמדות אוכל ודוכני מזון",
+      "מגשי אירוח"
+    ],
+    "subCategoriesEn": [
+      "Dairy Catering",
+      "Meat Catering",
+      "Chef Meals",
+      "Vegan / Vegetarian Catering",
+      "Dessert Bar, Sweets & Carts",
+      "Fruit Bar",
+      "Food Stations & Stalls",
+      "Hospitality Trays"
+    ]
+  },
+  {
+    "eventType": "אירוע יום / ערב",
+    "eventTypeEn": "Day / Evening Event",
+    "mainCategory": "שתייה",
+    "mainCategoryEn": "Beverages",
+    "subCategories": [
+      "בר אקטיבי",
+      "בר קוקטיילים",
+      "בר יין",
+      "עגלות קפה",
+      "מיצים / שייקים"
+    ],
+    "subCategoriesEn": [
+      "Active Bar Service",
+      "Cocktail Bar",
+      "Wine Bar",
+      "Coffee Carts",
+      "Juices / Smoothies"
+    ]
+  },
+  {
+    "eventType": "אירוע יום / ערב",
+    "eventTypeEn": "Day / Evening Event",
+    "mainCategory": "מקומות",
+    "mainCategoryEn": "Venues",
+    "subCategories": [
+      "אולמות וגני אירועים",
+      "וילות",
+      "מלונות",
+      "חללים לכנסים והרצאות"
+    ],
+    "subCategoriesEn": [
+      "Event Halls & Gardens",
+      "Villas",
+      "Hotels",
+      "Conference & Lecture Spaces"
+    ]
+  },
+  {
+    "eventType": "אירוע יום / ערב",
+    "eventTypeEn": "Day / Evening Event",
+    "mainCategory": "צילום ותיעוד",
+    "mainCategoryEn": "Photography & Documentation",
+    "subCategories": [
+      "מנהלות סושיאל",
+      "צלמי סטילס",
+      "צלמי וידאו / קליפים",
+      "עמדות צילום מיוחדות",
+      "צלמי מגנטים",
+      "צילומי רחפן"
+    ],
+    "subCategoriesEn": [
+      "Social Media Managers",
+      "Still Photographers",
+      "Video / Clip Photographers",
+      "Special Photo Booths",
+      "Magnet Photo Vendors",
+      "Drone Photography"
+    ]
+  },
+  {
+    "eventType": "אירוע יום / ערב",
+    "eventTypeEn": "Day / Evening Event",
+    "mainCategory": "אטרקציות, תוכן פעיל וסיורים",
+    "mainCategoryEn": "Attractions, Interactive Content & Tours",
+    "subCategories": [
+      "עמדות גיימינג ו-VR",
+      "מתנפחים ומתקנים",
+      "אמנים ומפעילים",
+      "סדנאות יצירה",
+      "סיורים"
+    ],
+    "subCategoriesEn": [
+      "Gaming & VR Stations",
+      "Inflatables & Facilities",
+      "Performers & Activity Operators",
+      "Creative Workshops",
+      "Tours"
+    ]
+  },
+  {
+    "eventType": "אירוע יום / ערב",
+    "eventTypeEn": "Day / Evening Event",
+    "mainCategory": "לוגיסטיקה והשכרות",
+    "mainCategoryEn": "Logistics & Rentals",
+    "subCategories": [
+      "השכרות ציוד",
+      "השכרות ריהוט",
+      "אוהלים ופתרונות הצללה",
+      "הגברה ותאורה",
+      "גנרטורים ומיזוג נייד",
+      "הקרנה ומסכי לדים",
+      "הסעות",
+      "אבטחה וסדרנות",
+      "שירותים ופסולת",
+      "רפואה / מהנדסי בטיחות"
+    ],
+    "subCategoriesEn": [
+      "Equipment Rentals",
+      "Furniture Rentals",
+      "Tents & Shading Solutions",
+      "Sound & Lighting",
+      "Generators & Portable Air Conditioning",
+      "Projection & LED Screens",
+      "Transportation Services",
+      "Security & Ushers",
+      "Sanitation & Waste Services",
+      "Medical / Safety Engineering"
+    ]
+  },
+  {
+    "eventType": "אירוע יום / ערב",
+    "eventTypeEn": "Day / Evening Event",
+    "mainCategory": "מתנות ומזכרות מעוצבות",
+    "mainCategoryEn": "Gifts & Branded Keepsakes",
+    "subCategories": [
+      "מתנות",
+      "מתנות ממותגות",
+      "מתנות מאוירות"
+    ],
+    "subCategoriesEn": [
+      "Gifts",
+      "Branded Gifts",
+      "Illustrated Gifts"
+    ]
+  },
+  {
+    "eventType": "אירוע יום / ערב",
+    "eventTypeEn": "Day / Evening Event",
+    "mainCategory": "עיצוב ומיתוג",
+    "mainCategoryEn": "Design & Branding",
+    "subCategories": [
+      "מעצבי אירועים",
+      "תפאורה וקונספטים",
+      "עיצובי בלונים",
+      "מעצבים גרפיים",
+      "בתי דפוס ומיתוג גרפי"
+    ],
+    "subCategoriesEn": [
+      "Event Designers",
+      "Set Design & Concepts",
+      "Balloon Designs",
+      "Graphic Designers",
+      "Printing Houses & Graphic Branding"
+    ]
+  },
+  {
+    "eventType": "אירוע יום / ערב",
+    "eventTypeEn": "Day / Evening Event",
+    "mainCategory": "ניהול הפקה",
+    "mainCategoryEn": "Production Management",
+    "subCategories": [
+      "מפיקים",
+      "מנהלי אירוע",
+      "דיילות וצוותי רישום"
+    ],
+    "subCategoriesEn": [
+      "Producers",
+      "Event Managers",
+      "Hostesses & Registration Teams"
+    ]
+  },
+  {
+    "eventType": "אירוע יום / ערב",
+    "eventTypeEn": "Day / Evening Event",
+    "mainCategory": "הרצאות סדנאות ותוכן",
+    "mainCategoryEn": "Lectures, Workshops & Content",
+    "subCategories": [
+      "הרצאות",
+      "וולנס",
+      "סדנאות",
+      "סטנדאפיסטים",
+      "ODT"
+    ],
+    "subCategoriesEn": [
+      "Lectures",
+      "Wellness",
+      "Workshops",
+      "Stand-up Comedians",
+      "ODT (Outdoor Team Activities)"
+    ]
+  },
+  {
+    "eventType": "אירוע יום / ערב",
+    "eventTypeEn": "Day / Evening Event",
+    "mainCategory": "מוזיקה",
+    "mainCategoryEn": "Music",
+    "subCategories": [
+      "דיג'יי מיינסטרים וכלליים",
+      "דיג'יי טכנו/טראנס/אלקטרוני",
+      "להקות חיות / קאברים / קבלות פנים",
+      "נגני סולו / להקות אינסטרומנטליות",
+      "מוזיקה דתית / חסידית"
+    ],
+    "subCategoriesEn": [
+      "Mainstream / General DJs",
+      "Techno / Trance / Electronic DJs",
+      "Live Bands / Covers / Reception Music",
+      "Solo Musicians / Instrumental Bands",
+      "Religious / Hasidic Music"
+    ]
+  },
+  {
+    "eventType": "אירוע יום / ערב",
+    "eventTypeEn": "Day / Evening Event",
+    "mainCategory": "אנשי דת",
+    "mainCategoryEn": "Religious Officiants",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "האפי האוור",
+    "eventTypeEn": "Happy Hour",
+    "mainCategory": "אוכל",
+    "mainCategoryEn": "Food",
+    "subCategories": [
+      "בר מתוקים קינוחים ועגלות",
+      "בר פירות",
+      "עמדות אוכל ודוכני מזון",
+      "מגשי אירוח"
+    ],
+    "subCategoriesEn": [
+      "Dessert Bar, Sweets & Carts",
+      "Fruit Bar",
+      "Food Stations & Stalls",
+      "Hospitality Trays"
+    ]
+  },
+  {
+    "eventType": "האפי האוור",
+    "eventTypeEn": "Happy Hour",
+    "mainCategory": "שתייה",
+    "mainCategoryEn": "Beverages",
+    "subCategories": [
+      "בר אקטיבי",
+      "בר קוקטיילים",
+      "בר יין",
+      "עגלות קפה",
+      "מיצים / שייקים"
+    ],
+    "subCategoriesEn": [
+      "Active Bar Service",
+      "Cocktail Bar",
+      "Wine Bar",
+      "Coffee Carts",
+      "Juices / Smoothies"
+    ]
+  },
+  {
+    "eventType": "האפי האוור",
+    "eventTypeEn": "Happy Hour",
+    "mainCategory": "מקומות",
+    "mainCategoryEn": "Venues",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "האפי האוור",
+    "eventTypeEn": "Happy Hour",
+    "mainCategory": "צילום ותיעוד",
+    "mainCategoryEn": "Photography & Documentation",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "האפי האוור",
+    "eventTypeEn": "Happy Hour",
+    "mainCategory": "אטרקציות, תוכן פעיל וסיורים",
+    "mainCategoryEn": "Attractions, Interactive Content & Tours",
+    "subCategories": [
+      "סדנאות יצירה"
+    ],
+    "subCategoriesEn": [
+      "Creative Workshops"
+    ]
+  },
+  {
+    "eventType": "האפי האוור",
+    "eventTypeEn": "Happy Hour",
+    "mainCategory": "לוגיסטיקה והשכרות",
+    "mainCategoryEn": "Logistics & Rentals",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "האפי האוור",
+    "eventTypeEn": "Happy Hour",
+    "mainCategory": "מתנות ומזכרות מעוצבות",
+    "mainCategoryEn": "Gifts & Branded Keepsakes",
+    "subCategories": [
+      "מתנות",
+      "מתנות ממותגות",
+      "מתנות מאוירות"
+    ],
+    "subCategoriesEn": [
+      "Gifts",
+      "Branded Gifts",
+      "Illustrated Gifts"
+    ]
+  },
+  {
+    "eventType": "האפי האוור",
+    "eventTypeEn": "Happy Hour",
+    "mainCategory": "עיצוב ומיתוג",
+    "mainCategoryEn": "Design & Branding",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "האפי האוור",
+    "eventTypeEn": "Happy Hour",
+    "mainCategory": "ניהול הפקה",
+    "mainCategoryEn": "Production Management",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "האפי האוור",
+    "eventTypeEn": "Happy Hour",
+    "mainCategory": "הרצאות סדנאות ותוכן",
+    "mainCategoryEn": "Lectures, Workshops & Content",
+    "subCategories": [
+      "וולנס",
+      "סדנאות"
+    ],
+    "subCategoriesEn": [
+      "Wellness",
+      "Workshops"
+    ]
+  },
+  {
+    "eventType": "האפי האוור",
+    "eventTypeEn": "Happy Hour",
+    "mainCategory": "מוזיקה",
+    "mainCategoryEn": "Music",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "האפי האוור",
+    "eventTypeEn": "Happy Hour",
+    "mainCategory": "אנשי דת",
+    "mainCategoryEn": "Religious Officiants",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "לקהל הרחב",
+    "eventTypeEn": "Public Events",
+    "mainCategory": "אוכל",
+    "mainCategoryEn": "Food",
+    "subCategories": [
+      "קייטרינג טבעוני / צמחוני",
+      "בר מתוקים קינוחים ועגלות",
+      "בר פירות",
+      "עמדות אוכל ודוכני מזון"
+    ],
+    "subCategoriesEn": [
+      "Vegan / Vegetarian Catering",
+      "Dessert Bar, Sweets & Carts",
+      "Fruit Bar",
+      "Food Stations & Stalls"
+    ]
+  },
+  {
+    "eventType": "לקהל הרחב",
+    "eventTypeEn": "Public Events",
+    "mainCategory": "שתייה",
+    "mainCategoryEn": "Beverages",
+    "subCategories": [
+      "בר אקטיבי",
+      "בר קוקטיילים",
+      "בר יין",
+      "עגלות קפה",
+      "מיצים / שייקים"
+    ],
+    "subCategoriesEn": [
+      "Active Bar Service",
+      "Cocktail Bar",
+      "Wine Bar",
+      "Coffee Carts",
+      "Juices / Smoothies"
+    ]
+  },
+  {
+    "eventType": "לקהל הרחב",
+    "eventTypeEn": "Public Events",
+    "mainCategory": "מקומות",
+    "mainCategoryEn": "Venues",
+    "subCategories": [
+      "מועדונים וברים"
+    ],
+    "subCategoriesEn": [
+      "Clubs & Bars"
+    ]
+  },
+  {
+    "eventType": "לקהל הרחב",
+    "eventTypeEn": "Public Events",
+    "mainCategory": "צילום ותיעוד",
+    "mainCategoryEn": "Photography & Documentation",
+    "subCategories": [
+      "מנהלות סושיאל",
+      "צלמי סטילס",
+      "צלמי וידאו / קליפים",
+      "עמדות צילום מיוחדות",
+      "צלמי מגנטים",
+      "צילומי רחפן"
+    ],
+    "subCategoriesEn": [
+      "Social Media Managers",
+      "Still Photographers",
+      "Video / Clip Photographers",
+      "Special Photo Booths",
+      "Magnet Photo Vendors",
+      "Drone Photography"
+    ]
+  },
+  {
+    "eventType": "לקהל הרחב",
+    "eventTypeEn": "Public Events",
+    "mainCategory": "אטרקציות, תוכן פעיל וסיורים",
+    "mainCategoryEn": "Attractions, Interactive Content & Tours",
+    "subCategories": [
+      "עמדות גיימינג ו-VR",
+      "מתנפחים ומתקנים",
+      "אמנים ומפעילים",
+      "סדנאות יצירה"
+    ],
+    "subCategoriesEn": [
+      "Gaming & VR Stations",
+      "Inflatables & Facilities",
+      "Performers & Activity Operators",
+      "Creative Workshops"
+    ]
+  },
+  {
+    "eventType": "לקהל הרחב",
+    "eventTypeEn": "Public Events",
+    "mainCategory": "לוגיסטיקה והשכרות",
+    "mainCategoryEn": "Logistics & Rentals",
+    "subCategories": [
+      "השכרות ציוד",
+      "השכרות ריהוט",
+      "אוהלים ופתרונות הצללה",
+      "הגברה ותאורה",
+      "גנרטורים ומיזוג נייד",
+      "הקרנה ומסכי לדים",
+      "הסעות",
+      "אבטחה וסדרנות",
+      "שירותים ופסולת",
+      "רפואה / מהנדסי בטיחות"
+    ],
+    "subCategoriesEn": [
+      "Equipment Rentals",
+      "Furniture Rentals",
+      "Tents & Shading Solutions",
+      "Sound & Lighting",
+      "Generators & Portable Air Conditioning",
+      "Projection & LED Screens",
+      "Transportation Services",
+      "Security & Ushers",
+      "Sanitation & Waste Services",
+      "Medical / Safety Engineering"
+    ]
+  },
+  {
+    "eventType": "לקהל הרחב",
+    "eventTypeEn": "Public Events",
+    "mainCategory": "מתנות ומזכרות מעוצבות",
+    "mainCategoryEn": "Gifts & Branded Keepsakes",
+    "subCategories": [
+      "מתנות",
+      "מתנות ממותגות",
+      "מתנות מאוירות"
+    ],
+    "subCategoriesEn": [
+      "Gifts",
+      "Branded Gifts",
+      "Illustrated Gifts"
+    ]
+  },
+  {
+    "eventType": "לקהל הרחב",
+    "eventTypeEn": "Public Events",
+    "mainCategory": "עיצוב ומיתוג",
+    "mainCategoryEn": "Design & Branding",
+    "subCategories": [
+      "מעצבי אירועים",
+      "תפאורה וקונספטים",
+      "עיצובי בלונים",
+      "מעצבים גרפיים",
+      "בתי דפוס ומיתוג גרפי",
+      "השכרות ביגוד והלבשה"
+    ],
+    "subCategoriesEn": [
+      "Event Designers",
+      "Set Design & Concepts",
+      "Balloon Designs",
+      "Graphic Designers",
+      "Printing Houses & Graphic Branding",
+      "Clothing & Attire Rentals"
+    ]
+  },
+  {
+    "eventType": "לקהל הרחב",
+    "eventTypeEn": "Public Events",
+    "mainCategory": "ניהול הפקה",
+    "mainCategoryEn": "Production Management",
+    "subCategories": [
+      "מפיקים",
+      "מנהלי אירוע",
+      "דיילות וצוותי רישום"
+    ],
+    "subCategoriesEn": [
+      "Producers",
+      "Event Managers",
+      "Hostesses & Registration Teams"
+    ]
+  },
+  {
+    "eventType": "לקהל הרחב",
+    "eventTypeEn": "Public Events",
+    "mainCategory": "הרצאות סדנאות ותוכן",
+    "mainCategoryEn": "Lectures, Workshops & Content",
+    "subCategories": [
+      "הרצאות",
+      "וולנס",
+      "סדנאות",
+      "סטנדאפיסטים"
+    ],
+    "subCategoriesEn": [
+      "Lectures",
+      "Wellness",
+      "Workshops",
+      "Stand-up Comedians"
+    ]
+  },
+  {
+    "eventType": "לקהל הרחב",
+    "eventTypeEn": "Public Events",
+    "mainCategory": "מוזיקה",
+    "mainCategoryEn": "Music",
+    "subCategories": [
+      "דיג'יי מיינסטרים וכלליים",
+      "דיג'יי לאירועי ילדים ונוער",
+      "דיג'יי טכנו/טראנס/אלקטרוני",
+      "להקות חיות / קאברים / קבלות פנים",
+      "נגני סולו / להקות אינסטרומנטליות",
+      "מוזיקה דתית / חסידית"
+    ],
+    "subCategoriesEn": [
+      "Mainstream / General DJs",
+      "DJs for Kids & Teen Events",
+      "Techno / Trance / Electronic DJs",
+      "Live Bands / Covers / Reception Music",
+      "Solo Musicians / Instrumental Bands",
+      "Religious / Hasidic Music"
+    ]
+  },
+  {
+    "eventType": "לקהל הרחב",
+    "eventTypeEn": "Public Events",
+    "mainCategory": "אנשי דת",
+    "mainCategoryEn": "Religious Officiants",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "לקהל הרחב",
+    "eventTypeEn": "Public Events",
+    "mainCategory": "אנשי דת",
+    "mainCategoryEn": "Religious Officiants",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "לקהל הרחב",
+    "eventTypeEn": "Public Events",
+    "mainCategory": "אנשי דת",
+    "mainCategoryEn": "Religious Officiants",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "פילטרים / מסננים",
+    "eventTypeEn": "Filters",
+    "mainCategory": "אנשי דת",
+    "mainCategoryEn": "Religious Officiants",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "מסננים כלליים",
+    "eventTypeEn": "General Filters",
+    "mainCategory": "כללי",
+    "mainCategoryEn": "General",
+    "subCategories": [
+      "דירוג",
+      "מיקום בארץ",
+      "מילואימניק",
+      "ספק משרד הביטחון",
+      "ביטוח",
+      "עובד / פתוח בשבת",
+      "דובר שפות נוספות"
+    ],
+    "subCategoriesEn": [
+      "Rating",
+      "Location in Israel",
+      "Reservist-Owned Business",
+      "Ministry of Defense Approved Supplier",
+      "Insurance",
+      "Operates / Open on Saturday",
+      "Speaks Additional Languages"
+    ]
+  },
+  {
+    "eventType": "מסננים פר קטגוריה \nבנוסף לתתי קטגוריות",
+    "eventTypeEn": "Category-Specific Filters (in addition to subcategories)",
+    "mainCategory": "אוכל",
+    "mainCategoryEn": "Food",
+    "subCategories": [
+      "כשרות"
+    ],
+    "subCategoriesEn": [
+      "Kosher"
+    ]
+  },
+  {
+    "eventType": "מסננים פר קטגוריה \nבנוסף לתתי קטגוריות",
+    "eventTypeEn": "Category-Specific Filters (in addition to subcategories)",
+    "mainCategory": "שתייה",
+    "mainCategoryEn": "Beverages",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "מסננים פר קטגוריה \nבנוסף לתתי קטגוריות",
+    "eventTypeEn": "Category-Specific Filters (in addition to subcategories)",
+    "mainCategory": "מקומות",
+    "mainCategoryEn": "Venues",
+    "subCategories": [
+      "גישה לנכים",
+      "מינימום - מקסימום אורחים",
+      "פנים/חוץ/משולב",
+      "חניה חינם/תשלום"
+    ],
+    "subCategoriesEn": [
+      "Accessible for People with Disabilities",
+      "Min - Max Guests",
+      "Indoor/Outdoor/Combined",
+      "Parking (Free/Paid)"
+    ]
+  },
+  {
+    "eventType": "מסננים פר קטגוריה \nבנוסף לתתי קטגוריות",
+    "eventTypeEn": "Category-Specific Filters (in addition to subcategories)",
+    "mainCategory": "צילום ותיעוד",
+    "mainCategoryEn": "Photography & Documentation",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "מסננים פר קטגוריה \nבנוסף לתתי קטגוריות",
+    "eventTypeEn": "Category-Specific Filters (in addition to subcategories)",
+    "mainCategory": "אטרקציות, תוכן פעיל וסיורים",
+    "mainCategoryEn": "Attractions, Interactive Content & Tours",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "מסננים פר קטגוריה \nבנוסף לתתי קטגוריות",
+    "eventTypeEn": "Category-Specific Filters (in addition to subcategories)",
+    "mainCategory": "לוגיסטיקה והשכרות",
+    "mainCategoryEn": "Logistics & Rentals",
+    "subCategories": [
+      "הובלה/איסוף עצמי בלבד"
+    ],
+    "subCategoriesEn": [
+      "Delivery / Self-Pickup Only"
+    ]
+  },
+  {
+    "eventType": "מסננים פר קטגוריה \nבנוסף לתתי קטגוריות",
+    "eventTypeEn": "Category-Specific Filters (in addition to subcategories)",
+    "mainCategory": "מתנות ומזכרות מעוצבות",
+    "mainCategoryEn": "Gifts & Branded Keepsakes",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "מסננים פר קטגוריה \nבנוסף לתתי קטגוריות",
+    "eventTypeEn": "Category-Specific Filters (in addition to subcategories)",
+    "mainCategory": "עיצוב ומיתוג",
+    "mainCategoryEn": "Design & Branding",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "מסננים פר קטגוריה \nבנוסף לתתי קטגוריות",
+    "eventTypeEn": "Category-Specific Filters (in addition to subcategories)",
+    "mainCategory": "ניהול הפקה",
+    "mainCategoryEn": "Production Management",
+    "subCategories": [
+      "אופציה לאונליין"
+    ],
+    "subCategoriesEn": [
+      "Online Option"
+    ]
+  },
+  {
+    "eventType": "מסננים פר קטגוריה \nבנוסף לתתי קטגוריות",
+    "eventTypeEn": "Category-Specific Filters (in addition to subcategories)",
+    "mainCategory": "הרצאות סדנאות ותוכן",
+    "mainCategoryEn": "Lectures, Workshops & Content",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "מסננים פר קטגוריה \nבנוסף לתתי קטגוריות",
+    "eventTypeEn": "Category-Specific Filters (in addition to subcategories)",
+    "mainCategory": "מוזיקה",
+    "mainCategoryEn": "Music",
+    "subCategories": [],
+    "subCategoriesEn": null
+  },
+  {
+    "eventType": "מסננים פר קטגוריה \nבנוסף לתתי קטגוריות",
+    "eventTypeEn": "Category-Specific Filters (in addition to subcategories)",
+    "mainCategory": "אנשי דת",
+    "mainCategoryEn": "Religious Officiants",
+    "subCategories": [
+      "זרם אורתודוקסי / רפורמי / קונסרבטיבי / חילוני מסורתי"
+    ],
+    "subCategoriesEn": [
+      "Orthodox / Reform / Conservative / Traditional Secular Stream"
+    ]
+  }
+]

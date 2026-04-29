@@ -85,6 +85,37 @@ export class AutomationService {
         ),
       );
     }
+
+    if (event.type === 'user.registered') {
+      await this.notificationsService.enqueueEmail({
+        recipientUserId: typeof event.payload.userId === 'string' ? event.payload.userId : undefined,
+        templateKey: 'user.welcome',
+        data: { ...event.payload, eventId: event.eventId, eventType: event.type },
+      });
+      await this.notificationsService.enqueuePush({
+        recipientUserId: typeof event.payload.userId === 'string' ? event.payload.userId : undefined,
+        templateKey: 'user.welcome',
+        data: { ...event.payload, eventId: event.eventId, eventType: event.type },
+      });
+    }
+
+    if (event.type === 'supplier.onboarding.abandoned') {
+      const scheduledAt = new Date(Date.now() + 3 * 60 * 60 * 1000);
+      await this.notificationsService.enqueueEmail({
+        recipientUserId: typeof event.payload.userId === 'string' ? event.payload.userId : undefined,
+        recipientSupplierId: typeof event.payload.supplierId === 'string' ? event.payload.supplierId : undefined,
+        templateKey: 'supplier.onboarding.abandoned',
+        scheduledAt,
+        data: { ...event.payload, eventId: event.eventId, eventType: event.type },
+      });
+      await this.notificationsService.enqueuePush({
+        recipientUserId: typeof event.payload.userId === 'string' ? event.payload.userId : undefined,
+        recipientSupplierId: typeof event.payload.supplierId === 'string' ? event.payload.supplierId : undefined,
+        templateKey: 'supplier.onboarding.abandoned',
+        scheduledAt,
+        data: { ...event.payload, eventId: event.eventId, eventType: event.type },
+      });
+    }
   }
 
   private async hasProcessedEvent(eventId: string) {

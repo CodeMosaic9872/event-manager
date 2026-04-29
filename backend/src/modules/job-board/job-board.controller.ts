@@ -7,6 +7,8 @@ import { AuthGuard } from '../../common/guards/auth.guard';
 import { AuthUser } from '../../common/interfaces/auth-user.interface';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { ApiProtectedErrors } from '../../common/swagger/api-error-responses.decorator';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { RolesGuard } from '../../common/guards/roles.guard';
 import { ApplyJobDto, CreateJobDto, UpdateJobApplicationStatusDto, UpdateJobDto } from './dto/job-board.dto';
 import {
   CreatedJobResponseDto,
@@ -140,6 +142,8 @@ export class JobBoardController {
 
 @ApiTags('Job Board')
 @ApiProtectedErrors()
+@UseGuards(AuthGuard, RolesGuard)
+@Roles('ADMIN')
 @Controller('job-applications')
 export class JobApplicationController {
   constructor(private readonly jobBoardService: JobBoardService) {}

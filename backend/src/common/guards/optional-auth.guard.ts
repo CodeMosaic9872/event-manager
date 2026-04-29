@@ -41,11 +41,11 @@ export class OptionalAuthGuard implements CanActivate {
         where: { id: decoded.sub },
         include: { roles: true },
       });
-      if (user) {
+      if (user && user.status === 'ACTIVE') {
         request.user = {
           id: user.id,
           email: user.email ?? undefined,
-          roles: decoded.roles,
+          roles: user.roles.map((roleRow) => roleRow.role),
         };
       }
     } catch {
