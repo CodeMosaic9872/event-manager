@@ -9,6 +9,14 @@ import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../../com
 export class AuthService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private toAuthUserSummary(user: { id: string; email?: string | null; roles: { role: PlatformRole }[] }) {
+    return {
+      id: user.id,
+      email: user.email ?? '',
+      roles: user.roles.map((roleRow) => roleRow.role),
+    };
+  }
+
   private async issueTokenPair(user: {
     id: string;
     email?: string | null;
@@ -54,7 +62,11 @@ export class AuthService {
         });
       }
       const { accessToken, refreshToken } = await this.issueTokenPair(fullUser);
-      return { accessToken, refreshToken, userId: existing.id, role };
+      return {
+        accessToken,
+        refreshToken,
+        user: this.toAuthUserSummary(fullUser),
+      };
     }
 
     const created = await this.prisma.user.create({
@@ -66,7 +78,11 @@ export class AuthService {
       include: { roles: true },
     });
     const { accessToken, refreshToken } = await this.issueTokenPair(created);
-    return { accessToken, refreshToken, userId: created.id, role };
+    return {
+      accessToken,
+      refreshToken,
+      user: this.toAuthUserSummary(created),
+    };
   }
 
   async login(payload: { email: string; password?: string }) {
@@ -85,7 +101,11 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
     const { accessToken, refreshToken } = await this.issueTokenPair(user);
-    return { accessToken, refreshToken, userId: user.id };
+    return {
+      accessToken,
+      refreshToken,
+      user: this.toAuthUserSummary(user),
+    };
   }
 
   async createAnonymousSession(payload: { fingerprintHash?: string; ipHash?: string }) {
