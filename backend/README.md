@@ -49,3 +49,8 @@ The API container runs:
   - `RATE_LIMIT_WINDOW_MS`
   - `RATE_LIMIT_MAX_REQUESTS`
 - Notification worker and provider behavior are controlled by `.env` provider keys.
+- Channel providers run independently and simultaneously when configured:
+  - Email: SMTP envs (`NOTIFICATION_SMTP_*`)
+  - Push: Firebase envs (`FIREBASE_*`)
+  - SMS: Twilio envs (`NOTIFICATION_TWILIO_*`)
+  - Any missing channel config automatically falls back to mock delivery for that channel only.

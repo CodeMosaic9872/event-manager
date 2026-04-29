@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { App, cert, getApps, initializeApp } from 'firebase-admin/app';
 import { getMessaging } from 'firebase-admin/messaging';
 import nodemailer, { Transporter } from 'nodemailer';
+import Twilio from 'twilio';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
@@ -96,6 +97,36 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
     return notification;
   }
 
+  async enqueueSms(payload: {
+    recipientUserId?: string;
+    recipientSupplierId?: string;
+    templateKey: string;
+    data: Record<string, unknown>;
+    scheduledAt?: Date;
+  }) {
+    const allowed = await this.shouldEnqueueChannel({
+      templateKey: payload.templateKey,
+      channel: 'SMS',
+      recipientUserId: payload.recipientUserId,
+      recipientSupplierId: payload.recipientSupplierId,
+    });
+    if (!allowed) {
+      return { skipped: true, channel: 'SMS', templateKey: payload.templateKey };
+    }
+    const notification = await this.prisma.notification.create({
+      data: {
+        recipientUserId: payload.recipientUserId ?? null,
+        recipientSupplierId: payload.recipientSupplierId ?? null,
+        channel: 'SMS',
+        templateKey: payload.templateKey,
+        payloadJson: payload.data as Prisma.InputJsonValue,
+        scheduledAt: payload.scheduledAt ?? null,
+      },
+    });
+    this.logger.log(`notification.queued ${notification.id}`);
+    return notification;
+  }
+
   async registerPushTokenForUser(userId: string, token: string, platform?: string) {
     const supplier = await this.prisma.supplier.findUnique({
       where: { ownerUserId: userId },
@@ -173,7 +204,7 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
     this.isDispatching = true;
     const pending = await this.prisma.notification.findMany({
       where: {
-        channel: { in: ['EMAIL', 'PUSH'] },
+        channel: { in: ['EMAIL', 'PUSH', 'SMS'] },
         status: 'PENDING',
         OR: [{ scheduledAt: null }, { scheduledAt: { lte: new Date() } }],
       },
@@ -204,8 +235,9 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
 
           const renderedSubject = this.renderTemplate(template.subjectTemplate ?? '', payload);
           const renderedBody = this.renderTemplate(template.bodyTemplate, payload);
-          const providerMessageId = await this.sendEmailViaProvider({
-            channel: notification.channel === 'PUSH' ? 'PUSH' : 'EMAIL',
+          const providerMessageId = await this.sendNotificationViaProvider({
+            channel:
+              notification.channel === 'PUSH' ? 'PUSH' : notification.channel === 'SMS' ? 'SMS' : 'EMAIL',
             notificationId: notification.id,
             templateKey: notification.templateKey,
             subject: renderedSubject,
@@ -247,6 +279,17 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
       attempted: pending.length,
       sent,
       failed,
+    };
+  }
+
+  getProviderHealth() {
+    const emailConfigured = this.isSmtpConfigured();
+    const pushConfigured = this.isFirebaseConfigured();
+    const smsConfigured = this.isTwilioConfigured();
+    return {
+      email: { configured: emailConfigured, mode: emailConfigured ? 'smtp' : 'mock' },
+      push: { configured: pushConfigured, mode: pushConfigured ? 'firebase' : 'mock' },
+      sms: { configured: smsConfigured, mode: smsConfigured ? 'twilio' : 'mock' },
     };
   }
 
@@ -306,8 +349,8 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
-  private async sendEmailViaProvider(payload: {
-    channel: 'EMAIL' | 'PUSH';
+  private async sendNotificationViaProvider(payload: {
+    channel: 'EMAIL' | 'PUSH' | 'SMS';
     notificationId: string;
     templateKey: string;
     subject: string;
@@ -316,11 +359,13 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
     recipientUserId?: string;
     recipientSupplierId?: string;
   }) {
-    const provider = (process.env.NOTIFICATION_PROVIDER ?? 'mock').toLowerCase();
     if (payload.channel === 'PUSH') {
-      return this.sendPushViaProvider(payload, provider);
+      return this.sendPushViaProvider(payload);
     }
-    if (provider !== 'smtp') {
+    if (payload.channel === 'SMS') {
+      return this.sendSmsViaProvider(payload);
+    }
+    if (!this.isSmtpConfigured()) {
       return `mock_email_${payload.notificationId}`;
     }
 
@@ -352,6 +397,38 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
     return result.messageId ?? `smtp_email_${payload.notificationId}`;
   }
 
+  private async sendSmsViaProvider(
+    payload: {
+      notificationId: string;
+      subject: string;
+      body: string;
+      payload: Record<string, unknown>;
+      recipientUserId?: string;
+      recipientSupplierId?: string;
+    },
+  ) {
+    const to = await this.resolveSmsRecipient(payload);
+    if (!to) {
+      throw new Error('SMS_RECIPIENT_MISSING');
+    }
+    if (!this.isTwilioConfigured()) {
+      return `mock_sms_${payload.notificationId}`;
+    }
+    const sid = process.env.NOTIFICATION_TWILIO_ACCOUNT_SID;
+    const authToken = process.env.NOTIFICATION_TWILIO_AUTH_TOKEN;
+    const from = process.env.NOTIFICATION_TWILIO_FROM;
+    if (!sid || !authToken || !from) {
+      throw new Error('TWILIO_SMS_PROVIDER_NOT_CONFIGURED');
+    }
+    const client = Twilio(sid, authToken);
+    const message = await client.messages.create({
+      from,
+      to,
+      body: payload.body,
+    });
+    return message.sid ?? `twilio_sms_${payload.notificationId}`;
+  }
+
   private async sendPushViaProvider(
     payload: {
       notificationId: string;
@@ -362,13 +439,12 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
       recipientUserId?: string;
       recipientSupplierId?: string;
     },
-    provider: string,
   ) {
     const deviceTokens = await this.resolvePushTokens(payload);
     if (!deviceTokens.length) {
       throw new Error('PUSH_DEVICE_TOKEN_MISSING');
     }
-    if (provider !== 'firebase') {
+    if (!this.isFirebaseConfigured()) {
       return `mock_push_${payload.notificationId}_${deviceTokens.length}`;
     }
 
@@ -409,6 +485,27 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
       return 15000;
     }
     return Math.floor(parsed);
+  }
+
+  private isSmtpConfigured() {
+    return Boolean(
+      process.env.NOTIFICATION_SMTP_HOST &&
+        process.env.NOTIFICATION_SMTP_USER &&
+        process.env.NOTIFICATION_SMTP_PASS &&
+        process.env.NOTIFICATION_SMTP_FROM,
+    );
+  }
+
+  private isFirebaseConfigured() {
+    return Boolean(process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY);
+  }
+
+  private isTwilioConfigured() {
+    return Boolean(
+      process.env.NOTIFICATION_TWILIO_ACCOUNT_SID &&
+        process.env.NOTIFICATION_TWILIO_AUTH_TOKEN &&
+        process.env.NOTIFICATION_TWILIO_FROM,
+    );
   }
 
   private getRetryDelayMs(attemptNumber: number) {
@@ -499,7 +596,7 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async shouldEnqueueChannel(payload: {
-    channel: 'EMAIL' | 'PUSH';
+    channel: 'EMAIL' | 'PUSH' | 'SMS';
     templateKey: string;
     recipientUserId?: string;
     recipientSupplierId?: string;
@@ -514,7 +611,7 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
     if (!pref) {
       return true;
     }
-    const enabled = payload.channel === 'EMAIL' ? pref.emailEnabled : pref.pushEnabled;
+    const enabled = payload.channel === 'EMAIL' ? pref.emailEnabled : payload.channel === 'PUSH' ? pref.pushEnabled : true;
     if (!enabled) {
       return false;
     }
@@ -568,6 +665,36 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
       });
       if (supplier?.owner?.email) {
         return supplier.owner.email;
+      }
+    }
+    return null;
+  }
+
+  private async resolveSmsRecipient(payload: {
+    payload: Record<string, unknown>;
+    recipientUserId?: string;
+    recipientSupplierId?: string;
+  }) {
+    const direct = payload.payload.phone ?? payload.payload.phoneNumber;
+    if (typeof direct === 'string' && direct.trim().length > 4) {
+      return direct.trim();
+    }
+    if (payload.recipientUserId) {
+      const user = await this.prisma.user.findUnique({
+        where: { id: payload.recipientUserId },
+        select: { phone: true },
+      });
+      if (user?.phone) {
+        return user.phone;
+      }
+    }
+    if (payload.recipientSupplierId) {
+      const supplier = await this.prisma.supplier.findUnique({
+        where: { id: payload.recipientSupplierId },
+        include: { owner: { select: { phone: true } } },
+      });
+      if (supplier?.owner?.phone) {
+        return supplier.owner.phone;
       }
     }
     return null;

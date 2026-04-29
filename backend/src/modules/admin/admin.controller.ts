@@ -22,7 +22,9 @@ import {
 import {
   AdminApproveSupplierResponseDto,
   AdminEventTypeResponseDto,
+  AdminNotificationProvidersHealthResponseDto,
   AdminSupplierReviewDto,
+  AdminUserListItemDto,
 } from './dto/admin-response.dto';
 
 @ApiTags('Admin')
@@ -42,6 +44,39 @@ export class AdminController {
   })
   suppliers() {
     return this.adminService.listSuppliers();
+  }
+
+  @Get('users')
+  @ApiOperation({ summary: 'List all users including incomplete and unpaid' })
+  @ApiOkResponse({
+    description: 'User records for admin',
+    type: AdminUserListItemDto,
+    isArray: true,
+  })
+  users() {
+    return this.adminService.listUsers();
+  }
+
+  @Get('users/incomplete')
+  @ApiOperation({ summary: 'List incomplete user registrations' })
+  @ApiOkResponse({
+    description: 'Incomplete user records',
+    type: AdminUserListItemDto,
+    isArray: true,
+  })
+  incompleteUsers() {
+    return this.adminService.listIncompleteUsers();
+  }
+
+  @Get('users/unpaid')
+  @ApiOperation({ summary: 'List unpaid users based on supplier activity status' })
+  @ApiOkResponse({
+    description: 'Unpaid user records',
+    type: AdminUserListItemDto,
+    isArray: true,
+  })
+  unpaidUsers() {
+    return this.adminService.listUnpaidUsers();
   }
 
   @Get('suppliers/incomplete')
@@ -111,6 +146,16 @@ export class AdminController {
   @ApiOperation({ summary: 'List notifications and statuses for admin' })
   notifications() {
     return this.adminService.notifications();
+  }
+
+  @Get('notifications/providers/health')
+  @ApiOperation({ summary: 'Get delivery provider health per notification channel' })
+  @ApiOkResponse({
+    description: 'Provider health status for email, push, and sms channels',
+    type: AdminNotificationProvidersHealthResponseDto,
+  })
+  notificationProvidersHealth() {
+    return this.adminService.notificationProvidersHealth();
   }
 
   @Get('jobs')

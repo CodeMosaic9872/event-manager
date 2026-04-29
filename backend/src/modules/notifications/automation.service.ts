@@ -36,6 +36,11 @@ export class AutomationService {
         templateKey: 'job.application.submitted',
         data: { ...event.payload, eventId: event.eventId, eventType: event.type },
       });
+      await this.notificationsService.enqueueSms({
+        recipientUserId: typeof event.payload.ownerUserId === 'string' ? event.payload.ownerUserId : undefined,
+        templateKey: 'job.application.submitted',
+        data: { ...event.payload, eventId: event.eventId, eventType: event.type },
+      });
     }
 
     if (event.type === 'job.material.updated') {
@@ -54,6 +59,15 @@ export class AutomationService {
       await Promise.all(
         supplierIds.map((supplierId) =>
           this.notificationsService.enqueuePush({
+            recipientSupplierId: supplierId,
+            templateKey: 'job.material.updated',
+            data: { ...event.payload, eventId: event.eventId, eventType: event.type },
+          }),
+        ),
+      );
+      await Promise.all(
+        supplierIds.map((supplierId) =>
+          this.notificationsService.enqueueSms({
             recipientSupplierId: supplierId,
             templateKey: 'job.material.updated',
             data: { ...event.payload, eventId: event.eventId, eventType: event.type },
@@ -84,6 +98,15 @@ export class AutomationService {
           }),
         ),
       );
+      await Promise.all(
+        supplierIds.map((supplierId) =>
+          this.notificationsService.enqueueSms({
+            recipientSupplierId: supplierId,
+            templateKey: 'job.matching.published',
+            data: { ...event.payload, eventId: event.eventId, eventType: event.type },
+          }),
+        ),
+      );
     }
 
     if (event.type === 'user.registered') {
@@ -93,6 +116,11 @@ export class AutomationService {
         data: { ...event.payload, eventId: event.eventId, eventType: event.type },
       });
       await this.notificationsService.enqueuePush({
+        recipientUserId: typeof event.payload.userId === 'string' ? event.payload.userId : undefined,
+        templateKey: 'user.welcome',
+        data: { ...event.payload, eventId: event.eventId, eventType: event.type },
+      });
+      await this.notificationsService.enqueueSms({
         recipientUserId: typeof event.payload.userId === 'string' ? event.payload.userId : undefined,
         templateKey: 'user.welcome',
         data: { ...event.payload, eventId: event.eventId, eventType: event.type },
@@ -109,6 +137,13 @@ export class AutomationService {
         data: { ...event.payload, eventId: event.eventId, eventType: event.type },
       });
       await this.notificationsService.enqueuePush({
+        recipientUserId: typeof event.payload.userId === 'string' ? event.payload.userId : undefined,
+        recipientSupplierId: typeof event.payload.supplierId === 'string' ? event.payload.supplierId : undefined,
+        templateKey: 'supplier.onboarding.abandoned',
+        scheduledAt,
+        data: { ...event.payload, eventId: event.eventId, eventType: event.type },
+      });
+      await this.notificationsService.enqueueSms({
         recipientUserId: typeof event.payload.userId === 'string' ? event.payload.userId : undefined,
         recipientSupplierId: typeof event.payload.supplierId === 'string' ? event.payload.supplierId : undefined,
         templateKey: 'supplier.onboarding.abandoned',

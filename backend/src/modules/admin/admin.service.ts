@@ -14,6 +14,77 @@ export class AdminService {
     return this.prisma.supplier.findMany({ orderBy: { createdAt: 'desc' } });
   }
 
+  listUsers() {
+    return this.prisma.user.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        roles: true,
+        supplier: {
+          select: {
+            id: true,
+            approvalStatus: true,
+            isActive: true,
+          },
+        },
+      },
+      take: 500,
+    });
+  }
+
+  listIncompleteUsers() {
+    return this.prisma.user.findMany({
+      where: {
+        OR: [
+          { email: null },
+          { phone: null },
+          {
+            supplier: {
+              is: {
+                approvalStatus: { in: ['DRAFT', 'PENDING'] },
+              },
+            },
+          },
+        ],
+      },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        roles: true,
+        supplier: {
+          select: {
+            id: true,
+            approvalStatus: true,
+            isActive: true,
+          },
+        },
+      },
+      take: 500,
+    });
+  }
+
+  listUnpaidUsers() {
+    return this.prisma.user.findMany({
+      where: {
+        supplier: {
+          is: {
+            isActive: false,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        roles: true,
+        supplier: {
+          select: {
+            id: true,
+            approvalStatus: true,
+            isActive: true,
+          },
+        },
+      },
+      take: 500,
+    });
+  }
+
   listIncompleteSuppliers() {
     return this.prisma.supplierDraft.findMany({
       where: { completionPercent: { lt: 100 } },
@@ -136,6 +207,10 @@ export class AdminService {
 
   notifications() {
     return this.prisma.notification.findMany({ orderBy: { createdAt: 'desc' }, take: 100 });
+  }
+
+  notificationProvidersHealth() {
+    return this.notificationsService.getProviderHealth();
   }
 
   listJobs() {

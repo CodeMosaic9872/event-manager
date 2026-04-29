@@ -14,6 +14,8 @@ describe('AdminController (contract)', () => {
     moderateJobApplication: jest.fn(),
     updateAutomationRule: jest.fn(),
     processAutomationRuns: jest.fn(),
+    listUsers: jest.fn(),
+    notificationProvidersHealth: jest.fn(),
   };
 
   beforeAll(async () => {
@@ -94,5 +96,37 @@ describe('AdminController (contract)', () => {
       .expect(201);
 
     expect(adminServiceMock.processAutomationRuns).toHaveBeenCalledWith(25);
+  });
+
+  it('GET /v1/admin/users returns user list', async () => {
+    adminServiceMock.listUsers.mockResolvedValueOnce([
+      { id: 'usr_1', email: 'planner@example.com', status: 'ACTIVE', roles: [{ role: 'USER' }] },
+    ]);
+
+    const response = await request(app.getHttpServer()).get('/v1/admin/users').expect(200);
+
+    expect(response.body).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: 'usr_1', email: 'planner@example.com' })]),
+    );
+    expect(adminServiceMock.listUsers).toHaveBeenCalledTimes(1);
+  });
+
+  it('GET /v1/admin/notifications/providers/health returns channel provider health', async () => {
+    adminServiceMock.notificationProvidersHealth.mockResolvedValueOnce({
+      email: { configured: true, mode: 'smtp' },
+      push: { configured: true, mode: 'firebase' },
+      sms: { configured: true, mode: 'twilio' },
+    });
+
+    const response = await request(app.getHttpServer()).get('/v1/admin/notifications/providers/health').expect(200);
+
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        email: expect.objectContaining({ mode: 'smtp' }),
+        push: expect.objectContaining({ mode: 'firebase' }),
+        sms: expect.objectContaining({ mode: 'twilio' }),
+      }),
+    );
+    expect(adminServiceMock.notificationProvidersHealth).toHaveBeenCalledTimes(1);
   });
 });
