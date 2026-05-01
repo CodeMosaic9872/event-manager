@@ -32,12 +32,15 @@ export class HttpExceptionFilter implements ExceptionFilter {
     );
 
     response.status(status).json({
-      code: isHttpException ? 'HTTP_ERROR' : 'INTERNAL_ERROR',
-      message:
-        typeof details === 'object' && details !== null && 'message' in details
-          ? (details as { message?: string }).message
-          : 'Request failed',
-      details,
+      success: false,
+      error: {
+        code: isHttpException ? 'HTTP_ERROR' : 'INTERNAL_ERROR',
+        message:
+          typeof details === 'object' && details !== null && 'message' in details
+            ? (details as { message?: string }).message
+            : 'Request failed',
+        details,
+      },
       traceId: request.traceId ?? null,
     });
   }

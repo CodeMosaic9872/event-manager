@@ -11,12 +11,25 @@ export class JobBoardService {
     private readonly automationService: AutomationService,
   ) {}
 
-  listPublicJobs() {
-    return this.prisma.jobPost.findMany({
-      where: { status: 'PUBLISHED' },
-      orderBy: { publishedAt: 'desc' },
-      take: 50,
-    });
+  private toPagination(page?: number, limit?: number) {
+    const safePage = Number.isFinite(page) && (page as number) > 0 ? Math.floor(page as number) : 1;
+    const safeLimit = Number.isFinite(limit) && (limit as number) > 0 ? Math.min(200, Math.floor(limit as number)) : 20;
+    return { skip: (safePage - 1) * safeLimit, take: safeLimit };
+  }
+
+  async listPublicJobs(page?: number, limit?: number) {
+    const pg = this.toPagination(page, limit);
+    const where = { status: 'PUBLISHED' } as const;
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.jobPost.findMany({
+        where,
+        orderBy: { publishedAt: 'desc' },
+        skip: pg.skip,
+        take: pg.take,
+      }),
+      this.prisma.jobPost.count({ where }),
+    ]);
+    return { items, totalItems };
   }
 
   createJob(payload: {
@@ -155,11 +168,19 @@ export class JobBoardService {
     });
   }
 
-  listUserJobs(userId: string) {
-    return this.prisma.jobPost.findMany({
-      where: { ownerUserId: userId },
-      orderBy: { updatedAt: 'desc' },
-    });
+  async listUserJobs(userId: string, page?: number, limit?: number) {
+    const pg = this.toPagination(page, limit);
+    const where = { ownerUserId: userId };
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.jobPost.findMany({
+        where,
+        orderBy: { updatedAt: 'desc' },
+        skip: pg.skip,
+        take: pg.take,
+      }),
+      this.prisma.jobPost.count({ where }),
+    ]);
+    return { items, totalItems };
   }
 
   async apply(jobId: string, supplierId: string, message?: string) {
@@ -239,12 +260,20 @@ export class JobBoardService {
     });
   }
 
-  listApplications(jobId: string) {
-    return this.prisma.jobApplication.findMany({
-      where: { jobPostId: jobId },
-      include: { supplier: true },
-      orderBy: { submittedAt: 'desc' },
-    });
+  async listApplications(jobId: string, page?: number, limit?: number) {
+    const pg = this.toPagination(page, limit);
+    const where = { jobPostId: jobId };
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.jobApplication.findMany({
+        where,
+        include: { supplier: true },
+        orderBy: { submittedAt: 'desc' },
+        skip: pg.skip,
+        take: pg.take,
+      }),
+      this.prisma.jobApplication.count({ where }),
+    ]);
+    return { items, totalItems };
   }
 
   async updateApplicationStatus(id: string, status: 'SUBMITTED' | 'SHORTLISTED' | 'REJECTED' | 'WITHDRAWN') {
@@ -306,7 +335,7 @@ export class JobBoardService {
     });
   }
 
-  async listRecommendedJobsForSupplier(supplierId: string) {
+  async listRecommendedJobsForSupplier(supplierId: string, page?: number, limit?: number) {
     const supplier = await this.prisma.supplier.findUnique({
       where: { id: supplierId },
       include: {
@@ -380,10 +409,15 @@ export class JobBoardService {
       };
     });
 
-    return ranked.sort((a, b) => b.matchScore - a.matchScore);
+    const sorted = ranked.sort((a, b) => b.matchScore - a.matchScore);
+    const pg = this.toPagination(page, limit);
+    return {
+      items: sorted.slice(pg.skip, pg.skip + pg.take),
+      totalItems: sorted.length,
+    };
   }
 
-  async listRecommendedJobsForUser(userId: string) {
+  async listRecommendedJobsForUser(userId: string, page?: number, limit?: number) {
     const supplier = await this.prisma.supplier.findUnique({
       where: { ownerUserId: userId },
       select: { id: true },
@@ -391,7 +425,7 @@ export class JobBoardService {
     if (!supplier) {
       throw new NotFoundException('Supplier profile not found for user');
     }
-    return this.listRecommendedJobsForSupplier(supplier.id);
+    return this.listRecommendedJobsForSupplier(supplier.id, page, limit);
   }
 
   private calculateJobMatch(

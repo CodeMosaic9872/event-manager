@@ -60,6 +60,8 @@ describe('TaxonomyController (contract)', () => {
     );
     expect(taxonomyServiceMock.getMapping).toHaveBeenCalledWith(
       expect.objectContaining({ eventTypeId: 'evt_1', categoryId: 'cat_1' }),
+      undefined,
+      undefined,
     );
   });
 });

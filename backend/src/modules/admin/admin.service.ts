@@ -10,87 +10,126 @@ export class AdminService {
     private readonly notificationsService: NotificationsService,
   ) {}
 
-  listSuppliers() {
-    return this.prisma.supplier.findMany({ orderBy: { createdAt: 'desc' } });
+  private toPagination(page?: number, limit?: number) {
+    const safePage = Number.isFinite(page) && (page as number) > 0 ? Math.floor(page as number) : 1;
+    const safeLimit = Number.isFinite(limit) && (limit as number) > 0 ? Math.min(200, Math.floor(limit as number)) : 20;
+    return { skip: (safePage - 1) * safeLimit, take: safeLimit };
   }
 
-  listUsers() {
-    return this.prisma.user.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: {
-        roles: true,
-        supplier: {
-          select: {
-            id: true,
-            approvalStatus: true,
-            isActive: true,
-          },
-        },
-      },
-      take: 500,
-    });
+  async listSuppliers(page?: number, limit?: number) {
+    const pg = this.toPagination(page, limit);
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.supplier.findMany({ orderBy: { createdAt: 'desc' }, skip: pg.skip, take: pg.take }),
+      this.prisma.supplier.count(),
+    ]);
+    return { items, totalItems };
   }
 
-  listIncompleteUsers() {
-    return this.prisma.user.findMany({
-      where: {
-        OR: [
-          { email: null },
-          { phone: null },
-          {
-            supplier: {
-              is: {
-                approvalStatus: { in: ['DRAFT', 'PENDING'] },
-              },
+  async listUsers(page?: number, limit?: number) {
+    const pg = this.toPagination(page, limit);
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.user.findMany({
+        orderBy: { createdAt: 'desc' },
+        include: {
+          roles: true,
+          supplier: {
+            select: {
+              id: true,
+              approvalStatus: true,
+              isActive: true,
             },
           },
-        ],
-      },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        roles: true,
-        supplier: {
-          select: {
-            id: true,
-            approvalStatus: true,
-            isActive: true,
-          },
         },
-      },
-      take: 500,
-    });
+        skip: pg.skip,
+        take: pg.take,
+      }),
+      this.prisma.user.count(),
+    ]);
+    return { items, totalItems };
   }
 
-  listUnpaidUsers() {
-    return this.prisma.user.findMany({
-      where: {
-        supplier: {
-          is: {
-            isActive: false,
+  async listIncompleteUsers(page?: number, limit?: number) {
+    const pg = this.toPagination(page, limit);
+    const where: Prisma.UserWhereInput = {
+      OR: [
+        { email: null },
+        { phone: null },
+        {
+          supplier: {
+            is: {
+              approvalStatus: { in: ['DRAFT', 'PENDING'] },
+            },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        roles: true,
-        supplier: {
-          select: {
-            id: true,
-            approvalStatus: true,
-            isActive: true,
+      ],
+    };
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.user.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          roles: true,
+          supplier: {
+            select: {
+              id: true,
+              approvalStatus: true,
+              isActive: true,
+            },
           },
         },
-      },
-      take: 500,
-    });
+        skip: pg.skip,
+        take: pg.take,
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+    return { items, totalItems };
   }
 
-  listIncompleteSuppliers() {
-    return this.prisma.supplierDraft.findMany({
-      where: { completionPercent: { lt: 100 } },
-      include: { supplier: true },
-      orderBy: { lastAutosaveAt: 'desc' },
-    });
+  async listUnpaidUsers(page?: number, limit?: number) {
+    const pg = this.toPagination(page, limit);
+    const where: Prisma.UserWhereInput = {
+      supplier: {
+        is: {
+          isActive: false,
+        },
+      },
+    };
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.user.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          roles: true,
+          supplier: {
+            select: {
+              id: true,
+              approvalStatus: true,
+              isActive: true,
+            },
+          },
+        },
+        skip: pg.skip,
+        take: pg.take,
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+    return { items, totalItems };
+  }
+
+  async listIncompleteSuppliers(page?: number, limit?: number) {
+    const pg = this.toPagination(page, limit);
+    const where = { completionPercent: { lt: 100 } } as const;
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.supplierDraft.findMany({
+        where,
+        include: { supplier: true },
+        orderBy: { lastAutosaveAt: 'desc' },
+        skip: pg.skip,
+        take: pg.take,
+      }),
+      this.prisma.supplierDraft.count({ where }),
+    ]);
+    return { items, totalItems };
   }
 
   approveSupplier(id: string, actorAdminId?: string) {
@@ -132,12 +171,14 @@ export class AdminService {
     });
   }
 
-  aiUsage() {
-    return this.prisma.aiUsageCounter.findMany({ orderBy: { updatedAt: 'desc' }, take: 100 });
+  aiUsage(page?: number, limit?: number) {
+    const pg = this.toPagination(page, limit);
+    return this.prisma.aiUsageCounter.findMany({ orderBy: { updatedAt: 'desc' }, skip: pg.skip, take: pg.take });
   }
 
-  aiConversations() {
-    return this.prisma.aiConversation.findMany({ include: { messages: true }, take: 50 });
+  aiConversations(page?: number, limit?: number) {
+    const pg = this.toPagination(page, limit);
+    return this.prisma.aiConversation.findMany({ include: { messages: true }, skip: pg.skip, take: pg.take });
   }
 
   aiFailures() {
@@ -205,28 +246,42 @@ export class AdminService {
     };
   }
 
-  notifications() {
-    return this.prisma.notification.findMany({ orderBy: { createdAt: 'desc' }, take: 100 });
+  async notifications(page?: number, limit?: number) {
+    const pg = this.toPagination(page, limit);
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.notification.findMany({ orderBy: { createdAt: 'desc' }, skip: pg.skip, take: pg.take }),
+      this.prisma.notification.count(),
+    ]);
+    return { items, totalItems };
   }
 
   notificationProvidersHealth() {
     return this.notificationsService.getProviderHealth();
   }
 
-  listJobs() {
-    return this.prisma.jobPost.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 200,
-    });
+  async listJobs(page?: number, limit?: number) {
+    const pg = this.toPagination(page, limit);
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.jobPost.findMany({ orderBy: { createdAt: 'desc' }, skip: pg.skip, take: pg.take }),
+      this.prisma.jobPost.count(),
+    ]);
+    return { items, totalItems };
   }
 
-  listJobApplications(jobId?: string) {
-    return this.prisma.jobApplication.findMany({
-      where: { jobPostId: jobId ?? undefined },
-      include: { supplier: true, jobPost: true },
-      orderBy: { submittedAt: 'desc' },
-      take: 200,
-    });
+  async listJobApplications(jobId?: string, page?: number, limit?: number) {
+    const pg = this.toPagination(page, limit);
+    const where = { jobPostId: jobId ?? undefined };
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.jobApplication.findMany({
+        where,
+        include: { supplier: true, jobPost: true },
+        orderBy: { submittedAt: 'desc' },
+        skip: pg.skip,
+        take: pg.take,
+      }),
+      this.prisma.jobApplication.count({ where }),
+    ]);
+    return { items, totalItems };
   }
 
   archiveJob(jobId: string) {
@@ -272,11 +327,17 @@ export class AdminService {
     });
   }
 
-  automationRules() {
-    return this.prisma.notificationTemplate.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 100,
-    });
+  async automationRules(page?: number, limit?: number) {
+    const pg = this.toPagination(page, limit);
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.notificationTemplate.findMany({
+        orderBy: { createdAt: 'desc' },
+        skip: pg.skip,
+        take: pg.take,
+      }),
+      this.prisma.notificationTemplate.count(),
+    ]);
+    return { items, totalItems };
   }
 
   updateAutomationRule(id: string, payload: { isActive?: boolean; config?: Record<string, unknown> }) {
@@ -290,11 +351,17 @@ export class AdminService {
     });
   }
 
-  automationRuns() {
-    return this.prisma.notification.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 200,
-    });
+  async automationRuns(page?: number, limit?: number) {
+    const pg = this.toPagination(page, limit);
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.notification.findMany({
+        orderBy: { createdAt: 'desc' },
+        skip: pg.skip,
+        take: pg.take,
+      }),
+      this.prisma.notification.count(),
+    ]);
+    return { items, totalItems };
   }
 
   processAutomationRuns(limit = 50) {

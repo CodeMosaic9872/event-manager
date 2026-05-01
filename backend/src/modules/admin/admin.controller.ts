@@ -5,6 +5,7 @@ import { ApiProtectedErrors } from '../../common/swagger/api-error-responses.dec
 import { AuthGuard } from '../../common/guards/auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import {
   ApproveSupplierDto,
   CreateCategoryDto,
@@ -42,8 +43,8 @@ export class AdminController {
     type: AdminSupplierReviewDto,
     isArray: true,
   })
-  suppliers() {
-    return this.adminService.listSuppliers();
+  suppliers(@Query() query: PaginationQueryDto) {
+    return this.adminService.listSuppliers(query.page, query.limit);
   }
 
   @Get('users')
@@ -53,8 +54,8 @@ export class AdminController {
     type: AdminUserListItemDto,
     isArray: true,
   })
-  users() {
-    return this.adminService.listUsers();
+  users(@Query() query: PaginationQueryDto) {
+    return this.adminService.listUsers(query.page, query.limit);
   }
 
   @Get('users/incomplete')
@@ -64,8 +65,8 @@ export class AdminController {
     type: AdminUserListItemDto,
     isArray: true,
   })
-  incompleteUsers() {
-    return this.adminService.listIncompleteUsers();
+  incompleteUsers(@Query() query: PaginationQueryDto) {
+    return this.adminService.listIncompleteUsers(query.page, query.limit);
   }
 
   @Get('users/unpaid')
@@ -75,14 +76,14 @@ export class AdminController {
     type: AdminUserListItemDto,
     isArray: true,
   })
-  unpaidUsers() {
-    return this.adminService.listUnpaidUsers();
+  unpaidUsers(@Query() query: PaginationQueryDto) {
+    return this.adminService.listUnpaidUsers(query.page, query.limit);
   }
 
   @Get('suppliers/incomplete')
   @ApiOperation({ summary: 'List incomplete supplier onboarding records' })
-  incompleteSuppliers() {
-    return this.adminService.listIncompleteSuppliers();
+  incompleteSuppliers(@Query() query: PaginationQueryDto) {
+    return this.adminService.listIncompleteSuppliers(query.page, query.limit);
   }
 
   @Post('suppliers/:id/approve')
@@ -108,8 +109,8 @@ export class AdminController {
 
   @Get('ai/usage')
   @ApiOperation({ summary: 'Get AI usage telemetry for admin' })
-  aiUsage() {
-    return this.adminService.aiUsage();
+  aiUsage(@Query() query: PaginationQueryDto) {
+    return this.adminService.aiUsage(query.page, query.limit);
   }
 
   @Get('ai/failures')
@@ -120,8 +121,8 @@ export class AdminController {
 
   @Get('ai/conversations')
   @ApiOperation({ summary: 'Get AI conversations snapshot for admin' })
-  aiConversations() {
-    return this.adminService.aiConversations();
+  aiConversations(@Query() query: PaginationQueryDto) {
+    return this.adminService.aiConversations(query.page, query.limit);
   }
 
   @Get('ai/recommendations/top')
@@ -144,8 +145,8 @@ export class AdminController {
 
   @Get('notifications')
   @ApiOperation({ summary: 'List notifications and statuses for admin' })
-  notifications() {
-    return this.adminService.notifications();
+  notifications(@Query() query: PaginationQueryDto) {
+    return this.adminService.notifications(query.page, query.limit);
   }
 
   @Get('notifications/providers/health')
@@ -160,14 +161,14 @@ export class AdminController {
 
   @Get('jobs')
   @ApiOperation({ summary: 'List all job posts for admin moderation' })
-  jobs() {
-    return this.adminService.listJobs();
+  jobs(@Query() query: PaginationQueryDto) {
+    return this.adminService.listJobs(query.page, query.limit);
   }
 
   @Get('jobs/applications')
   @ApiOperation({ summary: 'List job applications for admin moderation' })
-  jobApplications(@Query('jobId') jobId?: string) {
-    return this.adminService.listJobApplications(jobId);
+  jobApplications(@Query('jobId') jobId?: string, @Query() query?: PaginationQueryDto) {
+    return this.adminService.listJobApplications(jobId, query?.page, query?.limit);
   }
 
   @Post('jobs/:id/archive')
@@ -189,8 +190,8 @@ export class AdminController {
   }
 
   @Get('automations/rules')
-  automationRules() {
-    return this.adminService.automationRules();
+  automationRules(@Query() query: PaginationQueryDto) {
+    return this.adminService.automationRules(query.page, query.limit);
   }
 
   @Patch('automations/rules/:id')
@@ -202,8 +203,8 @@ export class AdminController {
   }
 
   @Get('automations/runs')
-  automationRuns() {
-    return this.adminService.automationRuns();
+  automationRuns(@Query() query: PaginationQueryDto) {
+    return this.adminService.automationRuns(query.page, query.limit);
   }
 
   @Post('automations/runs/process')

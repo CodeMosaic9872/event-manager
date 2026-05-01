@@ -45,22 +45,23 @@ describe('JobQueryController (contract)', () => {
   });
 
   it('GET /v1/supplier/jobs/recommended resolves supplier via authenticated user', async () => {
-    jobBoardServiceMock.listRecommendedJobsForUser.mockResolvedValueOnce([
-      { id: 'job_1', title: 'Wedding DJ needed', matchScore: 0.9, matchReasons: ['category_match'] },
-    ]);
+    jobBoardServiceMock.listRecommendedJobsForUser.mockResolvedValueOnce({
+      items: [{ id: 'job_1', title: 'Wedding DJ needed', matchScore: 0.9, matchReasons: ['category_match'] }],
+      totalItems: 1,
+    });
 
     const response = await request(app.getHttpServer())
       .get('/v1/supplier/jobs/recommended')
       .set('x-user-id', 'usr_supplier_123')
       .expect(200);
 
-    expect(response.body[0]).toEqual(
+    expect(response.body.items[0]).toEqual(
       expect.objectContaining({
         id: 'job_1',
         matchScore: 0.9,
       }),
     );
-    expect(jobBoardServiceMock.listRecommendedJobsForUser).toHaveBeenCalledWith('usr_supplier_123');
+    expect(jobBoardServiceMock.listRecommendedJobsForUser).toHaveBeenCalledWith('usr_supplier_123', undefined, undefined);
   });
 
   it('GET /v1/supplier/jobs/recommended rejects anonymous-style user ids', async () => {

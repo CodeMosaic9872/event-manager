@@ -6,6 +6,12 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class ReferralsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private toPagination(page?: number, limit?: number) {
+    const safePage = Number.isFinite(page) && (page as number) > 0 ? Math.floor(page as number) : 1;
+    const safeLimit = Number.isFinite(limit) && (limit as number) > 0 ? Math.min(200, Math.floor(limit as number)) : 20;
+    return { skip: (safePage - 1) * safeLimit, take: safeLimit };
+  }
+
   private buildReferralUrl(code: string) {
     const baseUrl = process.env.REFERRAL_BASE_URL ?? 'https://event-marketplace.example/ref';
     return `${baseUrl}/${code}`;
@@ -60,36 +66,56 @@ export class ReferralsService {
     };
   }
 
-  async listAttributions(supplierId: string) {
-    const attributions = await this.prisma.referralAttribution.findMany({
-      where: { referralLink: { supplierId } },
-      orderBy: { createdAt: 'desc' },
-    });
-    return { supplierId, attributions };
+  async listAttributions(supplierId: string, page?: number, limit?: number) {
+    const pg = this.toPagination(page, limit);
+    const where = { referralLink: { supplierId } };
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.referralAttribution.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: pg.skip,
+        take: pg.take,
+      }),
+      this.prisma.referralAttribution.count({ where }),
+    ]);
+    return { supplierId, items, totalItems };
   }
 
-  async listRewards(supplierId: string) {
-    const rewards = await this.prisma.referralReward.findMany({
-      where: { supplierId },
-      include: { attribution: true },
-      orderBy: { createdAt: 'desc' },
-    });
-    return { supplierId, rewards };
+  async listRewards(supplierId: string, page?: number, limit?: number) {
+    const pg = this.toPagination(page, limit);
+    const where = { supplierId };
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.referralReward.findMany({
+        where,
+        include: { attribution: true },
+        orderBy: { createdAt: 'desc' },
+        skip: pg.skip,
+        take: pg.take,
+      }),
+      this.prisma.referralReward.count({ where }),
+    ]);
+    return { supplierId, items, totalItems };
   }
 
-  adminList() {
-    return this.prisma.referralReward.findMany({
-      include: {
-        supplier: true,
-        attribution: {
-          include: {
-            referralLink: true,
+  async adminList(page?: number, limit?: number) {
+    const pg = this.toPagination(page, limit);
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.referralReward.findMany({
+        include: {
+          supplier: true,
+          attribution: {
+            include: {
+              referralLink: true,
+            },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 200,
-    });
+        orderBy: { createdAt: 'desc' },
+        skip: pg.skip,
+        take: pg.take,
+      }),
+      this.prisma.referralReward.count(),
+    ]);
+    return { items, totalItems };
   }
 
   async patchReward(id: string, payload: { status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'PAID' }) {

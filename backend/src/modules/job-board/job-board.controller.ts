@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JobBoardService } from './job-board.service';
 import { JobPublishGuard } from './guards/job-publish.guard';
@@ -9,6 +9,7 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { ApiProtectedErrors } from '../../common/swagger/api-error-responses.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../common/guards/roles.guard';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import { ApplyJobDto, CreateJobDto, UpdateJobApplicationStatusDto, UpdateJobDto } from './dto/job-board.dto';
 import {
   CreatedJobResponseDto,
@@ -30,8 +31,8 @@ export class JobBoardController {
     type: JobSummaryResponseDto,
     isArray: true,
   })
-  listPublicJobs() {
-    return this.jobBoardService.listPublicJobs();
+  listPublicJobs(@Query() query: PaginationQueryDto) {
+    return this.jobBoardService.listPublicJobs(query.page, query.limit);
   }
 
   @Post()
@@ -135,8 +136,8 @@ export class JobBoardController {
 
   @Get(':id/applications')
   @ApiOperation({ summary: 'List applications for a specific job' })
-  applications(@Param('id') id: string) {
-    return this.jobBoardService.listApplications(id);
+  applications(@Param('id') id: string, @Query() query: PaginationQueryDto) {
+    return this.jobBoardService.listApplications(id, query.page, query.limit);
   }
 }
 
@@ -174,12 +175,12 @@ export class JobQueryController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'List current user owned jobs' })
   @UseGuards(AuthGuard)
-  userJobs(@CurrentUser() user: AuthUser | undefined) {
+  userJobs(@CurrentUser() user: AuthUser | undefined, @Query() query: PaginationQueryDto) {
     const userId = user?.id;
     if (!userId || userId.startsWith('anonymous:')) {
       throw new UnauthorizedException('Authenticated user required');
     }
-    return this.jobBoardService.listUserJobs(userId);
+    return this.jobBoardService.listUserJobs(userId, query.page, query.limit);
   }
 
   @Get('supplier/jobs/recommended')
@@ -191,11 +192,11 @@ export class JobQueryController {
     isArray: true,
   })
   @UseGuards(AuthGuard, SupplierOnlyGuard)
-  supplierRecommendedJobs(@CurrentUser() user: AuthUser | undefined) {
+  supplierRecommendedJobs(@CurrentUser() user: AuthUser | undefined, @Query() query: PaginationQueryDto) {
     const userId = user?.id;
     if (!userId || userId.startsWith('anonymous:')) {
       throw new UnauthorizedException('Authenticated supplier required');
     }
-    return this.jobBoardService.listRecommendedJobsForUser(userId);
+    return this.jobBoardService.listRecommendedJobsForUser(userId, query.page, query.limit);
   }
 }

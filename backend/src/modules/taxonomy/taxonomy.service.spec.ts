@@ -13,6 +13,7 @@ describe('TaxonomyService', () => {
             subcategory: { id: 's1', key: 'catering', name: 'Catering' },
           },
         ]),
+        count: jest.fn().mockResolvedValue(1),
       },
     } as any;
 
@@ -33,6 +34,7 @@ describe('TaxonomyService', () => {
         categoryId: 'c1',
       },
       count: 1,
+      totalItems: 1,
       items: [
         {
           eventType: { id: 'e1', key: 'wedding', name: 'Wedding' },

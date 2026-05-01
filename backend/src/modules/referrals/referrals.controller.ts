@@ -9,6 +9,7 @@ import { SupplierOnlyGuard } from '../job-board/guards/supplier-only.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthUser } from '../../common/interfaces/auth-user.interface';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import {
   PatchReferralRewardResponseDto,
   ReferralAttributionResponseDto,
@@ -53,22 +54,25 @@ export class ReferralsController {
     type: ReferralAttributionResponseDto,
     isArray: true,
   })
-  attributions(@CurrentUser() user: AuthUser | undefined, @Query() query: SupplierIdQueryDto) {
+  attributions(
+    @CurrentUser() user: AuthUser | undefined,
+    @Query() query: SupplierIdQueryDto & PaginationQueryDto,
+  ) {
     const userId = user?.id;
     if (!userId || userId.startsWith('anonymous:')) {
       throw new UnauthorizedException('Authenticated supplier required');
     }
-    return this.referralsService.listAttributions(query.supplierId);
+    return this.referralsService.listAttributions(query.supplierId, query.page, query.limit);
   }
 
   @Get('rewards')
   @ApiOperation({ summary: 'List supplier referral rewards' })
-  rewards(@CurrentUser() user: AuthUser | undefined, @Query() query: SupplierIdQueryDto) {
+  rewards(@CurrentUser() user: AuthUser | undefined, @Query() query: SupplierIdQueryDto & PaginationQueryDto) {
     const userId = user?.id;
     if (!userId || userId.startsWith('anonymous:')) {
       throw new UnauthorizedException('Authenticated supplier required');
     }
-    return this.referralsService.listRewards(query.supplierId);
+    return this.referralsService.listRewards(query.supplierId, query.page, query.limit);
   }
 }
 
@@ -82,8 +86,8 @@ export class AdminReferralsController {
 
   @Get()
   @ApiOperation({ summary: 'List referral records for admin' })
-  list() {
-    return this.referralsService.adminList();
+  list(@Query() query: PaginationQueryDto) {
+    return this.referralsService.adminList(query.page, query.limit);
   }
 
   @Patch('rewards/:id')

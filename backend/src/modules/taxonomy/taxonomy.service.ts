@@ -6,34 +6,67 @@ import { TaxonomyMappingQueryDto } from './dto/taxonomy-mapping-query.dto';
 export class TaxonomyService {
   constructor(private readonly prisma: PrismaService) {}
 
-  getEventTypes() {
-    return this.prisma.eventType.findMany({ where: { isActive: true }, orderBy: { name: 'asc' } });
+  private toPagination(page?: number, limit?: number) {
+    const safePage = Number.isFinite(page) && (page as number) > 0 ? Math.floor(page as number) : 1;
+    const safeLimit = Number.isFinite(limit) && (limit as number) > 0 ? Math.min(200, Math.floor(limit as number)) : 20;
+    return { skip: (safePage - 1) * safeLimit, take: safeLimit };
   }
 
-  getCategories() {
-    return this.prisma.category.findMany({ where: { isActive: true }, orderBy: { sortOrder: 'asc' } });
+  async getEventTypes(page?: number, limit?: number) {
+    const pg = this.toPagination(page, limit);
+    const where = { isActive: true };
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.eventType.findMany({ where, orderBy: { name: 'asc' }, skip: pg.skip, take: pg.take }),
+      this.prisma.eventType.count({ where }),
+    ]);
+    return { items, totalItems };
   }
 
-  getSubcategories(categoryId: string) {
-    return this.prisma.subcategory.findMany({
-      where: { categoryId, isActive: true },
-      orderBy: { sortOrder: 'asc' },
-    });
+  async getCategories(page?: number, limit?: number) {
+    const pg = this.toPagination(page, limit);
+    const where = { isActive: true };
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.category.findMany({ where, orderBy: { sortOrder: 'asc' }, skip: pg.skip, take: pg.take }),
+      this.prisma.category.count({ where }),
+    ]);
+    return { items, totalItems };
   }
 
-  getFilterDefinitions(categoryId?: string) {
-    return this.prisma.filterDefinition.findMany({
-      where: {
-        isActive: true,
-        OR: [{ scope: 'GLOBAL' }, categoryId ? { scope: 'CATEGORY', categoryId } : undefined].filter(
-          Boolean,
-        ) as object[],
-      },
-      orderBy: { sortOrder: 'asc' },
-    });
+  async getSubcategories(categoryId: string, page?: number, limit?: number) {
+    const pg = this.toPagination(page, limit);
+    const where = { categoryId, isActive: true };
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.subcategory.findMany({
+        where,
+        orderBy: { sortOrder: 'asc' },
+        skip: pg.skip,
+        take: pg.take,
+      }),
+      this.prisma.subcategory.count({ where }),
+    ]);
+    return { items, totalItems };
   }
 
-  async getMapping(query: TaxonomyMappingQueryDto) {
+  async getFilterDefinitions(categoryId?: string, page?: number, limit?: number) {
+    const pg = this.toPagination(page, limit);
+    const where = {
+      isActive: true,
+      OR: [{ scope: 'GLOBAL' }, categoryId ? { scope: 'CATEGORY', categoryId } : undefined].filter(Boolean) as object[],
+    };
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.filterDefinition.findMany({
+        where,
+        orderBy: { sortOrder: 'asc' },
+        skip: pg.skip,
+        take: pg.take,
+      }),
+      this.prisma.filterDefinition.count({ where }),
+    ]);
+    return { items, totalItems };
+  }
+
+  async getMapping(query: TaxonomyMappingQueryDto, page?: number, limit?: number) {
+    const pg = this.toPagination(page, limit);
     const mappings = await this.prisma.eventCategorySubcategoryMap.findMany({
       where: {
         eventTypeId: query.eventTypeId ?? undefined,
@@ -45,6 +78,14 @@ export class TaxonomyService {
         subcategory: { select: { id: true, key: true, name: true } },
       },
       orderBy: [{ priority: 'asc' }, { createdAt: 'asc' }],
+      skip: pg.skip,
+      take: pg.take,
+    });
+    const totalItems = await this.prisma.eventCategorySubcategoryMap.count({
+      where: {
+        eventTypeId: query.eventTypeId ?? undefined,
+        categoryId: query.categoryId ?? undefined,
+      },
     });
 
     return {
@@ -53,6 +94,7 @@ export class TaxonomyService {
         categoryId: query.categoryId ?? null,
       },
       count: mappings.length,
+      totalItems,
       items: mappings.map((row) => ({
         eventType: row.eventType,
         category: row.category,
