@@ -1,0 +1,759 @@
+PRD — Event Supplier Marketplace Platform 
+
+1. Product Overview 
+
+The platform is a web-based marketplace designed to connect users planning events with relevant 
+
+suppliers. 
+
+This is not an event management system. 
+
+The system does not manage the execution of the event itself, but helps users discover suppliers, 
+
+receive ideas, access supplier contact details, and use AI assistance for planning and supplier 
+
+recommendations. 
+
+The platform operates with three main sides: 
+
+1.  User Side 
+2.  Supplier Side 
+3.  Admin Side 
+
+The business model is primarily based on suppliers, where suppliers are the paying customers of 
+
+the platform and users access the platform mostly for free. 
+
+The platform must be fully responsive for mobile devices, although it is web-ﬁrst. 
+
+This logic was conﬁrmed during the project meeting and transcript . 
+
+2. User Roles 
+
+2.1 User 
+
+A User is anyone looking to organize an event. 
+
+Examples: 
+
+●  Couple planning a wedding 
+●  HR manager planning a company event 
+●  Welfare manager 
+●  Private person planning a birthday 
+●  Event producer 
+●  Anyone searching for suppliers 
+
+The user does not manage the event inside the platform. 
+
+The platform helps the user: 
+
+ 
+●  Find suppliers 
+●  Get ideas 
+●  Access supplier contact details 
+●  Receive AI recommendations 
+●  Publish job offers for suppliers 
+
+Users can browse freely without mandatory registration in most cases. 
+
+Account creation is only required in two situations: 
+
+1.  After more than 10 AI chat messages 
+2.  When publishing a job offer 
+
+This was explicitly deﬁned in the meeting . 
+
+2.2 Supplier 
+
+A Supplier is the business-side customer of the platform. 
+
+Examples: 
+
+●  DJ 
+●  Catering 
+●  Photographer 
+●  Event Hall 
+●  Lighting 
+●  Sound Systems 
+●  Decorations 
+●  Attractions 
+●  Business Event Vendors 
+
+Suppliers: 
+
+●  Create and manage their proﬁle 
+●  Receive leads 
+●  Apply to job offers 
+●  Become discoverable in marketplace search 
+●  Receive exposure through AI recommendations 
+
+Suppliers are the monetized users of the system. 
+
+2.3 Admin 
+
+The Admin controls the full platform. 
+
+ 
+Admin permissions include: 
+
+●  View all users 
+●  View suppliers 
+●  View incomplete registrations 
+●  View unpaid users 
+●  View job posts 
+●  Manage supplier approvals 
+●  Monitor AI usage 
+●  View system analytics 
+●  Control featured suppliers 
+●  Manage categories/subcategories 
+●  Review reports and abuse cases 
+
+Admin must be able to see users even if they did not complete payment or registration, as 
+
+requested by client. 
+
+3. Core Modules 
+
+3.1 Supplier Marketplace 
+
+Main searchable supplier directory. 
+
+Users can: 
+
+●  Search suppliers 
+●  Filter suppliers 
+●  Open supplier proﬁles 
+●  Access contact details 
+●  Save favorites 
+●  Share suppliers 
+●  Contact externally (phone / WhatsApp / email) 
+
+Important: 
+
+The platform does NOT handle the ﬁnal transaction. 
+
+The goal is to connect both sides, not to mediate payment. 
+
+This was clearly stated in the meeting: 
+“No commission on the event itself, only connection between both sides” . 
+
+3.2 AI Event Planning Agent 
+
+ 
+AI-based assistant for helping users plan events. 
+
+The AI should function like a smart event planning assistant. 
+
+It helps users: 
+
+●  Understand what suppliers they need 
+●  Get recommendations 
+●  Build event ideas 
+●  Receive supplier suggestions from internal database 
+●  Get event concepts 
+●  Receive job board recommendations 
+●  Navigate to supplier categories 
+
+Example: 
+
+User writes: 
+
+“I’m planning a wedding and need a DJ” 
+
+AI responds with: 
+
+●  clarifying questions 
+● 
+
+recommended suppliers 
+
+relevant supplier categories 
+
+● 
+●  budget suggestions 
+●  event ideas 
+●  direct links to suppliers 
+
+The AI must recommend suppliers from the platform database, not generic internet results. 
+
+This was explicitly requested by the client . 
+
+3.3 Job Board 
+
+Users can publish supplier requests as “job offers”. 
+
+Example: 
+
+“I need DJ + sound system for a company event for 1,200 people in Tel Aviv” 
+
+The job post includes: 
+
+●  Event type 
+●  Date 
+●  Budget 
+
+ 
+●  Quantity / audience size 
+●  Supplier category needed 
+●  Description 
+●  Location 
+
+Suppliers can apply to the job. 
+
+When supplier applies: 
+
+●  supplier details are sent to the user 
+●  user receives notiﬁcation 
+●  system stores candidate history 
+
+Notiﬁcations should support: 
+
+●  Email 
+●  SMS 
+
+This was conﬁrmed in meeting . 
+
+4. Main User Flows 
+
+4.1 User Flow — Supplier Search 
+
+Flow 
+
+Landing Page 
+→ Search Supplier 
+→ Live Search Suggestions 
+→ Supplier Listing 
+→ Apply Filters 
+→ Open Supplier Proﬁle 
+→ View Contact Details 
+→ Save / Share / Contact 
+
+Notes 
+
+Search must be live search. 
+
+No “Search Button” is required. 
+
+As user types: 
+
+●  supplier names 
+
+ 
+●  categories 
+● 
+tags 
+
+results appear dynamically. 
+
+This was speciﬁcally requested during meeting. 
+
+4.2 User Flow — AI Planning 
+
+Flow 
+
+Landing Page 
+→ AI Planning 
+→ Select Event Type 
+→ AI Conversation Starts 
+→ AI asks clarifying questions 
+→ AI recommends suppliers 
+→ AI suggests categories 
+→ AI may redirect to Job Board 
+
+Registration Trigger 
+
+First 10 AI messages = free 
+
+After 10 messages: 
+
+Require account creation 
+
+This is a hard business rule. 
+
+4.3 User Flow — Publish Job Offer 
+
+Flow 
+
+Landing Page 
+→ Job Board 
+→ Publish Job Offer 
+→ Registration Required 
+→ Create Account 
+→ Fill Job Form 
+→ Publish 
+→ Suppliers Apply 
+→ User Receives Notiﬁcations 
+
+ 
+Registration is mandatory here. 
+
+4.4 Supplier Flow 
+
+Flow 
+
+Landing Page 
+→ Join as Supplier 
+→ Registration 
+→ Supplier Proﬁle Setup 
+→ Category Selection 
+→ Service Areas 
+→ Contact Details 
+→ Gallery Upload 
+→ Social Links 
+→ Pricing Information (optional) 
+→ Veriﬁcation / Approval 
+→ Published in Marketplace 
+
+4.5 Supplier Applying to Job 
+
+Flow 
+
+Supplier Dashboard 
+→ Job Board 
+→ Open Job Offer 
+→ Apply 
+→ Supplier Details Sent 
+→ User Notiﬁcation Triggered 
+
+5. Supplier Proﬁle Structure 
+
+Each supplier proﬁle should include: 
+
+●  Business name 
+●  Category 
+●  Subcategory 
+●  Description 
+●  Service areas 
+●  Contact phone 
+●  WhatsApp 
+●  Email 
+
+ 
+●  Website 
+● 
+Instagram 
+●  Facebook 
+●  Gallery 
+●  Reviews 
+●  Rating 
+●  Working days 
+●  Certiﬁcations 
+● 
+Insurance 
+●  Accessibility 
+●  Kosher options (if relevant) 
+●  Languages spoken 
+●  Government supplier ﬂags (if relevant) 
+
+Figma conﬁrms extensive supplier proﬁle structure. 
+
+6. Categories & Filtering Logic 
+
+The system uses: 
+
+Event Type 
+
+Examples: 
+
+●  Wedding 
+●  Corporate Event 
+●  Birthday 
+●  Bar Mitzvah 
+●  Bat Mitzvah 
+●  Brit 
+●  Luxury & Leisure 
+●  Bachelor / Bachelorette 
+●  Hafrashat Challah 
+
+Then: 
+
+Event Subtype 
+
+Example: 
+
+Corporate Event → Conference 
+
+Then: 
+
+ 
+Supplier Categories 
+
+Examples: 
+
+●  Food 
+●  Music 
+●  Photography 
+●  Venues 
+●  Attractions 
+●  Logistics 
+●  Branding 
+●  Production 
+
+Then: 
+
+Speciﬁc Filters 
+
+Examples: 
+
+●  Kosher Mehadrin 
+●  Open on Shabbat 
+●  Free Parking 
+●  Accessible 
+●  Outdoor Event 
+●  Speaks English 
+●  Region 
+●  Minimum Rating 
+
+This structure is shown in Figma screens. 
+
+7. Authentication Logic 
+
+Registration is NOT mandatory for general browsing. 
+
+Registration required only for: 
+
+Users 
+
+●  More than 10 AI messages 
+●  Publishing job offer 
+
+Suppliers 
+
+●  Always required 
+
+ 
+This is critical business logic and should not be changed. 
+
+8. Notiﬁcations 
+
+System notiﬁcations include: 
+
+User Notiﬁcations 
+
+●  Supplier applied to job 
+●  AI registration reminder 
+●  Saved suppliers follow-up 
+
+Supplier Notiﬁcations 
+
+●  New relevant job posted 
+●  Lead received 
+●  Proﬁle approval 
+●  Account reminders 
+
+Channels: 
+
+●  Email 
+●  SMS 
+
+Potential future: 
+
+●  WhatsApp notiﬁcations 
+
+9. Admin Dashboard 
+
+Admin should have: 
+
+User Management 
+
+●  all users 
+● 
+●  unpaid users 
+
+incomplete users 
+
+Supplier Management 
+
+●  approval ﬂow 
+● 
+●  veriﬁcation 
+
+featured suppliers 
+
+ 
+Job Board Management 
+
+●  all job offers 
+●  applications 
+●  abuse reports 
+
+AI Monitoring 
+
+●  conversations 
+●  usage analytics 
+● 
+
+failed recommendations 
+
+CMS 
+
+●  categories 
+●  ﬁlters 
+●  homepage content 
+●  banners 
+
+10. Technical Notes 
+
+Recommended stack: 
+
+Frontend: 
+
+●  Next.js 
+
+Backend: 
+
+●  Node.js / NestJS 
+
+Database: 
+
+●  PostgreSQL / Supabase 
+
+AI Layer: 
+
+●  OpenAI Assistant / Agent Architecture 
+
+Notiﬁcations: 
+
+●  Email + SMS Provider 
+
+Hosting: 
+
+●  AWS 
+
+ 
+Search: 
+
+●  Fast searchable supplier index 
+
+Important: 
+System must be optimized for mobile responsiveness. 
+
+Web ﬁrst, mobile-perfect. 
+
+13. Advanced Filtering Logic 
+
+The supplier ﬁltering system must be dynamic and divided into 3 main layers. 
+
+13.1 First Layer — Subcategories of the Selected Category 
+
+The ﬁrst ﬁlters shown must be the subcategories of the selected supplier category. 
+
+Example: 
+
+If the user selects the category: 
+
+Food 
+
+The subcategories displayed should include: 
+
+●  Catering 
+●  Chef Meals 
+●  Food Stations 
+●  Serving Trays 
+●  Alcohol Bar 
+●  Desserts 
+●  Sweet Bar 
+●  Private Chef 
+
+Important: 
+
+The displayed subcategories also depend on the event type selected earlier. 
+
+Example: 
+
+If the user selected: 
+
+ 
+ 
+Wedding 
+
+The system should pre-select and prioritize only the subcategories deﬁned in the mapping table as 
+
+relevant for weddings. 
+
+For example: 
+
+●  Dairy Catering 
+●  Alcohol Bar 
+●  Serving Trays 
+
+And should not display irrelevant subcategories for that event type. 
+
+The system must work according to a clear mapping table between: 
+
+Event Type → Category → Subcategory 
+
+As deﬁned in the Figma and project meeting. 
+
+13.2 Second Layer — Category-Speciﬁc Filters 
+
+Each supplier category must have its own unique ﬁlters. 
+
+Examples: 
+
+Food 
+
+●  Kosher 
+●  Mehadrin Kosher 
+●  Dairy / Meat / Parve 
+●  Vegan 
+●  Gluten-Free 
+
+DJ / Music 
+
+●  Music Style 
+●  Sound Equipment 
+●  Live Performance 
+●  Corporate Event Experience 
+
+Photography 
+
+●  Stills 
+●  Video 
+●  Drone 
+
+ 
+●  Magnets 
+
+Event Venue 
+
+●  Outdoor Event 
+●  Accessibility 
+●  Free Parking 
+●  Guest Capacity 
+
+These ﬁlters must be relevant only to their speciﬁc category. 
+
+13.3 Third Layer — General Filters 
+
+General ﬁlters that apply to all suppliers: 
+
+●  Location in Israel 
+●  Service Area 
+●  Minimum Rating 
+●  Ministry of Defense Supplier 
+●  Reservist 
+● 
+Insurance 
+●  Open / Working on Shabbat 
+●  Speaks Additional Languages 
+●  Accessibility 
+●  Veriﬁed Supplier 
+
+These ﬁlters must always be available across all categories. 
+
+14. Automatic Supplier Draft Saving During Registration 
+
+If a supplier starts the registration process but does not complete it, the system must automatically 
+
+save all entered data. 
+
+Purpose of this feature: 
+
+Allow the supplier to return later and continue registration without losing information. 
+
+Examples: 
+
+●  Supplier entered business name and left 
+●  Supplier uploaded gallery but did not ﬁnish 
+●  Supplier stopped before payment 
+●  Supplier stopped before ﬁnal approval 
+
+ 
+The admin must be able to view these incomplete supplier registrations. 
+
+Additionally: 
+
+The system should support: 
+
+●  Automatic reminder emails 
+●  Automatic SMS reminders 
+●  Admin tracking for incomplete registrations 
+
+This also connects to the admin requirement of viewing incomplete users. 
+
+15. “Refer a Friend” System for Suppliers 
+
+The platform must include a referral system for registered suppliers. 
+
+Logic: 
+
+If a registered supplier sends their unique registration link to a new supplier, and the new supplier 
+
+registers through that link and completes registration — 
+
+the referring supplier receives a beneﬁt on subscription renewal. 
+
+Examples of rewards: 
+
+●  Subscription renewal discount 
+●  One free extra month 
+●  Higher marketplace exposure 
+● 
+Internal platform credit 
+
+The exact reward will be deﬁned later. 
+
+System requirements: 
+
+●  Unique referral link generation for each supplier 
+●  New supplier attribution to referring supplier 
+●  Registration status tracking 
+●  Completion veriﬁcation 
+●  Automatic reward eligibility calculation 
+●  Supplier dashboard for referral tracking 
+●  Admin dashboard for referral management and control 
+
+16. System Automations 
+
+The platform must be built with a clear infrastructure for Email / SMS automations. 
+
+ 
+Even if not all automations are fully deﬁned yet, this must be included in the PRD. 
+
+Possible automations include: 
+
+16.1 User Automations 
+
+●  Supplier applied to a job post 
+●  Registration completion reminder 
+●  Reminder to continue AI conversation 
+●  Follow-up after viewing a supplier 
+●  Reminder to publish a new job offer 
+
+16.2 Supplier Automations 
+
+●  New lead received 
+●  New relevant job opportunity 
+●  Proﬁle completion reminder 
+●  Subscription renewal reminder 
+●  Proﬁle approval / rejection 
+● 
+
+Inactivity reminder 
+
+16.3 Admin Automations 
+
+●  Suppliers with incomplete registration 
+● 
+Inactive suppliers 
+●  System issue alerts 
+●  Lead monitoring 
+●  Unusual AI usage monitoring 
+
+16.4 Technical Requirements 
+
+Automations must support: 
+
+●  Email 
+●  SMS 
+●  Future support for WhatsApp 
+
+Notiﬁcation table: 
+
+תויצקיפיטונ
+
+ 
+ 
+ 
+

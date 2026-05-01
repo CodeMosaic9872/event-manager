@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --accent: #201c44;
+  --secondary: #6ab7ff;
+  --secondary-dark: #4721df;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-assistant);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-assistant), Arial, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.card {
+  @apply rounded-xl border border-slate-200 bg-white p-4 shadow-sm;
+}
+
+.figma-panel {
+  @apply rounded-2xl border p-6 shadow-[0px_8px_16px_rgba(0,0,0,0.18)];
+  border-color: var(--secondary-dark);
+  background: rgba(198, 220, 255, 0.3);
+}
+
+.figma-primary-btn {
+  @apply rounded-full px-6 py-2 text-white;
+  background: var(--accent);
+}
