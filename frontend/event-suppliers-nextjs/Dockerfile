@@ -1,30 +1,34 @@
-FROM node:20-alpine AS base
-
-FROM base AS deps
+# ---- 1. Base build image ----
+FROM node:20-alpine AS builder
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci
 
-FROM base AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+COPY package*.json ./
+RUN npm install --legacy-peer-deps
+
+# Copy project files (this includes .env)
 COPY . .
+
+# ✅ Added: Make env variable available at build time
+ARG NEXT_PUBLIC_BASE_URL
+ENV NEXT_PUBLIC_BASE_URL=${NEXT_PUBLIC_BASE_URL}
+
 RUN npm run build
 
-FROM base AS runner
+# ---- 2. Production image ----
+FROM node:20-alpine AS runner
 WORKDIR /app
+
 ENV NODE_ENV=production
 ENV PORT=3000
-ENV HOSTNAME=0.0.0.0
 
-RUN addgroup -S nodejs && adduser -S nextjs -G nodejs
-
-COPY --from=builder /app/public ./public
+COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/public ./public
 COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/next.config.mjs ./next.config.mjs
 
-USER nextjs
+# ✅ Added: Copy .env into final container (optional)
+COPY --from=builder /app/.env ./.env
+
 EXPOSE 3000
-
-CMD ["npx", "next", "start", "-p", "3000", "-H", "0.0.0.0"]
+CMD ["npm", "start"]    
