@@ -15,6 +15,7 @@ FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3010
+ENV HOSTNAME=0.0.0.0
 
 RUN addgroup -S nodejs && adduser -S nextjs -G nodejs
 
@@ -26,4 +27,4 @@ COPY --from=builder /app/node_modules ./node_modules
 USER nextjs
 EXPOSE 3010
 
-CMD ["npm", "run", "start"]
+CMD ["npx", "next", "start", "-p", "3010", "-H", "0.0.0.0"]
