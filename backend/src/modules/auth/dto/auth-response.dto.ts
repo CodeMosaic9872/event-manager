@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-class AuthUserSummaryDto {
+export class AuthUserSummaryDto {
   @ApiProperty({ example: 'usr_123' })
   id!: string;
 
@@ -30,4 +30,10 @@ export class RefreshTokensResponseDto {
   refreshToken!: string;
 }
 
-export class MeResponseDto extends AuthUserSummaryDto {}
+export class MeResponseDto {
+  @ApiProperty({ type: [AuthUserSummaryDto] })
+  items!: AuthUserSummaryDto[];
+
+  @ApiProperty({ example: 1 })
+  totalItems!: number;
+}

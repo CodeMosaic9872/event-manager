@@ -72,11 +72,17 @@ export const api = createApi({
     }),
     me: builder.query<AuthUser, void>({
       query: () => ({ url: "/v1/auth/me" }),
-      transformResponse: (response: { id: string; email: string; roles: string[] }) => ({
-        id: response.id,
-        email: response.email,
-        roles: toRole(response.roles),
-      }),
+      transformResponse: (response: { items?: Array<{ id: string; email: string; roles: string[] }> }) => {
+        const row = response.items?.[0];
+        if (!row) {
+          return { id: "", email: "", roles: [] as AuthUser["roles"] };
+        }
+        return {
+          id: row.id,
+          email: row.email,
+          roles: toRole(row.roles),
+        };
+      },
       providesTags: ["Auth"],
     }),
     getSuppliers: builder.query<SuppliersListResponse, SuppliersQuery>({
@@ -146,6 +152,13 @@ export const api = createApi({
     }),
     getNotificationPreferences: builder.query<NotificationPreferences, void>({
       query: () => ({ url: "/v1/notifications/preferences" }),
+      transformResponse: (response: { items?: NotificationPreferences[] }) =>
+        response.items?.[0] ?? {
+          userId: "",
+          emailEnabled: true,
+          pushEnabled: true,
+          mutedTemplates: [],
+        },
       providesTags: ["Notifications"],
     }),
     updateNotificationPreferences: builder.mutation<
@@ -153,6 +166,13 @@ export const api = createApi({
       Partial<NotificationPreferences>
     >({
       query: (body) => ({ url: "/v1/notifications/preferences", method: "PUT", body }),
+      transformResponse: (response: { items?: NotificationPreferences[] }) =>
+        response.items?.[0] ?? {
+          userId: "",
+          emailEnabled: true,
+          pushEnabled: true,
+          mutedTemplates: [],
+        },
       invalidatesTags: ["Notifications"],
     }),
     getSupplierReferralLink: builder.query<{ link: string }, void>({

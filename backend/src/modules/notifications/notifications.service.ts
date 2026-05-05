@@ -162,10 +162,15 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
   async getNotificationPreferences(userId: string) {
     const pref = await this.prisma.notificationPreference.findUnique({ where: { userId } });
     return {
-      userId,
-      emailEnabled: pref?.emailEnabled ?? true,
-      pushEnabled: pref?.pushEnabled ?? true,
-      mutedTemplates: this.readMutedTemplates(pref?.mutedTemplatesJson),
+      items: [
+        {
+          userId,
+          emailEnabled: pref?.emailEnabled ?? true,
+          pushEnabled: pref?.pushEnabled ?? true,
+          mutedTemplates: this.readMutedTemplates(pref?.mutedTemplatesJson),
+        },
+      ],
+      totalItems: 1,
     };
   }
 
@@ -190,10 +195,15 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
       },
     });
     return {
-      userId: updated.userId,
-      emailEnabled: updated.emailEnabled,
-      pushEnabled: updated.pushEnabled,
-      mutedTemplates: this.readMutedTemplates(updated.mutedTemplatesJson),
+      items: [
+        {
+          userId: updated.userId,
+          emailEnabled: updated.emailEnabled,
+          pushEnabled: updated.pushEnabled,
+          mutedTemplates: this.readMutedTemplates(updated.mutedTemplatesJson),
+        },
+      ],
+      totalItems: 1,
     };
   }
 

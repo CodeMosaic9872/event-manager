@@ -25,12 +25,38 @@ class AiMessageDto {
   content!: string;
 }
 
-export class ConversationResponseDto {
+class AiConversationMetaDto {
   @ApiProperty({ example: 'conv_123' })
   id!: string;
 
+  @ApiProperty({ example: 'usr_123', nullable: true })
+  userId!: string | null;
+
+  @ApiProperty({ example: null, nullable: true })
+  anonymousSessionId!: string | null;
+
+  @ApiProperty({ example: 'ACTIVE' })
+  status!: string;
+
+  @ApiProperty({ example: { eventType: 'wedding' } })
+  contextJson!: Record<string, unknown> | null;
+
+  @ApiProperty()
+  createdAt!: Date;
+
+  @ApiProperty()
+  updatedAt!: Date;
+}
+
+export class ConversationResponseDto {
+  @ApiProperty({ type: AiConversationMetaDto })
+  conversation!: AiConversationMetaDto;
+
   @ApiProperty({ type: [AiMessageDto] })
-  messages!: AiMessageDto[];
+  items!: AiMessageDto[];
+
+  @ApiProperty({ example: 42 })
+  totalItems!: number;
 }
 
 class SendMessageUsageDto {

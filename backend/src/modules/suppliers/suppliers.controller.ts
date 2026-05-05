@@ -19,6 +19,7 @@ import { verifyAccessToken } from '../../common/utils/jwt.util';
 import { AuthGuard } from '../../common/guards/auth.guard';
 import { AuthUser } from '../../common/interfaces/auth-user.interface';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import { SupplierOnlyGuard } from '../job-board/guards/supplier-only.guard';
 import { ApiProtectedErrors } from '../../common/swagger/api-error-responses.decorator';
 import { ListSuppliersQueryDto } from './dto/list-suppliers-query.dto';
@@ -75,7 +76,7 @@ export class SuppliersController {
   async suggestions(@Query() query: SupplierSuggestionsQueryDto) {
     const q = query.q ?? '';
     if (!q) {
-      return [];
+      return { items: [], totalItems: 0 };
     }
     return this.suppliersService.suggestions(q, query.take);
   }
@@ -229,9 +230,9 @@ export class SuppliersController {
 
   @Get('users/me/favorites')
   @ApiOperation({ summary: 'List current actor favorite suppliers' })
-  async listFavorites(@Headers('authorization') authorization?: string) {
+  async listFavorites(@Headers('authorization') authorization?: string, @Query() query?: PaginationQueryDto) {
     const { userId, anonymousSessionId } = await this.resolveActor(authorization);
-    return this.suppliersService.listFavorites(userId, anonymousSessionId);
+    return this.suppliersService.listFavorites(userId, anonymousSessionId, query?.page, query?.limit);
   }
 
   @Post('supplier/draft')

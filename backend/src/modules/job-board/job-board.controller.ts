@@ -160,8 +160,8 @@ export class JobApplicationController {
 
   @Get(':id/history')
   @ApiOperation({ summary: 'Get status timeline/history for a job application' })
-  history(@Param('id') id: string) {
-    return this.jobBoardService.listApplicationHistory(id);
+  history(@Param('id') id: string, @Query() query: PaginationQueryDto) {
+    return this.jobBoardService.listApplicationHistory(id, query.page, query.limit);
   }
 }
 

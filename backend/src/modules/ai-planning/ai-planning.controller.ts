@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AiPlanningService } from './ai-planning.service';
 import { AiQuotaGuard } from './guards/ai-quota.guard';
@@ -6,6 +6,7 @@ import { OptionalAuthGuard } from '../../common/guards/optional-auth.guard';
 import { AuthUser } from '../../common/interfaces/auth-user.interface';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { ApiAuthErrors } from '../../common/swagger/api-error-responses.decorator';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import { CreateConversationDto, SendMessageDto } from './dto/ai-planning.dto';
 import {
   ConversationResponseDto,
@@ -35,13 +36,13 @@ export class AiPlanningController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get AI conversation with persisted messages' })
+  @ApiOperation({ summary: 'Get AI conversation metadata with paginated messages (page/limit apply to messages)' })
   @ApiOkResponse({
-    description: 'Conversation with messages',
+    description: 'Conversation metadata plus paginated messages',
     type: ConversationResponseDto,
   })
-  getConversation(@Param('id') id: string) {
-    return this.aiPlanningService.getConversation(id);
+  getConversation(@Param('id') id: string, @Query() query: PaginationQueryDto) {
+    return this.aiPlanningService.getConversation(id, query.page, query.limit);
   }
 
   @Post(':id/messages')

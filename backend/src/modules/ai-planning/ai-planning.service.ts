@@ -83,15 +83,40 @@ export class AiPlanningService {
     });
   }
 
-  async getConversation(id: string) {
+  async getConversation(id: string, page = 1, limit = 20) {
     const conversation = await this.prisma.aiConversation.findUnique({
       where: { id },
-      include: { messages: true },
+      select: {
+        id: true,
+        userId: true,
+        anonymousSessionId: true,
+        status: true,
+        contextJson: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
     if (!conversation) {
       throw new NotFoundException('Conversation not found');
     }
-    return conversation;
+    const safePage = Math.max(1, Math.floor(page));
+    const safeLimit = Math.max(1, Math.min(200, Math.floor(limit)));
+    const skip = (safePage - 1) * safeLimit;
+    const whereMsg = { conversationId: id };
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.aiMessage.findMany({
+        where: whereMsg,
+        orderBy: { createdAt: 'asc' },
+        skip,
+        take: safeLimit,
+      }),
+      this.prisma.aiMessage.count({ where: whereMsg }),
+    ]);
+    return {
+      conversation,
+      items,
+      totalItems,
+    };
   }
 
   async sendMessage(payload: SendMessagePayload) {

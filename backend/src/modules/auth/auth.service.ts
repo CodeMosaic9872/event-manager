@@ -206,6 +206,9 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Invalid token');
     }
-    return user;
+    return {
+      items: [this.toAuthUserSummary(user)],
+      totalItems: 1,
+    };
   }
 }

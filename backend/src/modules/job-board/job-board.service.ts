@@ -328,11 +328,19 @@ export class JobBoardService {
     });
   }
 
-  listApplicationHistory(applicationId: string) {
-    return this.prisma.jobApplicationHistory.findMany({
-      where: { jobApplicationId: applicationId },
-      orderBy: { createdAt: 'asc' },
-    });
+  async listApplicationHistory(applicationId: string, page?: number, limit?: number) {
+    const pg = this.toPagination(page, limit);
+    const where = { jobApplicationId: applicationId };
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.jobApplicationHistory.findMany({
+        where,
+        orderBy: { createdAt: 'asc' },
+        skip: pg.skip,
+        take: pg.take,
+      }),
+      this.prisma.jobApplicationHistory.count({ where }),
+    ]);
+    return { items, totalItems };
   }
 
   async listRecommendedJobsForSupplier(supplierId: string, page?: number, limit?: number) {

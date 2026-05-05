@@ -13,6 +13,12 @@ export class SuppliersService {
     @Optional() private readonly automationService?: AutomationService,
   ) {}
 
+  private toPagination(page?: number, limit?: number) {
+    const safePage = Number.isFinite(page) && (page as number) > 0 ? Math.floor(page as number) : 1;
+    const safeLimit = Number.isFinite(limit) && (limit as number) > 0 ? Math.min(200, Math.floor(limit as number)) : 20;
+    return { skip: (safePage - 1) * safeLimit, take: safeLimit };
+  }
+
   async list(query: ListSuppliersQueryDto) {
     const startedAt = Date.now();
     const take = Math.min(query.take ?? 20, 100);
@@ -449,7 +455,7 @@ export class SuppliersService {
       }),
     ]);
 
-    return [
+    const items = [
       ...suppliers.map((supplier) => ({
         id: supplier.id,
         label: supplier.businessName,
@@ -469,6 +475,7 @@ export class SuppliersService {
         value: subcategory.key,
       })),
     ].slice(0, limit);
+    return { items, totalItems: items.length };
   }
 
   async saveFavorite(userId: string | null, anonymousSessionId: string | null, supplierId: string) {
@@ -536,11 +543,19 @@ export class SuppliersService {
     throw new BadRequestException('User or anonymous session is required');
   }
 
-  listFavorites(userId: string | null, anonymousSessionId: string | null) {
-    return this.prisma.favoriteSupplier.findMany({
-      where: userId ? { userId } : anonymousSessionId ? { anonymousSessionId } : { id: '__none__' },
-      include: { supplier: true },
-    });
+  async listFavorites(userId: string | null, anonymousSessionId: string | null, page?: number, limit?: number) {
+    const where = userId ? { userId } : anonymousSessionId ? { anonymousSessionId } : { id: '__none__' };
+    const pg = this.toPagination(page, limit);
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.favoriteSupplier.findMany({
+        where,
+        include: { supplier: true },
+        skip: pg.skip,
+        take: pg.take,
+      }),
+      this.prisma.favoriteSupplier.count({ where }),
+    ]);
+    return { items, totalItems };
   }
 
   async upsertDraftForUser(
