@@ -19,7 +19,7 @@ export class AuthService {
 
   private ensureActiveStatus(status: 'ACTIVE' | 'INACTIVE' | 'BLOCKED') {
     if (status !== 'ACTIVE') {
-      throw new UnauthorizedException('User account is not active');
+      throw new UnauthorizedException('Your account is not active. Please contact support.');
     }
   }
 
@@ -65,13 +65,13 @@ export class AuthService {
     const existingByPhone = await this.prisma.user.findUnique({ where: { phone } });
 
     if (existingByEmail && existingByPhone && existingByEmail.id !== existingByPhone.id) {
-      throw new ConflictException('Email and phone belong to different accounts');
+      throw new ConflictException('Email and phone belong to different accounts. Please use matching credentials.');
     }
     if (existingByEmail && existingByEmail.phone && existingByEmail.phone !== phone) {
-      throw new ConflictException('Email already linked to a different phone number');
+      throw new ConflictException('This email is already linked to another phone number.');
     }
     if (existingByPhone && existingByPhone.email && existingByPhone.email !== payload.email) {
-      throw new ConflictException('Phone already linked to a different email');
+      throw new ConflictException('This phone number is already linked to another email.');
     }
 
     const existing = existingByEmail ?? existingByPhone;
@@ -155,7 +155,7 @@ export class AuthService {
       include: { roles: true },
     });
     if (!user || user.phone !== phone) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Invalid login details. Make sure email and phone are correct.');
     }
     this.ensureActiveStatus(user.status);
     const { accessToken, refreshToken } = await this.issueTokenPair(user);
@@ -185,14 +185,14 @@ export class AuthService {
       include: { roles: true },
     });
     if (!user) {
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new UnauthorizedException('Invalid refresh token.');
     }
     this.ensureActiveStatus(user.status);
     if (!user.refreshTokenHash) {
-      throw new UnauthorizedException('Refresh token was revoked');
+      throw new UnauthorizedException('Session expired. Please log in again.');
     }
     if (decoded.ver !== user.refreshTokenVersion) {
-      throw new UnauthorizedException('Refresh token was revoked');
+      throw new UnauthorizedException('Session expired. Please log in again.');
     }
     const isRefreshTokenValid = await compare(token, user.refreshTokenHash);
     if (!isRefreshTokenValid) {
@@ -230,7 +230,7 @@ export class AuthService {
       include: { roles: true },
     });
     if (!user) {
-      throw new UnauthorizedException('Invalid token');
+      throw new UnauthorizedException('Invalid access token.');
     }
     return {
       items: [this.toAuthUserSummary(user)],

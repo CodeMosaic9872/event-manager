@@ -42,6 +42,9 @@ export class RequestOtpResponseDto {
   @ApiProperty({ example: true })
   sent!: boolean;
 
+  @ApiProperty({ example: 'OTP sent successfully.' })
+  message!: string;
+
   @ApiProperty({ example: 'fixed', enum: ['fixed', 'live'] })
   mode!: 'fixed' | 'live';
 
@@ -52,4 +55,7 @@ export class RequestOtpResponseDto {
 export class VerifyOtpResponseDto {
   @ApiProperty({ example: true })
   verified!: true;
+
+  @ApiProperty({ example: 'OTP verified successfully.' })
+  message!: string;
 }

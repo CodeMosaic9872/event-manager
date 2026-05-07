@@ -10,12 +10,14 @@ const ALLOWED_PURPOSES: ReadonlyArray<OtpPurpose> = ['register', 'login'];
 
 export interface RequestOtpResult {
   sent: boolean;
+  message: string;
   mode: 'fixed' | 'live';
   expiresAt: Date;
 }
 
 export interface VerifyOtpResult {
   verified: true;
+  message: string;
 }
 
 @Injectable()
@@ -55,13 +57,20 @@ export class OtpService {
 
     const result = await this.sms.sendOtp(phone, code);
     this.logger.log(`otp.requested phone=${this.maskPhone(phone)} purpose=${purpose} mode=${result.mode}`);
-    return { sent: true, mode: result.mode, expiresAt };
+    return {
+      sent: true,
+      message: fixed
+        ? 'OTP created in fixed mode. Use AUTH_FIXED_OTP_CODE to verify.'
+        : 'OTP sent successfully.',
+      mode: result.mode,
+      expiresAt,
+    };
   }
 
   async verifyOtp(rawPhone: string, code: string, purpose: OtpPurpose): Promise<VerifyOtpResult> {
     this.assertPurpose(purpose);
     if (!code || !/^\d{4,8}$/.test(code)) {
-      throw new BadRequestException('OTP code must be 4-8 digits');
+      throw new BadRequestException('Invalid OTP format. Code must be 4-8 digits.');
     }
     const phone = this.sms.normalizeIsraeliMobile(rawPhone);
 
@@ -76,10 +85,10 @@ export class OtpService {
     });
 
     if (!record) {
-      throw new UnauthorizedException('No active OTP request for this phone');
+      throw new UnauthorizedException('No active OTP request found. Please request a new OTP.');
     }
     if (record.attempts >= record.maxAttempts) {
-      throw new UnauthorizedException('OTP locked - too many attempts');
+      throw new UnauthorizedException('OTP is locked due to too many failed attempts. Please request a new OTP.');
     }
 
     const isMatch = await compare(code, record.codeHash);
@@ -88,7 +97,7 @@ export class OtpService {
         where: { id: record.id },
         data: { attempts: { increment: 1 } },
       });
-      throw new UnauthorizedException('Invalid OTP code');
+      throw new UnauthorizedException('Incorrect OTP code. Please try again.');
     }
 
     await this.prisma.otpRequest.update({
@@ -97,7 +106,7 @@ export class OtpService {
     });
 
     this.logger.log(`otp.verified phone=${this.maskPhone(phone)} purpose=${purpose}`);
-    return { verified: true };
+    return { verified: true, message: 'OTP verified successfully.' };
   }
 
   async consumeVerifiedOtp(rawPhone: string, purpose: OtpPurpose): Promise<void> {
@@ -116,7 +125,7 @@ export class OtpService {
     });
 
     if (!record) {
-      throw new UnauthorizedException('Phone is not OTP verified for this action');
+      throw new UnauthorizedException('Phone is not verified. Complete OTP verification and try again.');
     }
 
     await this.prisma.otpRequest.update({
