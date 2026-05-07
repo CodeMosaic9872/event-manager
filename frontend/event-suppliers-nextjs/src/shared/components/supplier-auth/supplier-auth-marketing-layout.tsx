@@ -62,7 +62,6 @@ export function SupplierAuthMarketingLayout({
   return (
     <MarketingPageShell
       showBackgroundImage
-      className="bg-white!"
       dir="rtl"
       lang="he"
     >

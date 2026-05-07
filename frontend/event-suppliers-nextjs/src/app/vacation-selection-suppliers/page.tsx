@@ -78,8 +78,7 @@ export default function VacationSelectionSuppliersPage() {
 
   return (
     <section className="relative mx-auto min-h-[2002px] w-full overflow-x-hidden bg-white">
-      <div className="absolute -top-px left-1/2 h-[1066px] w-[1824px] -translate-x-1/2 bg-[linear-gradient(180deg,#9BD3EF_0%,#FFFFFF_58%)]" />
-      <div className="pointer-events-none absolute left-[1361px] top-[732px] hidden h-[233px] w-[261px] rotate-149 rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60.33%)] blur-[20.5px] min-[1450px]:block" />
+      <div className="absolute -top-px left-1/2 h-[1066px] w-[1824px] -translate-x-1/2" />
 
       <div className="relative z-10 mx-auto flex w-full max-w-[1280px] flex-col gap-8 px-4 pt-20 sm:gap-10 sm:px-6 sm:pt-24 lg:px-8 lg:pt-[132px]">
         <div className="mx-auto w-full max-w-[1024px]">

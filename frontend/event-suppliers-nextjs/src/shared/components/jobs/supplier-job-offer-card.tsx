@@ -2,13 +2,18 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { JobSummaryResponse } from "@/shared/types";
 import { useAppSelector } from "@/store/hooks";
 import { JobIconDate, JobIconLocation } from "./job-public-icons";
-import { SubmitProposalModal } from "./submit-proposal-modal";
+
+const SubmitProposalModal = dynamic(
+  () => import("./submit-proposal-modal").then((m) => m.SubmitProposalModal),
+  { ssr: false },
+);
 
 function formatEventDate(iso: string | undefined) {
   if (!iso) return "—";

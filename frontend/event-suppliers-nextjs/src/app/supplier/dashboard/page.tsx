@@ -195,8 +195,14 @@ function ChipToggle({
 export default function SupplierDashboardPage() {
   const dispatch = useAppDispatch();
   const sessionUser = useAppSelector((state) => state.auth.user);
-  const { data: referralData } = useGetSupplierReferralLinkQuery();
-  const { data: recommendedJobs = [] } = useGetRecommendedSupplierJobsQuery();
+  const isAuthHydrated = useAppSelector((state) => state.auth.isHydrated);
+  const shouldSkipProtectedQueries = !isAuthHydrated || !sessionUser;
+  const { data: referralData } = useGetSupplierReferralLinkQuery(undefined, {
+    skip: shouldSkipProtectedQueries,
+  });
+  const { data: recommendedJobs = [] } = useGetRecommendedSupplierJobsQuery(undefined, {
+    skip: shouldSkipProtectedQueries,
+  });
   const draft = useAppSelector((state) => state.jobBoard.supplierDraft);
 
   const displayName = useMemo(() => displayNameFromUser(sessionUser?.email), [sessionUser?.email]);
@@ -284,19 +290,14 @@ export default function SupplierDashboardPage() {
         className="relative min-h-screen w-full overflow-x-hidden"
         style={{ fontFamily: marketingPloniFont }}
       >
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,#9BD3EF_0%,#FFFFFF_58.17%)]" />
-
         <div
-          className="pointer-events-none absolute h-[396px] w-[444px] -rotate-[119deg] rounded-[40%] bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] opacity-70 blur-[2.5px]"
-          style={{ right: "-120px", top: "80px", boxShadow: "6px 36px 38px 8px #84C4FF" }}
-        />
-        <div
-          className="pointer-events-none absolute h-[396px] w-[444px] rotate-[62deg] rounded-[40%] bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] opacity-60 blur-[2.5px]"
-          style={{ left: "-200px", top: "480px", boxShadow: "6px 36px 38px 8px #84C4FF" }}
-        />
-        <div
-          className="pointer-events-none absolute h-20 w-[89px] -rotate-[161deg] rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] opacity-50 blur-[13.5px]"
-          style={{ left: "120px", top: "100px", boxShadow: "2.5px 15px 16px 3px #84C4FF" }}
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage: "url('/background-1.png'), url('/background-2.png')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }}
         />
 
 

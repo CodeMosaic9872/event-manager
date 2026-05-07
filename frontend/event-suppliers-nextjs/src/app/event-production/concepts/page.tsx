@@ -7,7 +7,6 @@ export default function EventProductionConceptsPage() {
       dir="ltr"
       lang="en"
       showBackgroundImage
-      className="!bg-white"
       contentClassName="items-stretch pt-20 sm:pt-24 lg:pt-[150px]"
     >
       <EventConceptsClient />

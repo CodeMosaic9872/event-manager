@@ -2,21 +2,35 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useGetJobsQuery } from "@/shared/api/api";
+import { AdditionalSuppliersSection } from "@/features/suppliers/components/additional-suppliers-section";
 import {
   TenderSupplierProposalCard,
   type TenderSupplierProposal,
 } from "@/shared/components/tenders/tender-supplier-proposal-card";
-import { SupplierSelectionConfirmModal } from "@/shared/components/tenders/supplier-selection-confirm-modal";
-import { SupplierSelectionSuccessModal } from "@/shared/components/tenders/supplier-selection-success-modal";
-import { AdditionalSuppliersSection } from "@/shared/components/suppliers/additional-suppliers-section";
 import { demoSupplierJobOffers } from "@/shared/data/supplier-job-offers.demo";
 import { tenderSupplierProposalsDemo } from "@/shared/data/tender-supplier-proposals.demo";
 import { mergeJobList } from "@/shared/lib/merge-job-list";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
 import { useAppSelector } from "@/store/hooks";
+
+const SupplierSelectionConfirmModal = dynamic(
+  () =>
+    import("@/features/tenders/components/supplier-selection-modals").then(
+      (m) => m.SupplierSelectionConfirmModal,
+    ),
+  { ssr: false },
+);
+const SupplierSelectionSuccessModal = dynamic(
+  () =>
+    import("@/features/tenders/components/supplier-selection-modals").then(
+      (m) => m.SupplierSelectionSuccessModal,
+    ),
+  { ssr: false },
+);
 
 function formatEventDate(iso: string | undefined) {
   if (!iso) return "May 14, 2025";
@@ -69,24 +83,8 @@ export default function TenderSuppliersPage() {
       lang="he"
       style={{
         fontFamily: marketingPloniFont,
-        background: "linear-gradient(180deg, #9BD3EF 0%, #FFFFFF 58.17%)",
       }}
     >
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div
-          className="absolute -left-40 top-32 h-[396px] w-[444px] rotate-[62.64deg] rounded-[40%] bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] opacity-70 blur-[2.5px] shadow-[6px_36px_38px_8px_#84C4FF]"
-          aria-hidden
-        />
-        <div
-          className="absolute -right-32 top-[28%] h-[396px] w-[444px] rotate-[-119.56deg] rounded-[40%] bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] opacity-60 blur-[2.5px] shadow-[6px_36px_38px_8px_#84C4FF]"
-          aria-hidden
-        />
-        <div
-          className="absolute bottom-[18%] left-0 h-20 w-[89px] rotate-[-161.24deg] rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] opacity-50 blur-[13.5px] shadow-[2px_15px_16px_3px_#84C4FF]"
-          aria-hidden
-        />
-      </div>
-
       <div className="relative z-10 mx-auto w-full max-w-[1200px] px-5 sm:px-8 lg:px-10">
         <section className="mb-10 w-full">
           <div className="flex w-full flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">

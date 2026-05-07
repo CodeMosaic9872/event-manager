@@ -21,7 +21,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="he" dir="rtl" className={`${assistant.variable} h-full antialiased`} suppressHydrationWarning>
-      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900" suppressHydrationWarning>
+      <body
+        className="min-h-full flex flex-col text-slate-900"
+        style={{
+          backgroundImage: "url('/background-1.png'), url('/background-2.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "top center",
+          backgroundRepeat: "no-repeat",
+        }}
+        suppressHydrationWarning
+      >
         <Providers>
           <MainNav />
           <main className="flex w-full flex-1 flex-col">

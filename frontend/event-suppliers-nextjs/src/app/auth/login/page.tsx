@@ -186,7 +186,6 @@ function LoginForm() {
               alt=""
               width={18}
               height={18}
-              unoptimized
             />
           </span>
         </button>

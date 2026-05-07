@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useEffect, useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useGetJobsQuery } from "@/shared/api/api";
+import { AdditionalSuppliersSection } from "@/features/suppliers/components/additional-suppliers-section";
 import { SupplierJobOfferCard } from "@/shared/components/jobs/supplier-job-offer-card";
-import { AdditionalSuppliersSection } from "@/shared/components/suppliers/additional-suppliers-section";
 import { demoSupplierJobOffers } from "@/shared/data/supplier-job-offers.demo";
 import { mergeJobList } from "@/shared/lib/merge-job-list";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
@@ -63,7 +63,6 @@ function QuickActionCard(props: {
               width={18}
               height={19}
               className="h-[19px] w-[18px] brightness-0 invert"
-              unoptimized
             />
           </div>
         </div>
@@ -85,7 +84,6 @@ function QuickActionCard(props: {
               height={8}
               className="h-2.5 w-auto shrink-0 brightness-0 invert"
               aria-hidden
-              unoptimized
             />
             {buttonLabel}
           </Link>
@@ -138,24 +136,8 @@ export default function UserDashboardPage() {
       lang="he"
       style={{
         fontFamily: marketingPloniFont,
-        background: "linear-gradient(180deg, #9BD3EF 0%, #FFFFFF 58.17%)",
       }}
     >
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div
-          className="absolute -left-40 top-32 h-[396px] w-[444px] rotate-[62.64deg] rounded-[40%] bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] opacity-70 blur-[2.5px] shadow-[6px_36px_38px_8px_#84C4FF]"
-          aria-hidden
-        />
-        <div
-          className="absolute -right-32 top-[28%] h-[396px] w-[444px] rotate-[-119.56deg] rounded-[40%] bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] opacity-60 blur-[2.5px] shadow-[6px_36px_38px_8px_#84C4FF]"
-          aria-hidden
-        />
-        <div
-          className="absolute bottom-[18%] left-0 h-20 w-[89px] rotate-[-161.24deg] rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] opacity-50 blur-[13.5px] shadow-[2px_15px_16px_3px_#84C4FF]"
-          aria-hidden
-        />
-      </div>
-
       <div className="relative z-10 mx-auto w-full max-w-[1200px] px-5 sm:px-8 lg:px-10">
         <div className="flex w-full flex-col text-start">
           <header className="mb-6 w-full lg:mb-8">
@@ -258,7 +240,6 @@ export default function UserDashboardPage() {
                           height={8}
                           className="h-2.5 w-auto shrink-0 brightness-0 invert"
                           aria-hidden
-                          unoptimized
                         />
                         Tendering
                       </Link>

@@ -198,7 +198,7 @@ function SupplierRegisterInner() {
                 maxLength={1}
                 value={digit}
                 onChange={(e) => setOtpDigit(i, e.target.value)}
-                className="box-border size-14 rounded-xl border border-black/10 bg-white text-center text-[18px] tabular-nums outline-none backdrop-blur-[8px] focus:ring-2 focus:ring-[#4721DF]/30"
+                className="box-border size-14 rounded-xl border border-black/10 bg-white text-center text-[18px] tabular-nums outline-none backdrop-blur-sm focus:ring-2 focus:ring-[#4721DF]/30"
                 aria-label={`Digit ${i + 1}`}
               />
             ))}
@@ -230,7 +230,6 @@ function SupplierRegisterInner() {
               alt=""
               width={18}
               height={18}
-              unoptimized
             />
           </span>
         </button>

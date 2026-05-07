@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, Suspense, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -15,7 +15,7 @@ function parseBudgetValue(raw: string) {
   return Number(onlyDigits) || undefined;
 }
 
-export default function PublishJobPage() {
+function PublishJobContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
@@ -274,5 +274,13 @@ export default function PublishJobPage() {
         )}
       </section>
     </MarketingPageShell>
+  );
+}
+
+export default function PublishJobPage() {
+  return (
+    <Suspense fallback={<div className="min-h-[40vh]" />}>
+      <PublishJobContent />
+    </Suspense>
   );
 }

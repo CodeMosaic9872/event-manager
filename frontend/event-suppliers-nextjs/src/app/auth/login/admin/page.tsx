@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { setCredentials } from "@/features/auth/auth-slice";
 import {
@@ -12,7 +12,7 @@ import { supplierAuthContactInputClass } from "@/shared/components/supplier-auth
 import { getSafeInternalRedirectPath } from "@/shared/lib/safe-redirect-path";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
-export default function AdminLoginPage() {
+function AdminLoginContent() {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -127,10 +127,18 @@ export default function AdminLoginPage() {
         >
           <span>Login as admin</span>
           <span className={otpComplete ? "opacity-90 brightness-0 invert" : "opacity-70"} aria-hidden>
-            <Image src="/go-to.svg" alt="" width={18} height={18} unoptimized />
+            <Image src="/go-to.svg" alt="" width={18} height={18} />
           </span>
         </button>
       </form>
     </SupplierAuthMarketingLayout>
+  );
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-[30vh]" />}>
+      <AdminLoginContent />
+    </Suspense>
   );
 }

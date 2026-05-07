@@ -1,16 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Provider } from "react-redux";
 import { store } from "@/store";
-import { hydrateAuth } from "@/features/auth/auth-slice";
+import { hydrateAuth, markAuthHydrated } from "@/features/auth/auth-slice";
 import type { AuthUser } from "@/shared/types";
 
 const AUTH_STORAGE_KEY = "event-suppliers/auth";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const [hydrated, setHydrated] = useState(false);
-
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(AUTH_STORAGE_KEY);
@@ -29,9 +27,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
             aiMessageCount: parsed.aiMessageCount ?? 0,
           }),
         );
+      } else {
+        store.dispatch(markAuthHydrated());
       }
     } catch {
       /* ignore malformed persisted auth */
+      store.dispatch(markAuthHydrated());
     }
 
     const unsubscribe = store.subscribe(() => {
@@ -51,10 +52,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       );
     });
 
-    setHydrated(true);
     return () => unsubscribe();
   }, []);
-
-  if (!hydrated) return null;
   return <Provider store={store}>{children}</Provider>;
 }

@@ -17,7 +17,7 @@ export default function NotificationsPage() {
   const state = data || local;
 
   return (
-    <section className="mx-auto w-full max-w-[1200px] rounded-[24px] border border-[#bfdbfe] bg-[linear-gradient(180deg,#9BD3EF_0%,#FFFFFF_58%)] p-8">
+    <section className="mx-auto w-full max-w-[1200px] rounded-[24px] border border-[#bfdbfe] p-8">
       <div className="rounded-2xl border border-[#4721df] bg-[rgba(198,220,255,0.30)] p-5">
         <h1 className="text-3xl text-[#201c44]">מרכז התראות</h1>
         <p className="mt-1 text-sm text-slate-600">ניהול התראות אימייל ו-Push עבור פעילות דרושים וספקים.</p>

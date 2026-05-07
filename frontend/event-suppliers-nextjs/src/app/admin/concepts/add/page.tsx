@@ -124,11 +124,9 @@ export default function AdminAddConceptPage() {
     <ProtectedRoute roles={["admin"]}>
       <section
         dir="rtl"
-        className="relative mx-auto min-h-screen w-full max-w-[1440px] overflow-x-hidden bg-[linear-gradient(180deg,#9BD3EF_0%,#FFFFFF_58%)] px-4 pb-16 pt-24 sm:px-6"
+        className="relative mx-auto min-h-screen w-full max-w-[1440px] overflow-x-hidden px-4 pb-16 pt-24 sm:px-6"
         style={{ fontFamily: marketingPloniFont }}
       >
-        <div className="pointer-events-none absolute -left-24 top-24 h-[300px] w-[340px] rotate-62 rounded-[40%] bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] opacity-70 blur-[2.5px]" />
-        <div className="pointer-events-none absolute -right-24 top-72 h-[300px] w-[340px] rotate-[-119deg] rounded-[40%] bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] opacity-70 blur-[2.5px]" />
 
         <div className="relative z-10 mx-auto w-full max-w-[1100px]">
           <header className="mb-8 text-right">

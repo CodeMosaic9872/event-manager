@@ -28,7 +28,7 @@ export function MarketingPageShell({
 }: MarketingPageShellProps) {
   return (
     <section
-      className={`relative min-h-screen w-full overflow-x-hidden bg-[#F1F5F9] ${className}`.trim()}
+      className={`relative min-h-screen w-full overflow-x-hidden ${className}`.trim()}
       {...(dir !== undefined ? { dir } : {})}
       {...(lang !== undefined ? { lang } : {})}
     >

@@ -1,9 +1,9 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { MarketingPageShell } from "@/shared/components/marketing-page-shell";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
-import { RegistrationQuotaModal } from "./registration-quota-modal";
 import { addMessage, clearMessages } from "@/features/ai-planner/ai-planner-slice";
 import { incrementAiMessageCount } from "@/features/auth/auth-slice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -112,6 +112,11 @@ const QUICK_CHIPS: { label: string; prompt: string; icon: ChipIconName }[] = [
   { label: "Bar/Bat Mitzvah", prompt: "Bar/Bat Mitzvah", icon: "sparkles" },
   { label: "Help me choose", prompt: "Help me choose", icon: "help" },
 ];
+
+const RegistrationQuotaModal = dynamic(
+  () => import("./registration-quota-modal").then((m) => m.RegistrationQuotaModal),
+  { ssr: false },
+);
 
 export default function AiPlannerPage() {
   const [prompt, setPrompt] = useState("");

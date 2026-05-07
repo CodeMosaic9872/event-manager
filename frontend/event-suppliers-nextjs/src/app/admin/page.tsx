@@ -94,13 +94,10 @@ export default function AdminPage() {
   return (
     <ProtectedRoute roles={["admin"]}>
       <section
-        className="relative mx-auto min-h-screen w-full overflow-x-hidden bg-[linear-gradient(180deg,#9BD3EF_0%,#FFFFFF_58%)] px-4 pb-14 pt-24 sm:px-6"
+        className="relative mx-auto min-h-screen w-full overflow-x-hidden px-4 pb-14 pt-24 sm:px-6"
         style={{ fontFamily: marketingPloniFont }}
         dir="rtl"
       >
-        <div className="pointer-events-none absolute -left-28 top-28 h-[396px] w-[444px] rotate-62 rounded-[40%] bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] opacity-70 blur-[2.5px]" />
-        <div className="pointer-events-none absolute -right-28 top-52 h-[396px] w-[444px] rotate-[-119deg] rounded-[40%] bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] opacity-70 blur-[2.5px]" />
-        <div className="pointer-events-none absolute -left-4 top-[860px] h-20 w-[89px] rotate-[-161deg] rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] opacity-60 blur-[13.5px]" />
 
         <div className="relative z-10 mx-auto flex w-full max-w-[1220px] flex-col gap-8">
           <div className="flex flex-col-reverse gap-6 lg:flex-row-reverse lg:items-center lg:justify-between">
@@ -125,7 +122,7 @@ export default function AdminPage() {
               >
                 <div className="flex flex-row-reverse items-start justify-between gap-4">
                   <span className="inline-flex rounded-lg bg-[#6AB7FF] p-2">
-                    <Image src={card.icon} alt="" width={22} height={16} unoptimized />
+                    <Image src={card.icon} alt="" width={22} height={16} />
                   </span>
                   <div className="text-right">
                     <p className="text-sm leading-5 text-black">{card.title}</p>
@@ -162,7 +159,7 @@ export default function AdminPage() {
                 {SUPPLIER_METRICS.map((row) => (
                   <div key={row.metric} className="flex items-center justify-between gap-4">
                     <span className="inline-flex size-10 items-center justify-center rounded-xl bg-[#6AB7FF]">
-                      <Image src={row.icon} alt="" width={20} height={20} unoptimized />
+                      <Image src={row.icon} alt="" width={20} height={20} />
                     </span>
                     <div className="flex flex-1 items-center justify-between gap-4 text-[#201C44]">
                       <span className="w-20 text-left text-sm">{row.month}</span>

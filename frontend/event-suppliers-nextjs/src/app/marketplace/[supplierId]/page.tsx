@@ -15,7 +15,7 @@ export default function SupplierProfilePage() {
   if (!supplier) return <section className="card">הספק לא נמצא.</section>;
 
   return (
-    <section className="relative mx-auto w-full max-w-[1300px] overflow-hidden rounded-[24px] border border-[#bfdbfe] bg-[linear-gradient(180deg,#9BD3EF_0%,#FFFFFF_58%)] pb-12">
+    <section className="relative mx-auto w-full max-w-[1300px] overflow-hidden rounded-[24px] border border-[#bfdbfe] pb-12">
       <div className="h-[180px] bg-[url('https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?q=80&w=1600&auto=format&fit=crop')] bg-cover bg-center" />
       <div className="-mt-20 text-center">
         <div className="mx-auto size-60 rounded-full border-4 border-white bg-[url('https://images.unsplash.com/photo-1566753323558-f4e0952af115?q=80&w=800&auto=format&fit=crop')] bg-cover bg-center shadow-xl" />

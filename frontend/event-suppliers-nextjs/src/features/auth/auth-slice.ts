@@ -6,6 +6,7 @@ type AuthState = {
   accessToken: string | null;
   refreshToken: string | null;
   aiMessageCount: number;
+  isHydrated: boolean;
 };
 
 const initialState: AuthState = {
@@ -13,6 +14,7 @@ const initialState: AuthState = {
   accessToken: null,
   refreshToken: null,
   aiMessageCount: 0,
+  isHydrated: false,
 };
 
 const ROLE_PRIORITY: UserRole[] = ["admin", "supplier", "user", "guest"];
@@ -46,6 +48,7 @@ const authSlice = createSlice({
       state.accessToken = action.payload.accessToken ?? null;
       state.refreshToken = action.payload.refreshToken ?? null;
       state.aiMessageCount = action.payload.aiMessageCount ?? 0;
+      state.isHydrated = true;
     },
     setCredentials: (
       state,
@@ -82,12 +85,17 @@ const authSlice = createSlice({
       }
       state.accessToken = action.payload.accessToken ?? null;
       state.refreshToken = action.payload.refreshToken ?? null;
+      state.isHydrated = true;
+    },
+    markAuthHydrated: (state) => {
+      state.isHydrated = true;
     },
     logout: (state) => {
       state.user = null;
       state.accessToken = null;
       state.refreshToken = null;
       state.aiMessageCount = 0;
+      state.isHydrated = true;
     },
     incrementAiMessageCount: (state) => {
       state.aiMessageCount += 1;
@@ -95,5 +103,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { hydrateAuth, setCredentials, logout, incrementAiMessageCount } = authSlice.actions;
+export const { hydrateAuth, setCredentials, markAuthHydrated, logout, incrementAiMessageCount } =
+  authSlice.actions;
 export default authSlice.reducer;

@@ -13,10 +13,12 @@ export function ProtectedRoute({
   roles: UserRole[];
 }) {
   const user = useAppSelector((state) => state.auth.user);
+  const isHydrated = useAppSelector((state) => state.auth.isHydrated);
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
+    if (!isHydrated) return;
     if (!user) {
       const needsAdminAccess = roles.includes("admin");
       const needsSupplierAccess = roles.includes("supplier");
@@ -31,8 +33,9 @@ export function ProtectedRoute({
     if (!user.roles.some((role) => roles.includes(role))) {
       router.replace("/");
     }
-  }, [user, router, roles, pathname]);
+  }, [isHydrated, user, router, roles, pathname]);
 
+  if (!isHydrated) return null;
   if (!user || !user.roles.some((role) => roles.includes(role))) return null;
   return <>{children}</>;
 }

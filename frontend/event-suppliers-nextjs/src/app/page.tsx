@@ -35,20 +35,15 @@ export default function Home() {
 
   return (
     <section className="relative mx-auto w-full overflow-hidden bg-white">
-      <div className="absolute left-0 top-0 min-h-[1163px] w-full bg-[linear-gradient(180deg,#9BD3EF_0%,#FFFFFF_58%)] lg:h-[1163px]" />
       <div
-        className="pointer-events-none absolute left-1/2 h-[1975.43px] w-[min(1440px,calc(100vw+80px))] max-w-none -translate-x-1/2 rotate-[-179.98deg] bg-[url('/2.png')] bg-cover bg-center bg-no-repeat md:left-[329.7px] md:w-[1440px] md:translate-x-0"
-        style={{ top: 1163.57 }}
-        aria-hidden="true"
+        className="absolute left-0 top-0 min-h-[1163px] w-full lg:h-[1163px]"
+        style={{
+          backgroundImage: "url('/background-1.png'), url('/background-2.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "top center",
+          backgroundRepeat: "no-repeat",
+        }}
       />
-
-      <div className="pointer-events-none absolute left-[-140px] top-[110px] size-[min(300px,55vw)] max-w-[300px] rotate-58 rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] blur-[3px] md:left-[-160px] md:size-[360px]" />
-      <div className="pointer-events-none absolute right-[-150px] top-[70px] size-[min(340px,60vw)] max-w-[340px] rotate-[-120deg] rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] blur-[3px] md:right-[-180px] md:size-[420px]" />
-      <div className="pointer-events-none absolute left-[-95px] top-[2050px] size-[min(300px,55vw)] max-w-[300px] rotate-99 rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] blur-[3px] md:top-[2180px] md:size-[360px]" />
-      <div className="pointer-events-none absolute right-[-60px] top-[1560px] size-[min(180px,35vw)] max-w-[180px] rotate-149 rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] blur-[20px] md:right-0 md:size-[230px]" />
-      <div className="pointer-events-none absolute left-[515px] top-[132px] hidden h-[79px] w-[89px] rotate-[-161deg] rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60.33%)] blur-[13.5px] min-[1100px]:block" />
-      <div className="pointer-events-none absolute left-[407px] top-[1213px] hidden h-[79px] w-[89px] rotate-[-161deg] rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60.33%)] blur-[13.5px] min-[1100px]:block" />
-
       <div className="relative z-10 mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8 pt-10 sm:pt-44">
         <div className="mx-auto flex w-full max-w-[892px] flex-col items-center gap-5 text-center lg:gap-7">
           <div className="flex w-full flex-col items-center">

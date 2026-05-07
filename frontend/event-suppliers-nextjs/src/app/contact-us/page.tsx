@@ -41,7 +41,7 @@ export default function ContactUsPage() {
   return (
     <MarketingPageShell
       showBackgroundImage={false}
-      className="min-h-screen bg-[linear-gradient(180deg,#E3F0FC_0%,#FFFFFF_58%)]"
+      className="min-h-screen"
       contentClassName="!max-w-[1440px] !items-stretch !px-4 !pb-20 !pt-20 sm:!px-6 sm:!pt-24 lg:!pt-[123px]"
       dir="ltr"
       lang="en"
@@ -49,8 +49,7 @@ export default function ContactUsPage() {
       <div className="mx-auto w-full max-w-[800px]" style={{ fontFamily: marketingPloniFont }}>
         <header className="mb-10 text-center">
           <h1 className="text-[clamp(2.5rem,6vw,3.75rem)] font-normal leading-[0.95] tracking-tight text-[#00113A]">
-            <span className="block">Contact</span>
-            <span className="block">US</span>
+            <span className="block">Contact Us</span>
           </h1>
           <p className="mx-auto mt-5 max-w-[540px] text-base leading-6 text-[#444650] sm:text-lg sm:leading-7">
             We are here for any questions or consultations, our team is always available to you.
