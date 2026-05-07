@@ -1,17 +1,18 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsIn, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsEmail, IsIn, IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
 
 export class RegisterDto {
   @ApiProperty({ description: 'User email', example: 'user@example.com' })
   @IsEmail()
   email!: string;
 
-  @ApiPropertyOptional({ description: 'Password for local auth', minLength: 8, example: 'StrongPass123!' })
-  @IsOptional()
+  @ApiProperty({
+    description: 'User mobile phone (Israeli mobile, e.g. 05XXXXXXXX or +9725XXXXXXXX). Must be OTP-verified before calling /auth/register.',
+    example: '0501234567',
+  })
   @IsString()
-  @MinLength(8)
-  @MaxLength(128)
-  password?: string;
+  @IsNotEmpty()
+  phone!: string;
 
   @ApiPropertyOptional({
     description: 'Role to register/extend',
@@ -29,12 +30,13 @@ export class LoginDto {
   @IsEmail()
   email!: string;
 
-  @ApiPropertyOptional({ description: 'Password for local auth', minLength: 8, example: 'StrongPass123!' })
-  @IsOptional()
+  @ApiProperty({
+    description: 'User mobile phone (Israeli mobile, e.g. 05XXXXXXXX or +9725XXXXXXXX). Must be OTP-verified before calling /auth/login.',
+    example: '0501234567',
+  })
   @IsString()
-  @MinLength(8)
-  @MaxLength(128)
-  password?: string;
+  @IsNotEmpty()
+  phone!: string;
 }
 
 export class RefreshDto {
@@ -59,4 +61,50 @@ export class LinkAnonymousDto {
   @ApiProperty({ description: 'Anonymous token to link', example: 'anon_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' })
   @IsString()
   anonymousToken!: string;
+}
+
+export class RequestOtpDto {
+  @ApiProperty({
+    description: 'Israeli mobile phone (e.g. 05XXXXXXXX or +9725XXXXXXXX)',
+    example: '0501234567',
+  })
+  @IsString()
+  @IsNotEmpty()
+  phone!: string;
+
+  @ApiProperty({
+    description: 'OTP purpose - register or login',
+    enum: ['register', 'login'],
+    example: 'register',
+  })
+  @IsString()
+  @IsIn(['register', 'login'])
+  purpose!: 'register' | 'login';
+}
+
+export class VerifyOtpDto {
+  @ApiProperty({
+    description: 'Israeli mobile phone (e.g. 05XXXXXXXX or +9725XXXXXXXX)',
+    example: '0501234567',
+  })
+  @IsString()
+  @IsNotEmpty()
+  phone!: string;
+
+  @ApiProperty({
+    description: '6-digit OTP code received via SMS',
+    example: '123456',
+  })
+  @IsString()
+  @Matches(/^\d{4,8}$/, { message: 'code must be 4-8 digits' })
+  code!: string;
+
+  @ApiProperty({
+    description: 'OTP purpose - must match the purpose used in /auth/request-otp',
+    enum: ['register', 'login'],
+    example: 'register',
+  })
+  @IsString()
+  @IsIn(['register', 'login'])
+  purpose!: 'register' | 'login';
 }
