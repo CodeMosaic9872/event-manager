@@ -2,10 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { FormEvent, Suspense, useState } from "react";
+import { FormEvent, Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { setCredentials } from "@/features/auth/auth-slice";
-import { useLoginMutation } from "@/shared/api/api";
+import { useLoginMutation, useRequestOtpMutation, useVerifyOtpMutation } from "@/shared/api/api";
 import { supplierAuthContactInputClass } from "@/shared/components/supplier-auth/supplier-auth-glass-card";
 import {
   SupplierAuthMailIcon,
@@ -17,9 +17,23 @@ import {
 } from "@/shared/lib/safe-redirect-path";
 import { useAppDispatch } from "@/store/hooks";
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_RE = /^[\d\s\-+()]{7,15}$/;
+const PURPOSE = "login" as const;
+
+function validateContact(value: string, mode: "email" | "phone"): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return "Please enter your email or phone number.";
+  if (mode === "email" && !EMAIL_RE.test(trimmed)) return "Please enter a valid email address.";
+  if (mode === "phone" && !PHONE_RE.test(trimmed)) return "Please enter a valid phone number.";
+  return null;
+}
+
 function LoginForm() {
   const dispatch = useAppDispatch();
-  const [login, { isLoading }] = useLoginMutation();
+  const [login, { isLoading: isLoggingIn }] = useLoginMutation();
+  const [requestOtp, { isLoading: isRequestingOtp }] = useRequestOtpMutation();
+  const [verifyOtp, { isLoading: isVerifyingOtp }] = useVerifyOtpMutation();
   const router = useRouter();
   const searchParams = useSearchParams();
   const nextParam = searchParams.get("next");
@@ -28,8 +42,25 @@ function LoginForm() {
     : "/auth/login/supplier";
   const [contact, setContact] = useState("");
   const [contactMode, setContactMode] = useState<"email" | "phone">("email");
-  const [otp, setOtp] = useState(["", "", "", ""]);
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [otpSent, setOtpSent] = useState(false);
   const [error, setError] = useState("");
+
+  const contactError = useMemo(() => validateContact(contact, contactMode), [contact, contactMode]);
+  const canRequestOtp = !isRequestingOtp && contact.trim().length > 0 && !contactError;
+
+  const handleRequestOtp = async () => {
+    if (!canRequestOtp) return;
+    setError("");
+    try {
+      await requestOtp({ phone: contact.trim(), purpose: PURPOSE }).unwrap();
+      setOtpSent(true);
+    } catch {
+      setError("Failed to send verification code. Please try again.");
+    }
+  };
+
+  const otpComplete = otp.every((digit) => digit.length === 1);
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -38,26 +69,29 @@ function LoginForm() {
     const loginIdentity = contact.trim();
 
     if (!loginIdentity) {
-      setError("נא להזין אימייל או מספר טלפון.");
+      setError("Please enter your email or phone number.");
       return;
     }
-    if (otpCode.length !== 4) {
-      setError("נא להזין קוד אימות בן 4 ספרות.");
+    if (otpCode.length !== 6) {
+      setError("Please enter a 6-digit verification code.");
       return;
     }
 
     try {
-      const payload = await login({ email: loginIdentity, password: otpCode }).unwrap();
+      await verifyOtp({ phone: loginIdentity, code: otpCode, purpose: PURPOSE }).unwrap();
+    } catch {
+      setError("Invalid verification code. Please try again.");
+      return;
+    }
+
+    try {
+      const payload = await login({ email: loginIdentity, phone: loginIdentity }).unwrap();
       const roles = payload.user.roles.map(
         (role) => role.toLowerCase() as "user" | "supplier" | "admin",
       );
       dispatch(
         setCredentials({
-          user: {
-            id: payload.user.id,
-            email: payload.user.email,
-            roles,
-          },
+          user: { id: payload.user.id, email: payload.user.email, roles },
           accessToken: payload.accessToken,
           refreshToken: payload.refreshToken,
         }),
@@ -66,32 +100,21 @@ function LoginForm() {
         getSafeInternalRedirectPath(nextParam, getPostLoginFallbackPath(roles)),
       );
     } catch {
-      setError("ההתחברות נכשלה, נוצר משתמש דמו להמשך פיתוח.");
-      dispatch(
-        setCredentials({
-          user: { id: "demo-user", email: loginIdentity, roles: ["user"] },
-        }),
-      );
-      router.push(
-        getSafeInternalRedirectPath(nextParam, getPostLoginFallbackPath(["user"])),
-      );
+      setError("Login failed. Please try again.");
     }
   };
 
-  const otpComplete = otp.every((digit) => digit.length === 1);
   const setOtpDigit = (index: number, value: string) => {
     const v = value.replace(/\D/g, "").slice(-1);
     const nextOtp = [...otp];
     nextOtp[index] = v;
     setOtp(nextOtp);
-    if (v && index < 3) {
+    if (v && index < 5) {
       document.getElementById(`user-otp-${index + 1}`)?.focus();
     }
   };
 
-  const handleGetCode = () => {
-    /* placeholder — wire to OTP API */
-  };
+  const isLoading = isRequestingOtp || isVerifyingOtp || isLoggingIn;
 
   return (
     <SupplierAuthMarketingLayout
@@ -123,21 +146,31 @@ function LoginForm() {
             />
             <SupplierAuthMailIcon />
           </div>
+          {contactError && contact.trim() ? (
+            <p className="pe-1 text-right text-xs text-red-600">{contactError}</p>
+          ) : null}
         </div>
 
         <button
           type="button"
-          onClick={handleGetCode}
-          className="flex h-14 w-full flex-col items-center justify-center rounded-[99px] bg-[#201C44] px-4 text-[24px] font-normal leading-6 text-white transition hover:bg-[#151238]"
+          onClick={handleRequestOtp}
+          disabled={!canRequestOtp}
+          className={`flex h-14 w-full flex-col items-center justify-center rounded-[99px] px-4 text-[24px] font-normal leading-6 text-white transition ${
+            canRequestOtp
+              ? "cursor-pointer bg-[#201C44] hover:bg-[#151238]"
+              : "cursor-not-allowed bg-[#201C44] opacity-60"
+          }`}
         >
-          Getting a code
+          {isRequestingOtp ? "Sending..." : otpSent ? "Send again" : "Getting a code"}
         </button>
 
         <div className="flex w-full flex-col gap-4 border-t border-black/10 pt-4">
           <div className="flex w-full flex-row items-center justify-between gap-4">
             <button
               type="button"
-              className="shrink-0 text-left text-[12px] leading-4 text-[#201C44] hover:underline"
+              onClick={handleRequestOtp}
+              disabled={!canRequestOtp}
+              className="shrink-0 cursor-pointer text-left text-[12px] leading-4 text-[#201C44] hover:underline disabled:cursor-not-allowed disabled:opacity-50"
             >
               Send again
             </button>
@@ -145,7 +178,7 @@ function LoginForm() {
               Enter verification code (OTP)
             </span>
           </div>
-          <div className="flex w-full flex-row justify-center gap-[29px]">
+          <div className="flex w-full flex-row justify-center gap-2">
             {otp.map((digit, index) => (
               <input
                 key={index}
@@ -168,7 +201,7 @@ function LoginForm() {
           disabled={!otpComplete || isLoading}
           className={`flex h-[58px] w-full flex-row items-center justify-center gap-2 rounded-[99px] border px-4 text-[16px] font-normal leading-6 transition ${
             otpComplete && !isLoading
-              ? "border-transparent bg-[#201C44] text-white hover:bg-[#151238]"
+              ? "cursor-pointer border-transparent bg-[#201C44] text-white hover:bg-[#151238]"
               : "cursor-not-allowed border-black/10 bg-black/10 text-black opacity-100"
           }`}
         >

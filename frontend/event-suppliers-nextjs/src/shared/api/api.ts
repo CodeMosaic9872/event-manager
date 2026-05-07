@@ -33,6 +33,8 @@ export const api = createApi({
 export const {
   useLoginMutation,
   useRegisterMutation,
+  useRequestOtpMutation,
+  useVerifyOtpMutation,
   useRefreshTokenMutation,
   useMeQuery,
   useGetSuppliersQuery,
