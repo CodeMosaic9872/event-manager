@@ -29,7 +29,7 @@ export function MainNav() {
                   התחברות
                 </Link>
                 <Link
-                  href="/auth/register"
+                  href="/join-supplier"
                   className="flex h-[39px] w-[139px] items-center justify-center rounded-[99px] border border-[#4721DF] text-center text-sm leading-[14px] text-[#4721DF]"
                 >
                   הצטרף כספק
@@ -48,7 +48,7 @@ export function MainNav() {
               תכנון עם AI
             </Link>
             <Link
-              href="/event-production/supplier-categories"
+              href="/event-production/concepts"
               className="flex h-[49px] min-w-[97px] items-center justify-center px-2.5 text-center text-black! visited:text-black! hover:text-black!"
             >
               קונספטים
@@ -79,7 +79,7 @@ export function MainNav() {
               <Link href="/auth/login" className="text-[#4721DF]">
                 התחברות
               </Link>
-              <Link href="/auth/register" className="rounded-full border border-[#4721DF] px-2 py-1 text-[#4721DF]">
+              <Link href="/join-supplier" className="rounded-full border border-[#4721DF] px-2 py-1 text-[#4721DF]">
                 הצטרפות
               </Link>
             </>

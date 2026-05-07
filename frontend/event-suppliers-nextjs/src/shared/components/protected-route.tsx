@@ -18,7 +18,14 @@ export function ProtectedRoute({
 
   useEffect(() => {
     if (!user) {
-      router.replace(`/auth/login?next=${encodeURIComponent(pathname)}`);
+      const needsAdminAccess = roles.includes("admin");
+      const needsSupplierAccess = roles.includes("supplier");
+      const loginBase = needsAdminAccess
+        ? "/auth/login/admin"
+        : needsSupplierAccess
+          ? "/auth/login/supplier"
+          : "/auth/login";
+      router.replace(`${loginBase}?next=${encodeURIComponent(pathname)}`);
       return;
     }
     if (!user.roles.some((role) => roles.includes(role))) {

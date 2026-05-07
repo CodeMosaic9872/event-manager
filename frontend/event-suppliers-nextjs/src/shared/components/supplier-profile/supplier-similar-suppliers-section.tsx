@@ -9,12 +9,12 @@ export function SupplierSimilarSuppliersSection({ items }: SupplierSimilarSuppli
     "drop-shadow(-84px 261px 110px rgba(0, 0, 0, 0.01)) drop-shadow(-47px 147px 92px rgba(0, 0, 0, 0.05)) drop-shadow(-21px 65px 68px rgba(0, 0, 0, 0.09)) drop-shadow(-5px 16px 38px rgba(0, 0, 0, 0.1))";
 
   return (
-    <section className="mx-auto flex w-full max-w-[1280px] flex-col items-start gap-8 px-5 py-16 lg:px-20">
+    <section className="mx-auto flex w-full max-w-[1280px] flex-col items-start gap-8 px-4 py-12 sm:px-5 sm:py-16 lg:px-20">
       <div className="flex h-8 w-full max-w-[1120px] flex-col items-end">
         <h3 className="text-right text-2xl leading-8 text-black">אולי יעניין אותך גם</h3>
       </div>
       <div
-        className="flex w-full max-w-[1120px] flex-row flex-wrap justify-center gap-6 dir-ltr"
+        className="flex w-full max-w-[1120px] flex-row flex-wrap justify-center gap-4 dir-ltr sm:gap-6"
         style={{ filter: dropShadow }}
       >
         {items.map((item) => (

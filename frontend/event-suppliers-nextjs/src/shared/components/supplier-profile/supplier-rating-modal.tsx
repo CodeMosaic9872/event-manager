@@ -1,7 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useCallback, useEffect, useState, type MouseEvent } from "react";
+import { useState } from "react";
+import { MarketingModal, MARKETING_ICE_SURFACE_CLASS } from "@/shared/components/marketing-modal";
 
 type SupplierRatingModalProps = {
   open: boolean;
@@ -42,41 +43,20 @@ export function SupplierRatingModal({
   const [fullName, setFullName] = useState("");
   const [review, setReview] = useState("");
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prev;
-    };
-  }, [open, onClose]);
-
-  const handleBackdropClick = useCallback(
-    (e: MouseEvent<HTMLDivElement>) => {
-      if (e.target === e.currentTarget) onClose();
-    },
-    [onClose],
-  );
-
-  if (!open) return null;
-
   return (
-    <div
-      role="presentation"
-      className="fixed inset-0 z-200 flex items-center justify-center overflow-hidden bg-[rgba(15,23,42,0.5)] p-4 sm:p-6"
-      onClick={handleBackdropClick}
+    <MarketingModal
+      open={open}
+      onClose={onClose}
+      backdrop="slate"
+      zClass="z-[200]"
+      closeOnBackdropClick
+      closeOnEscape
     >
       <div
         role="dialog"
         aria-modal
         aria-labelledby="supplier-rating-title"
-        className="relative max-h-[calc(100dvh-2rem)] w-full max-w-[712px] overflow-x-hidden overflow-y-auto overscroll-contain rounded-[24px] border border-[rgba(134,85,246,0.2)] bg-[#E3F0FC] shadow-[0px_8px_32px_rgba(0,0,0,0.37)] backdrop-blur-[6px] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        onClick={(e) => e.stopPropagation()}
+        className={`${MARKETING_ICE_SURFACE_CLASS} relative max-h-[calc(100dvh-2rem)] w-full max-w-[712px] overflow-x-hidden overflow-y-auto overscroll-contain`}
       >
         <div className="flex flex-col items-center gap-10 px-6 pb-10 pt-12 sm:gap-12 sm:px-[66px] sm:pb-12 sm:pt-14">
           <h2
@@ -177,6 +157,6 @@ export function SupplierRatingModal({
           </div>
         </div>
       </div>
-    </div>
+    </MarketingModal>
   );
 }

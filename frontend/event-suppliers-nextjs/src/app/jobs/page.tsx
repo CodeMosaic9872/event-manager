@@ -1,40 +1,128 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useGetJobsQuery } from "@/shared/api/api";
+import { MarketingPageShell } from "@/shared/components/marketing-page-shell";
+import { SupplierJobOfferCard } from "@/shared/components/jobs/supplier-job-offer-card";
+import { marketingPloniFont } from "@/shared/lib/marketing-typography";
+import { mergeJobList } from "@/shared/lib/merge-job-list";
+import { useAppSelector } from "@/store/hooks";
 
 export default function JobsPage() {
-  const { data: jobs = [], isLoading } = useGetJobsQuery();
+  const router = useRouter();
+  const pathname = usePathname();
+  const sessionUser = useAppSelector((state) => state.auth.user);
+  const localPublishedJobs = useAppSelector((state) => state.jobBoard.jobs);
+  const { data: apiJobs, isLoading } = useGetJobsQuery();
+  const [selectedCategory, setSelectedCategory] = useState("all");
+
+  const allJobs = useMemo(
+    () => mergeJobList(apiJobs, localPublishedJobs),
+    [apiJobs, localPublishedJobs],
+  );
+
+  const categoryOptions = useMemo(() => {
+    const set = new Set(
+      allJobs
+        .map((job) => (job.category ?? "").trim())
+        .filter((category) => category.length > 0),
+    );
+    return ["all", ...Array.from(set)];
+  }, [allJobs]);
+
+  const filtered = useMemo(() => {
+    if (selectedCategory === "all") return allJobs;
+    return allJobs.filter((job) => (job.category ?? "").trim() === selectedCategory);
+  }, [allJobs, selectedCategory]);
+
+  const isSupplierView = Boolean(
+    sessionUser?.roles.some((role) => role === "supplier" || role === "admin"),
+  );
+
+  useEffect(() => {
+    if (sessionUser) return;
+    router.replace(`/auth/login?next=${encodeURIComponent(pathname)}`);
+  }, [sessionUser, router, pathname]);
+
+  if (!sessionUser) return null;
+
   return (
-    <section className="mx-auto w-full max-w-[1200px] rounded-[24px] border border-[#bfdbfe] bg-[linear-gradient(180deg,#9BD3EF_0%,#FFFFFF_58%)] p-8">
-      <div className="mb-4 flex items-center justify-between rounded-2xl border border-[#201c44] bg-white/60 p-5">
-        <h1 className="text-3xl text-[#201c44]">עמוד הצעות עבודה</h1>
-        <Link href="/jobs/publish" className="rounded-full bg-[#266dd8] px-4 py-2 text-white">
-          פרסום דרישה חדשה
-        </Link>
+    <MarketingPageShell
+      showBackgroundImage
+      className="min-h-screen bg-white"
+      contentClassName="!max-w-[1440px] !px-4 !pb-20 !pt-20 sm:!px-6 sm:!pt-24 lg:!pt-[123px]"
+    >
+      <div
+        className="mx-auto flex w-full max-w-[900px] flex-col items-stretch"
+        style={{ fontFamily: marketingPloniFont }}
+      >
+        <div className="w-full text-right">
+          <p className="text-[14px] font-normal uppercase leading-4 tracking-[1.2px] text-[#0061A7]">
+            הזדמנויות בזמן אמת
+          </p>
+          <h1 className="mt-2 text-[32px] font-normal leading-none tracking-[-1.2px] text-[#00113A] sm:text-[40px] sm:tracking-[-2.4px] md:text-[48px]">
+            לוח הצעות עבודה
+          </h1>
+          <p className="mt-3 text-base font-normal leading-6 text-[#00113A] sm:text-[20px] sm:leading-6">
+            איך זה עובד? מחברים בין לקוחות לספקים - כאן אפשר לראות הזדמנויות בזמן אמת ולהגיש הצעה.
+          </p>
+        </div>
+
+        <div className="mt-8 flex w-full flex-col gap-4 sm:mt-10 sm:flex-row sm:items-center sm:justify-between">
+          <p className="order-1 text-end text-sm font-normal leading-6 text-[#00113A] sm:order-2">
+            {isLoading ? "טוען…" : `מוצגות ${filtered.length} הצעות פעילות`}
+          </p>
+          {isSupplierView ? (
+            <div className="order-2 flex w-full sm:order-1 sm:w-auto">
+              <label className="sr-only" htmlFor="jobs-category-filter">
+                Filter by category
+              </label>
+              <select
+                id="jobs-category-filter"
+                value={selectedCategory}
+                onChange={(event) => setSelectedCategory(event.target.value)}
+                className="h-[56px] w-full rounded-2xl border border-[#BFDBFE] bg-white px-5 text-base leading-6 text-[#00113A] outline-none sm:min-w-[290px]"
+              >
+                <option value="all">Filter by: Select a category</option>
+                {categoryOptions
+                  .filter((category) => category !== "all")
+                  .map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+              </select>
+            </div>
+          ) : (
+            <Link
+              href="/jobs/publish"
+              className="order-2 inline-flex h-[60px] w-full items-center justify-center rounded-[99px] bg-[#201C44] px-8 text-center text-2xl font-normal leading-[14px] text-white! sm:order-1 sm:w-auto sm:min-w-[253px]"
+            >
+              Post a new offer +
+            </Link>
+          )}
+        </div>
+
+        {isLoading ? (
+          <div className="mt-12 rounded-[14px] border border-[#E2E8F0] bg-white/80 p-8 text-center text-[#00113A]">
+            טוען הצעות…
+          </div>
+        ) : (
+          <ul className="mx-auto mt-10 grid w-full max-w-[900px] list-none grid-cols-1 justify-items-center gap-x-9 gap-y-6 sm:mt-12 md:grid-cols-2 md:justify-items-stretch md:gap-x-9 md:gap-y-6">
+            {filtered.map((job) => (
+              <li key={job.id} className="flex w-full max-w-[432px] justify-center md:max-w-none">
+                <SupplierJobOfferCard job={job} />
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {!isLoading && filtered.length === 0 ? (
+          <p className="mt-10 text-center text-[#00113A]">לא נמצאו הצעות בקטגוריה זו.</p>
+        ) : null}
       </div>
-      {isLoading ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 text-slate-700">טוען מודעות...</div>
-      ) : jobs.length === 0 ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 text-slate-700">
-          עדיין אין מודעות. אפשר להתחיל בפרסום ראשון.
-        </div>
-      ) : (
-        <div className="grid gap-3">
-          {jobs.map((job) => (
-            <article key={job.id} className="rounded-2xl border border-slate-200 bg-white p-5">
-              <div className="mb-2 flex items-center justify-between text-xs text-slate-400">
-                <span>Relevant</span>
-                <span className="rounded-full bg-[#dbeafe] px-2 py-1 text-[#1d4ed8]">OPEN</span>
-              </div>
-              <h2 className="text-lg text-[#201c44]">{job.title}</h2>
-              <p className="text-sm text-slate-600">
-                סטטוס: {job.status} | תקציב {job.budgetMin} - {job.budgetMax}
-              </p>
-            </article>
-          ))}
-        </div>
-      )}
-    </section>
+    </MarketingPageShell>
   );
 }

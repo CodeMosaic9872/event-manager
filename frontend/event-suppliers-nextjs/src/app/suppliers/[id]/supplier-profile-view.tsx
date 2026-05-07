@@ -40,13 +40,13 @@ export function SupplierProfileView({ profile }: SupplierProfileViewProps) {
     })) ?? [];
 
   return (
-    <section className="relative mx-auto w-full bg-white pb-24">
+    <section className="relative mx-auto w-full overflow-x-hidden bg-white pb-24">
       <SupplierProfileBackground />
 
-      <div className="relative z-10 mx-auto w-full pt-[119px]">
+      <div className="relative z-10 mx-auto w-full pt-20 sm:pt-24 lg:pt-[119px]">
         <SupplierProfileHero bannerUrl={banner} avatarUrl={avatar} name={profile.name} />
 
-        <div className="mx-auto flex max-w-[1440px] flex-col items-center px-6 pt-10">
+        <div className="mx-auto flex max-w-[1440px] flex-col items-center px-4 pt-8 sm:px-6 sm:pt-10">
           <SupplierProfileSummary
             headline={headline}
             subtitle={sub}
@@ -60,8 +60,8 @@ export function SupplierProfileView({ profile }: SupplierProfileViewProps) {
             <SupplierGalleryCarousel images={gallery} />
           </div>
 
-          <div className="mt-10 flex w-full max-w-[1392px] flex-col items-stretch gap-6 px-4 pb-4">
-            <div className="flex w-full max-w-[1360px] flex-row items-center justify-between self-center">
+          <div className="mt-10 flex w-full max-w-[1392px] flex-col items-stretch gap-6 px-2 pb-4 sm:px-4">
+            <div className="flex w-full max-w-[1360px] flex-wrap items-center justify-between gap-3 self-center">
               <h3 className="text-2xl leading-7 text-[#0F172A]">ביקורות</h3>
               <div className="flex items-center gap-2">
                 <span className="text-base font-bold leading-6 text-[#4721DF]">{score.toFixed(1)}</span>
@@ -89,10 +89,10 @@ export function SupplierProfileView({ profile }: SupplierProfileViewProps) {
 
       {similar.length > 0 ? <SupplierSimilarSuppliersSection items={similar} /> : null}
 
-      <div className="relative z-10 mx-auto flex justify-start px-6 pb-16 pt-8">
+      <div className="relative z-10 mx-auto flex justify-start px-4 pb-16 pt-8 sm:px-6">
         <Link
           href="/vacation-selection-suppliers"
-          className="inline-flex h-12 min-w-[227px] items-center justify-center gap-2 rounded-[99px] border-2 border-[rgba(98,98,98,0.46)] px-4 text-base leading-6 text-[rgba(0,0,0,0.66)]"
+          className="inline-flex h-12 w-full max-w-[260px] items-center justify-center gap-2 rounded-[99px] border-2 border-[rgba(98,98,98,0.46)] bg-white px-4 text-base leading-6 text-[rgba(0,0,0,0.66)]"
         >
           <Image src="/right_arrow.svg" alt="" width={16} height={16} className="h-4 w-4" /> חזרה לזירת הספקים
         </Link>

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { EventOptionCard } from "@/shared/components/event-option-card";
+import { MarketingPageShell } from "@/shared/components/marketing-page-shell";
 import { PillAction } from "@/shared/components/pill-action";
 
 const categories = [
@@ -22,11 +23,8 @@ const categories = [
 
 export default function VacationSelectionCategoriesPage() {
   return (
-    <section className="relative mx-auto w-full bg-[linear-gradient(180deg,#9BD3EF_0%,#FFFFFF_58%)]">
-      <div className="pointer-events-none absolute left-[1174px] top-[732px] h-[233px] w-[261px] rotate-149 rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60.33%)] blur-[20.5px]" />
-      <div className="pointer-events-none absolute left-[184px] top-[132px] h-[79px] w-[89px] rotate-[-161deg] rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60.33%)] blur-[13.5px]" />
-
-      <div className="relative z-10 mx-auto w-full max-w-[1210px] px-4 pt-[127px]">
+    <MarketingPageShell contentClassName="items-stretch">
+      <div className="mx-auto w-full max-w-[1210px]">
         <header className="mx-auto flex max-w-[634px] flex-col items-center gap-4 text-center">
           <h1 className="bg-[linear-gradient(180deg,#201C44_0%,#0657A2_100%)] bg-clip-text text-[42px] leading-[1.05] text-transparent sm:text-[52px] lg:text-[60px] lg:leading-[60px] lg:tracking-[-1.5px]">
             קטגוריות ספקים לחופשה
@@ -61,12 +59,12 @@ export default function VacationSelectionCategoriesPage() {
           <PillAction
             href="/event-production"
             variant="outline"
-            className="w-[165px] border-[rgba(98,98,98,0.46)] text-[rgba(0,0,0,0.66)]! visited:text-[rgba(0,0,0,0.66)]! hover:text-[rgba(0,0,0,0.66)]!"
+            className="w-[165px] border-[rgba(98,98,98,0.46)] bg-white! text-[rgba(0,0,0,0.66)]! visited:bg-white! visited:text-[rgba(0,0,0,0.66)]! hover:bg-white! hover:text-[rgba(0,0,0,0.66)]!"
           >
             <Image src="/right_arrow.svg" alt="" width={16} height={16} className="h-4 w-4" /> חזרה
           </PillAction>
         </div>
       </div>
-    </section>
+    </MarketingPageShell>
   );
 }

@@ -1,78 +1,336 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useMemo } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useGetJobsQuery } from "@/shared/api/api";
+import { SupplierJobOfferCard } from "@/shared/components/jobs/supplier-job-offer-card";
+import { AdditionalSuppliersSection } from "@/shared/components/suppliers/additional-suppliers-section";
+import { demoSupplierJobOffers } from "@/shared/data/supplier-job-offers.demo";
+import { mergeJobList } from "@/shared/lib/merge-job-list";
+import { marketingPloniFont } from "@/shared/lib/marketing-typography";
+import { useAppSelector } from "@/store/hooks";
 
-export default function UserDashboardPage() {
+function displayNameFromUser(email: string | undefined) {
+  if (!email) return "Daniel";
+  const local = email.split("@")[0]?.replace(/[._-]+/g, " ").trim() ?? "";
+  if (!local) return "Daniel";
+  return local.charAt(0).toUpperCase() + local.slice(1);
+}
+
+const likedConcepts = [
+  {
+    title: "Summer wedding in Jaffa",
+    href: "/event-production/concepts",
+    image:
+      "https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=1200&auto=format&fit=crop",
+    panelBg: "bg-[#EEF5FF]",
+  },
+  {
+    title: "Annual Technology Conference",
+    href: "/event-production/concepts",
+    image:
+      "https://images.unsplash.com/photo-1478144592103-25e218a04891?q=80&w=1200&auto=format&fit=crop",
+    panelBg: "bg-[#EAF3FE]",
+  },
+] as const;
+
+function QuickActionCard(props: {
+  title: string;
+  description: string;
+  buttonLabel: string;
+  href: string;
+  iconSrc: string;
+}) {
+  const { title, description, buttonLabel, href, iconSrc } = props;
   return (
-    <section className="relative mx-auto min-h-[calc(100vh-120px)] w-full max-w-[1440px] overflow-hidden rounded-[24px] border border-[#bfdbfe] bg-[linear-gradient(180deg,#9BD3EF_0%,#FFFFFF_58%)] px-6 py-8">
-      <div className="pointer-events-none absolute -left-24 top-40 size-80 rounded-full bg-[#6ab7ff]/30 blur-2xl" />
-      <div className="mx-auto max-w-[1000px]">
-        <div className="mb-6 flex items-start justify-between">
-          <div />
-          <div className="text-right">
-            <h1 className="text-5xl text-[#1e1b4b]">Welcome, Daniel.</h1>
-            <h2 className="mt-2 text-4xl text-[#1e1b4b]">Quick actions</h2>
+    <div
+      className="relative box-border flex w-full min-h-[246px] flex-col items-center rounded-[14px] border border-[#4721DF] bg-[rgba(230,241,255,0.64)] shadow-[1px_1px_2px_#4721DF]"
+      dir="rtl"
+    >
+      <div className="flex w-full flex-1 flex-col items-start px-8 pb-6 pt-9">
+        <div className="flex flex-row-reverse items-center justify-center gap-2.5">
+          <h3 className="text-center text-base font-normal leading-6 text-[#201C44]">
+            <span dir="ltr" className="inline-block" style={{ unicodeBidi: "isolate" }}>
+              {title}
+            </span>
+          </h3>
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#201C44]">
+            <Image
+              src={iconSrc}
+              alt=""
+              width={18}
+              height={19}
+              className="h-[19px] w-[18px] brightness-0 invert"
+              unoptimized
+            />
           </div>
         </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="figma-panel p-6 text-right">
-            <h3 className="text-xl text-[#1e1b4b]">Supplier Approval Page</h3>
-            <p className="mt-2 text-sm text-slate-500">You have 3 suppliers awaiting approval.</p>
-            <button className="mt-5 rounded-full bg-[#201c44] px-6 py-2 text-sm text-white">← Choosing suppliers</button>
-          </div>
-          <div className="figma-panel p-6 text-right">
-            <h3 className="text-xl text-[#1e1b4b]">Add a new tender</h3>
-            <p className="mt-2 text-sm text-slate-500">Add a tender to find the breaks that suit your bud.</p>
-            <button className="mt-5 rounded-full bg-[#201c44] px-6 py-2 text-sm text-white">← To open a tender</button>
-          </div>
-        </div>
-
-        <h2 className="mt-10 text-right text-4xl text-[#1e1b4b]">Manage my tenders</h2>
-        <div className="mt-3 grid gap-4 md:grid-cols-2">
-          {[1, 2].map((x) => (
-            <article key={x} className="figma-panel p-5 text-right">
-              <div className="mb-2 text-[10px] text-[#3b82f6]">MY AUCTION</div>
-              <h3 className="text-2xl text-[#1e1b4b]">Amplification and lighting for a company conference</h3>
-              <p className="mt-1 text-xs text-slate-500">Aug 15, 2024</p>
-              <div className="mt-4 flex items-center justify-between">
-                <button className="rounded-full bg-[#201c44] px-4 py-1 text-xs text-white">proposal managem</button>
-                <p className="text-xl text-[#1e1b4b]">₪5,000</p>
-              </div>
-              <button className="mt-4 rounded-full bg-[#201c44] px-5 py-2 text-xs text-white">← Tendering</button>
-            </article>
-          ))}
-        </div>
-
-        <div className="mt-12 grid gap-3 md:grid-cols-3">
-          {[1, 2, 3].map((item) => (
-            <article key={item} className="rounded-2xl border border-slate-200 bg-white p-4 text-center">
-              <div className="mx-auto mb-3 size-16 rounded-full border-2 border-[#6ab7ff] bg-slate-200" />
-              <h3 className="text-xl text-[#201c44]">DJ Alon Perry</h3>
-              <p className="text-xs text-slate-500">MUSIC AND PRODUCTION</p>
-              <p className="mt-2 text-xs text-slate-600">All of Israel | South</p>
-              <p className="text-xs text-amber-500">4.3 ★</p>
-            </article>
-          ))}
-        </div>
-
-        <div className="mt-10 grid gap-4 md:grid-cols-2">
-          <div className="rounded-2xl border border-[#4721df] bg-white overflow-hidden">
-            <div className="h-40 bg-[url('https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=1200&auto=format&fit=crop')] bg-cover bg-center" />
-            <div className="p-4 text-right">
-              <h3 className="text-3xl text-[#1e1b4b]">Annual Technology Conference</h3>
-              <Link href="#" className="text-sm text-[#3b82f6]">To view the concept</Link>
-            </div>
-          </div>
-          <div className="rounded-2xl border border-[#4721df] bg-white overflow-hidden">
-            <div className="h-40 bg-[url('https://images.unsplash.com/photo-1478144592103-25e218a04891?q=80&w=1200&auto=format&fit=crop')] bg-cover bg-center" />
-            <div className="p-4 text-right">
-              <h3 className="text-3xl text-[#1e1b4b]">Summer wedding in Jaffa</h3>
-              <Link href="#" className="text-sm text-[#3b82f6]">To view the concept</Link>
-            </div>
-          </div>
+        <p className="mt-4 w-full text-right text-sm font-normal leading-[23px] text-[#444650]">
+          <span dir="ltr" className="inline-block" style={{ unicodeBidi: "isolate" }}>
+            {description}
+          </span>
+        </p>
+        <div className="mt-auto flex w-full pt-8">
+          <Link
+            href={href}
+            dir="ltr"
+            className="inline-flex h-11 min-w-[199px] items-center justify-center gap-2 rounded-[99px] bg-[#201C44] px-5 text-center text-sm font-normal leading-5 text-white!"
+          >
+            <Image
+              src="/left-arrow.svg"
+              alt=""
+              width={10}
+              height={8}
+              className="h-2.5 w-auto shrink-0 brightness-0 invert"
+              aria-hidden
+              unoptimized
+            />
+            {buttonLabel}
+          </Link>
         </div>
       </div>
-    </section>
+    </div>
+  );
+}
+
+export default function UserDashboardPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const sessionUser = useAppSelector((state) => state.auth.user);
+  const localPublishedJobs = useAppSelector((state) => state.jobBoard.jobs);
+  const { data: apiJobs, isLoading } = useGetJobsQuery();
+
+  const allJobs = useMemo(
+    () => mergeJobList(apiJobs, localPublishedJobs),
+    [apiJobs, localPublishedJobs],
+  );
+
+  const myTenders = useMemo(() => {
+    const mine = allJobs.filter((j) => j.isMine);
+    const dummyMine = demoSupplierJobOffers.map((j) => ({
+      ...j,
+      isMine: true as const,
+    }));
+    const mineIds = new Set(mine.map((j) => j.id));
+    return [...mine, ...dummyMine.filter((j) => !mineIds.has(j.id))];
+  }, [allJobs]);
+
+  const choosingSuppliersHref = useMemo(() => {
+    const tenderId = myTenders[0]?.id ?? demoSupplierJobOffers[0]?.id;
+    return tenderId ? `/user/tenders/${tenderId}/suppliers` : "/jobs/publish";
+  }, [myTenders]);
+
+  const welcomeName = displayNameFromUser(sessionUser?.email);
+
+  useEffect(() => {
+    if (sessionUser) return;
+    router.replace(`/auth/login?next=${encodeURIComponent(pathname)}`);
+  }, [sessionUser, router, pathname]);
+
+  if (!sessionUser) return null;
+
+  return (
+    <div
+      className="relative w-full overflow-x-hidden pb-24 pt-20 sm:pt-24 lg:pt-[123px]"
+      dir="rtl"
+      lang="he"
+      style={{
+        fontFamily: marketingPloniFont,
+        background: "linear-gradient(180deg, #9BD3EF 0%, #FFFFFF 58.17%)",
+      }}
+    >
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div
+          className="absolute -left-40 top-32 h-[396px] w-[444px] rotate-[62.64deg] rounded-[40%] bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] opacity-70 blur-[2.5px] shadow-[6px_36px_38px_8px_#84C4FF]"
+          aria-hidden
+        />
+        <div
+          className="absolute -right-32 top-[28%] h-[396px] w-[444px] rotate-[-119.56deg] rounded-[40%] bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] opacity-60 blur-[2.5px] shadow-[6px_36px_38px_8px_#84C4FF]"
+          aria-hidden
+        />
+        <div
+          className="absolute bottom-[18%] left-0 h-20 w-[89px] rotate-[-161.24deg] rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] opacity-50 blur-[13.5px] shadow-[2px_15px_16px_3px_#84C4FF]"
+          aria-hidden
+        />
+      </div>
+
+      <div className="relative z-10 mx-auto w-full max-w-[1200px] px-5 sm:px-8 lg:px-10">
+        <div className="flex w-full flex-col text-start">
+          <header className="mb-6 w-full lg:mb-8">
+            <p className="text-[40px] font-normal leading-9 text-[#1E1B4B] text-right">
+              <span dir="ltr" className="inline-block w-full" style={{ unicodeBidi: "isolate" }}>
+                Welcome, {welcomeName}.
+              </span>
+            </p>
+          </header>
+
+          <section className="mb-14 w-full" aria-labelledby="quick-actions-heading">
+            <h2
+              id="quick-actions-heading"
+              className="mb-6 text-[30px] font-normal leading-8 text-[#00113A] text-right"
+            >
+              <span dir="ltr" className="inline-block w-full" style={{ unicodeBidi: "isolate" }}>
+                Quick actions
+              </span>
+            </h2>
+            <div className="flex w-full flex-col gap-6 md:flex-row md:gap-9 lg:gap-8">
+              <div className="min-w-0 flex-1">
+                <QuickActionCard
+                  title="Add a new tender"
+                  description="Add a tender to find the breaks that suit you best."
+                  buttonLabel="To open a tender"
+                  href="/jobs/publish"
+                  iconSrc="/hammer.svg"
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <QuickActionCard
+                  title="Supplier Approval Page"
+                  description="You have 3 suppliers awaiting approval."
+                  buttonLabel="Choosing suppliers"
+                  href={choosingSuppliersHref}
+                  iconSrc="/calender-white.svg"
+                />
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <section className="mb-16 w-full" aria-labelledby="tenders-heading">
+          <div className="mb-8 flex w-full flex-col gap-1 text-right">
+            <h2
+              id="tenders-heading"
+              className="text-2xl font-normal leading-8 text-[#00113A]"
+            >
+              <span className="inline-block" style={{ unicodeBidi: "isolate" }}>
+                Manage my tenders
+              </span>
+            </h2>
+            <p className="text-sm font-normal leading-5 text-[#444650]">
+              <span className="inline-block" style={{ unicodeBidi: "isolate" }}>
+                The best offers for your auction
+              </span>
+            </p>
+          </div>
+
+          {isLoading ? (
+            <p className="w-full rounded-[14px] border border-[#4721DF] bg-[rgba(230,241,255,0.64)] p-8 text-[#00113A]">
+              <span dir="ltr" className="inline-block" style={{ unicodeBidi: "isolate" }}>
+                Loading tenders…
+              </span>
+            </p>
+          ) : myTenders.length === 0 ? (
+            <div
+              className="w-full rounded-[14px] border border-[#4721DF] bg-[rgba(230,241,255,0.64)] p-8 text-[#00113A]"
+              dir="rtl"
+            >
+              <p className="text-start text-base leading-6">אין עדיין מכרזים שפרסמת.</p>
+              <div className="mt-4 flex justify-start">
+                <Link
+                  href="/jobs/publish"
+                  className="inline-flex h-11 items-center justify-center rounded-[99px] bg-[#201C44] px-8 text-sm text-white!"
+                >
+                  פרסום מכרז חדש
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <>
+              <ul className="flex w-full list-none flex-col gap-6 md:flex-row md:flex-wrap md:gap-x-9 md:gap-y-8">
+                {myTenders.map((job) => (
+                  <li
+                    key={job.id}
+                    className="flex min-w-0 w-full flex-col md:w-[calc(50%-1.125rem)]"
+                  >
+                    <SupplierJobOfferCard job={job} />
+                    <div className="mt-6 flex flex-wrap justify-start gap-3">
+                      <Link
+                        href={`/user/tenders/${job.id}/suppliers`}
+                        dir="ltr"
+                        className="inline-flex h-8 min-w-[160px] items-center justify-center gap-2 rounded-[99px] bg-[#201C44] px-4 text-center text-sm font-normal leading-5 text-white!"
+                      >
+                        <Image
+                          src="/left-arrow.svg"
+                          alt=""
+                          width={10}
+                          height={8}
+                          className="h-2.5 w-auto shrink-0 brightness-0 invert"
+                          aria-hidden
+                          unoptimized
+                        />
+                        Tendering
+                      </Link>
+                      <Link
+                        href={`/user/tenders/${job.id}/edit`}
+                        dir="ltr"
+                        className="inline-flex h-8 min-w-[140px] items-center justify-center rounded-[99px] border border-[#4721DF] px-4 text-center text-sm font-normal leading-5 text-[#4721DF]"
+                      >
+                        Edit tender
+                      </Link>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </section>
+
+        <AdditionalSuppliersSection className="mb-16" />
+
+        <section className="w-full pb-8" aria-labelledby="concepts-heading">
+          <div className="mb-6 flex flex-col items-end justify-between gap-4 sm:flex-row sm:items-end">
+            <h2 id="concepts-heading" className="text-[30px] font-normal leading-8 text-black">
+              <span dir="ltr" className="inline-block" style={{ unicodeBidi: "isolate" }}>
+                Concepts I liked
+              </span>
+            </h2>
+            <Link
+              href="/event-production/concepts"
+              className="text-sm font-normal leading-5 text-black hover:underline"
+            >
+              <span dir="ltr" className="inline-block" style={{ unicodeBidi: "isolate" }}>
+                For all concepts
+              </span>
+            </Link>
+          </div>
+          <div className="mx-auto grid w-full grid-cols-1 gap-6 md:grid-cols-2 md:gap-x-6">
+            {likedConcepts.map((c) => (
+              <article
+                key={c.title}
+                className={`w-full max-w-[452px] justify-self-center overflow-hidden rounded-lg border border-[#4721DF] shadow-[0px_1px_2px_rgba(0,0,0,0.05)] md:max-w-none ${c.panelBg}`}
+                dir="rtl"
+              >
+                <div className="relative h-48 w-full sm:h-52">
+                  <Image
+                    src={c.image}
+                    alt=""
+                    fill
+                    className="object-cover"
+                    sizes="(max-width:768px) 100vw, 420px"
+                  />
+                </div>
+                <div className="flex flex-col gap-2.5 p-6 text-start">
+                  <h3 className="text-xl font-normal leading-7 text-[#00113A]">
+                    <span dir="ltr" className="inline-block" style={{ unicodeBidi: "isolate" }}>
+                      {c.title}
+                    </span>
+                  </h3>
+                  <Link
+                    href={c.href}
+                    className="text-sm font-normal leading-5 text-[#4721DF] hover:underline"
+                  >
+                    <span dir="ltr" className="inline-block" style={{ unicodeBidi: "isolate" }}>
+                      To view the concept
+                    </span>
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
   );
 }

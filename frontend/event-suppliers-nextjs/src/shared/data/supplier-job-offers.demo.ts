@@ -1,0 +1,53 @@
+import type { JobSummaryResponse } from "@/shared/types";
+
+/** Fallback rows when `/v1/jobs` is empty — matches supplier tender-board UI spec. */
+export const demoSupplierJobOffers: JobSummaryResponse[] = [
+  {
+    id: "demo-1",
+    title: "הגברה ותאורה לכנס חברה",
+    status: "OPEN",
+    budgetMin: 10000,
+    budgetMax: 15000,
+    category: "אירוע חברה",
+    location: "תל אביב",
+    eventDate: "2024-08-24",
+    audienceLabel: "כמות קהל: 1000 - 1200 איש",
+    description: "אירוע חברה, ציוד הגברה ותאורה כולל.",
+  },
+  {
+    id: "demo-2",
+    title: "הגברה ותאורה לכנס חברה",
+    status: "OPEN",
+    budgetMin: 10000,
+    budgetMax: 15000,
+    category: "אירוע חברה",
+    location: "תל אביב",
+    eventDate: "2024-08-24",
+    audienceLabel: "כמות קהל: 1000 - 1200 איש",
+    description: "אירוע חברה, ציוד הגברה ותאורה כולל.",
+  },
+  {
+    id: "demo-3",
+    title: "הגברה ותאורה לכנס חברה",
+    status: "OPEN",
+    budgetMin: 10000,
+    budgetMax: 15000,
+    category: "אירוע חברה",
+    location: "תל אביב",
+    eventDate: "2024-08-24",
+    audienceLabel: "כמות קהל: 1000 - 1200 איש",
+    description: "אירוע חברה, ציוד הגברה ותאורה כולל.",
+  },
+  {
+    id: "demo-4",
+    title: "הגברה ותאורה לכנס חברה",
+    status: "OPEN",
+    budgetMin: 10000,
+    budgetMax: 15000,
+    category: "חתונה",
+    location: "תל אביב",
+    eventDate: "2024-08-24",
+    audienceLabel: "כמות קהל: 1000 - 1200 איש",
+    description: "אירוע חברה, ציוד הגברה ותאורה כולל.",
+  },
+];

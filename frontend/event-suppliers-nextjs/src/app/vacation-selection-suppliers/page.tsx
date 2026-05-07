@@ -26,6 +26,7 @@ export default function VacationSelectionSuppliersPage() {
   const [visibleCount, setVisibleCount] = useState(9);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const toggleArrayValue = (
@@ -76,11 +77,11 @@ export default function VacationSelectionSuppliersPage() {
   }, [hasMore, isLoadingMore]);
 
   return (
-    <section className="relative mx-auto min-h-[2002px] w-full max-w-[1440px] bg-white">
-      <div className="absolute -top-px left-[-187px] h-[1066px] w-[1824px] bg-[linear-gradient(180deg,#9BD3EF_0%,#FFFFFF_58%)]" />
-      <div className="pointer-events-none absolute left-[1361px] top-[732px] h-[233px] w-[261px] rotate-149 rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60.33%)] blur-[20.5px]" />
+    <section className="relative mx-auto min-h-[2002px] w-full overflow-x-hidden bg-white">
+      <div className="absolute -top-px left-1/2 h-[1066px] w-[1824px] -translate-x-1/2 bg-[linear-gradient(180deg,#9BD3EF_0%,#FFFFFF_58%)]" />
+      <div className="pointer-events-none absolute left-[1361px] top-[732px] hidden h-[233px] w-[261px] rotate-149 rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60.33%)] blur-[20.5px] min-[1450px]:block" />
 
-      <div className="relative z-10 mx-auto flex w-full max-w-[1280px] flex-col gap-10 px-6 pt-[132px]">
+      <div className="relative z-10 mx-auto flex w-full max-w-[1280px] flex-col gap-8 px-4 pt-20 sm:gap-10 sm:px-6 sm:pt-24 lg:px-8 lg:pt-[132px]">
         <div className="mx-auto w-full max-w-[1024px]">
           <div className="flex h-16 items-center rounded-[30px] border-2 border-[#201C44] bg-white/25 p-1 backdrop-blur-[6px]">
             <div className="flex w-full items-center gap-3 px-4">
@@ -91,7 +92,7 @@ export default function VacationSelectionSuppliersPage() {
               />
             </div>
           </div>
-          <div className="mt-3 flex items-center gap-3 text-xs text-black">
+          <div className="mt-3 flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-xs text-black">
             <button type="button" className="underline">
               אולמות בשרון
             </button>
@@ -105,10 +106,10 @@ export default function VacationSelectionSuppliersPage() {
           </div>
         </div>
 
-        <div dir="ltr" className="flex items-start gap-8">
-          <main className="w-[912px]">
+        <div dir="ltr" className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
+          <main className="order-2 w-full min-w-0 lg:order-1 lg:w-[912px]">
             <div className="mb-6 flex items-center justify-between">
-              <div className="flex items-center gap-3 text-sm text-black">
+              <div className="flex shrink-0 items-center gap-3 text-sm text-black">
                 <div className="relative">
                   <button
                     type="button"
@@ -138,13 +139,13 @@ export default function VacationSelectionSuppliersPage() {
                 </div>
                 <span>מיון לפי:</span>
               </div>
-              <div className="text-right">
+              <div className="min-w-0 text-right">
                 <h2 className="text-2xl text-black">ספקים מומלצים</h2>
                 <p className="text-sm text-black">מצאנו 128 ספקים התואמים לחיפוש שלך.</p>
               </div>
             </div>
 
-            <div className="mb-4 grid grid-cols-3 gap-6">
+            <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">
               {displayedSuppliers.map((supplier) => (
                 <SupplierGlassCard
                   key={supplier.rowKey}
@@ -174,7 +175,7 @@ export default function VacationSelectionSuppliersPage() {
             </div>
           </main>
 
-          <aside className="h-[1028px] w-[288px] rounded-2xl border border-black/10 bg-[linear-gradient(180deg,rgba(230,238,242,0.3564)_0%,rgba(133,138,140,0.1512)_100%)] p-6 backdrop-blur-[6px]">
+          <aside className="order-1 w-full rounded-2xl border border-black/10 bg-[linear-gradient(180deg,rgba(230,238,242,0.3564)_0%,rgba(133,138,140,0.1512)_100%)] p-5 backdrop-blur-[6px] sm:p-6 lg:order-2 lg:w-[288px] lg:min-w-[288px]">
             <div className="mb-8 flex items-center justify-between">
               <button
                 type="button"
@@ -195,7 +196,16 @@ export default function VacationSelectionSuppliersPage() {
               <h3 className="text-[18px] leading-7 text-black">מסננים</h3>
             </div>
 
-            <div className="space-y-8 text-sm text-black">
+            <button
+              type="button"
+              className="mb-4 flex w-full items-center justify-between rounded-lg border border-black/15 bg-white/60 px-3 py-2 text-sm text-[#201C44] lg:hidden"
+              onClick={() => setMobileFiltersOpen((prev) => !prev)}
+            >
+              <span>{mobileFiltersOpen ? "▴" : "▾"}</span>
+              <span>{mobileFiltersOpen ? "סגור מסננים" : "פתח מסננים"}</span>
+            </button>
+
+            <div className={`${mobileFiltersOpen ? "block" : "hidden"} space-y-8 text-sm text-black lg:block`}>
               <div>
                 <p className="mb-3 text-xs uppercase text-right tracking-[0.7px]">קטגוריה</p>
                 <div className="space-y-2">
@@ -354,14 +364,14 @@ export default function VacationSelectionSuppliersPage() {
         <div className="flex justify-end">
           <Link
             href="/vacation-selection-categories"
-            className="inline-flex h-12 w-[227px] items-center justify-center gap-2 rounded-[99px] border-2 border-black/45 text-[16px] text-black/70"
+            className="inline-flex h-12 w-full max-w-[227px] items-center justify-center gap-2 rounded-[99px] border-2 border-black/45 bg-white text-[16px] text-black/70"
           >
             <span aria-hidden>←</span> חזרה לרשימת הקטגוריות
           </Link>
         </div>
       </div>
 
-      <footer className="mt-12 flex h-[155px] w-full items-center justify-center border border-black/10 bg-[rgba(230,239,244,0.42)] backdrop-blur-[6px]">
+      <footer className="mt-12 flex min-h-[120px] w-full items-center justify-center border border-black/10 bg-[rgba(230,239,244,0.42)] px-4 py-8 backdrop-blur-[6px] sm:min-h-[155px]">
         <div className="flex items-center gap-3 text-2xl text-black">
           <span className="-rotate-90 text-xl" aria-hidden>
             →

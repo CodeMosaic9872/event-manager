@@ -1,142 +1,229 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { FormEvent, Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { setCredentials } from "@/features/auth/auth-slice";
 import { useLoginMutation } from "@/shared/api/api";
+import { supplierAuthContactInputClass } from "@/shared/components/supplier-auth/supplier-auth-glass-card";
+import {
+  SupplierAuthMailIcon,
+  SupplierAuthMarketingLayout,
+} from "@/shared/components/supplier-auth/supplier-auth-marketing-layout";
+import {
+  getPostLoginFallbackPath,
+  getSafeInternalRedirectPath,
+} from "@/shared/lib/safe-redirect-path";
 import { useAppDispatch } from "@/store/hooks";
 
-export default function LoginPage() {
+function LoginForm() {
   const dispatch = useAppDispatch();
   const [login, { isLoading }] = useLoginMutation();
   const router = useRouter();
-  const [identity, setIdentity] = useState("");
-  const [passwordOrOtp, setPasswordOrOtp] = useState("");
+  const searchParams = useSearchParams();
+  const nextParam = searchParams.get("next");
+  const supplierLoginHref = nextParam
+    ? `/auth/login/supplier?next=${encodeURIComponent(nextParam)}`
+    : "/auth/login/supplier";
+  const [contact, setContact] = useState("");
+  const [contactMode, setContactMode] = useState<"email" | "phone">("email");
+  const [otp, setOtp] = useState(["", "", "", ""]);
   const [error, setError] = useState("");
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
+    const otpCode = otp.join("");
+    const loginIdentity = contact.trim();
+
+    if (!loginIdentity) {
+      setError("נא להזין אימייל או מספר טלפון.");
+      return;
+    }
+    if (otpCode.length !== 4) {
+      setError("נא להזין קוד אימות בן 4 ספרות.");
+      return;
+    }
+
     try {
-      const payload = await login({ email: identity, password: passwordOrOtp }).unwrap();
+      const payload = await login({ email: loginIdentity, password: otpCode }).unwrap();
+      const roles = payload.user.roles.map(
+        (role) => role.toLowerCase() as "user" | "supplier" | "admin",
+      );
       dispatch(
         setCredentials({
           user: {
             id: payload.user.id,
             email: payload.user.email,
-            roles: payload.user.roles.map((role) => role.toLowerCase() as "user" | "supplier" | "admin"),
+            roles,
           },
           accessToken: payload.accessToken,
           refreshToken: payload.refreshToken,
         }),
       );
-      const nextPath = new URLSearchParams(window.location.search).get("next") || "/";
-      router.push(nextPath);
+      router.push(
+        getSafeInternalRedirectPath(nextParam, getPostLoginFallbackPath(roles)),
+      );
     } catch {
       setError("ההתחברות נכשלה, נוצר משתמש דמו להמשך פיתוח.");
       dispatch(
         setCredentials({
-          user: { id: "demo-user", email: identity, roles: ["user"] },
+          user: { id: "demo-user", email: loginIdentity, roles: ["user"] },
         }),
       );
-      const nextPath = new URLSearchParams(window.location.search).get("next") || "/";
-      router.push(nextPath);
+      router.push(
+        getSafeInternalRedirectPath(nextParam, getPostLoginFallbackPath(["user"])),
+      );
     }
   };
 
-  return (
-    <section className="relative mx-auto min-h-[calc(100vh-120px)] w-full max-w-[1440px] overflow-hidden rounded-[24px] border border-[#bfdbfe] bg-[linear-gradient(180deg,#9BD3EF_0%,#FFFFFF_58%)] px-6 py-10">
-      <div className="pointer-events-none absolute -left-16 top-40 size-72 rounded-full bg-[#6ab7ff]/25 blur-2xl" />
-      <div className="pointer-events-none absolute -right-24 top-1/2 size-80 -translate-y-1/2 rounded-full bg-[#6ab7ff]/30 blur-2xl" />
+  const otpComplete = otp.every((digit) => digit.length === 1);
+  const setOtpDigit = (index: number, value: string) => {
+    const v = value.replace(/\D/g, "").slice(-1);
+    const nextOtp = [...otp];
+    nextOtp[index] = v;
+    setOtp(nextOtp);
+    if (v && index < 3) {
+      document.getElementById(`user-otp-${index + 1}`)?.focus();
+    }
+  };
 
+  const handleGetCode = () => {
+    /* placeholder — wire to OTP API */
+  };
+
+  return (
+    <SupplierAuthMarketingLayout
+      userTabHref="/auth/login"
+      providerTabHref={supplierLoginHref}
+      userTabLabel="User login"
+      providerTabLabel="Provider login"
+      activeTab="user"
+      heading="User login"
+      subheading="Choose your preferred login method to log into our platform."
+      contactMode={contactMode}
+      onContactModeChange={setContactMode}
+    >
       <form
-        className="mx-auto mt-8 w-full max-w-[480px] rounded-[24px] border border-[#9bb9e5] bg-[#d8e5fa]/90 p-8 shadow-[0px_10px_24px_rgba(32,28,68,0.25)]"
+        className="flex w-full max-w-[382px] flex-col gap-6"
         onSubmit={onSubmit}
       >
-        <div className="mx-auto mb-6 w-[244px] rounded-full border border-[#d0d7e7] bg-[#eef2ff] p-1 shadow-inner">
-          <div className="grid grid-cols-2 text-center text-sm">
-            <div className="rounded-full bg-[#201c44] px-4 py-2 text-white">User login</div>
-            <div className="px-4 py-2 text-slate-500">Provider login</div>
+        <div className="flex flex-col gap-2">
+          <label className="w-full pe-1 text-right text-[14px] leading-5 text-black">
+            Email / Phone
+          </label>
+          <div className="relative">
+            <input
+              className={supplierAuthContactInputClass}
+              placeholder="Enter your details"
+              value={contact}
+              onChange={(event) => setContact(event.target.value)}
+              autoComplete={contactMode === "email" ? "email" : "tel"}
+            />
+            <SupplierAuthMailIcon />
           </div>
-        </div>
-
-        <div className="text-center">
-          <h1 className="text-[42px] leading-10 text-[#101426]">User login</h1>
-          <p className="mt-3 text-sm text-slate-500">
-            Select your preferred login method to log in.
-          </p>
         </div>
 
         <button
           type="button"
-          className="mt-7 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-[#1e1b4b]"
+          onClick={handleGetCode}
+          className="flex h-14 w-full flex-col items-center justify-center rounded-[99px] bg-[#201C44] px-4 text-[24px] font-normal leading-6 text-white transition hover:bg-[#151238]"
         >
-          Sign in with Google
+          Getting a code
         </button>
 
-        <div className="mt-7 rounded-xl border border-slate-200 bg-white p-1">
-          <div className="grid grid-cols-2 text-center text-sm">
-            <button type="button" className="rounded-lg px-3 py-2 text-slate-500">
-              Phone number
+        <div className="flex w-full flex-col gap-4 border-t border-black/10 pt-4">
+          <div className="flex w-full flex-row items-center justify-between gap-4">
+            <button
+              type="button"
+              className="shrink-0 text-left text-[12px] leading-4 text-[#201C44] hover:underline"
+            >
+              Send again
             </button>
-            <button type="button" className="rounded-lg bg-[#201c44] px-3 py-2 text-white">
-              Email
-            </button>
+            <span className="text-right text-[14px] leading-5 text-black">
+              Enter verification code (OTP)
+            </span>
+          </div>
+          <div className="flex w-full flex-row justify-center gap-[29px]">
+            {otp.map((digit, index) => (
+              <input
+                key={index}
+                id={`user-otp-${index}`}
+                inputMode="numeric"
+                maxLength={1}
+                value={digit}
+                onChange={(event) => setOtpDigit(index, event.target.value)}
+                className="box-border size-14 rounded-xl border border-black/10 bg-white text-center text-[18px] tabular-nums outline-none backdrop-blur-sm focus:ring-2 focus:ring-[#4721DF]/30"
+                aria-label={`Digit ${index + 1}`}
+              />
+            ))}
           </div>
         </div>
 
-        <div className="mt-4 grid gap-3">
-          <label className="text-right text-sm text-slate-700">Email / Phone</label>
-          <input
-            required
-            className="rounded-xl border border-[#c8cede] bg-[#f5f6fd] px-4 py-3"
-            placeholder="Enter your details"
-            value={identity}
-            onChange={(event) => setIdentity(event.target.value)}
-          />
-          <button
-            type="button"
-            className="rounded-full bg-[#232051] px-4 py-3 text-2xl text-white"
-          >
-            Getting a code
-          </button>
-          <div className="mt-2 border-t border-slate-300 pt-3">
-            <div className="mb-2 flex items-center justify-between text-xs text-slate-500">
-              <span>Send again</span>
-              <span>Enter verification code (OTP)</span>
-            </div>
-            <div className="grid grid-cols-4 gap-2">
-              {[1, 2, 3, 4].map((item) => (
-                <input key={item} className="h-12 rounded-lg border border-slate-200 bg-[#f7f8fc] text-center" />
-              ))}
-            </div>
-          </div>
-          <input
-            type="password"
-            required
-            className="rounded-xl border border-slate-300 bg-white px-4 py-3"
-            placeholder="Password (or OTP)"
-            value={passwordOrOtp}
-            onChange={(event) => setPasswordOrOtp(event.target.value)}
-          />
-          {error && <p className="text-sm text-red-700">{error}</p>}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="rounded-full bg-[#c4c8d6] px-4 py-3 text-[#232051] disabled:opacity-60"
-          >
-            {isLoading ? "Logging in..." : "Logging in to the system"}
-          </button>
-        </div>
+        {error ? <p className="text-right text-sm text-red-700">{error}</p> : null}
 
-        <p className="mt-6 text-center text-sm text-slate-600">
-          First time?{" "}
-          <Link href="/auth/register" className="text-[#201c44] underline">
-            Register as a user / supplier
+        <button
+          type="submit"
+          disabled={!otpComplete || isLoading}
+          className={`flex h-[58px] w-full flex-row items-center justify-center gap-2 rounded-[99px] border px-4 text-[16px] font-normal leading-6 transition ${
+            otpComplete && !isLoading
+              ? "border-transparent bg-[#201C44] text-white hover:bg-[#151238]"
+              : "cursor-not-allowed border-black/10 bg-black/10 text-black opacity-100"
+          }`}
+        >
+          <span>{isLoading ? "Logging in..." : "Logging in to the system"}</span>
+          <span
+            className={
+              otpComplete && !isLoading
+                ? "opacity-90 brightness-0 invert"
+                : "opacity-70"
+            }
+            aria-hidden
+          >
+            <Image
+              src="/go-to.svg"
+              alt=""
+              width={18}
+              height={18}
+              unoptimized
+            />
+          </span>
+        </button>
+
+        <footer className="mt-4 flex w-full flex-row flex-wrap items-center justify-center gap-2 text-center text-[14px] leading-5">
+          <span className="text-black">Don&apos;t have an account?</span>
+          <Link
+            href={nextParam ? `/auth/register?next=${encodeURIComponent(nextParam)}` : "/auth/register"}
+            className="font-normal text-[#201C44] hover:underline"
+          >
+            Register here
           </Link>
-        </p>
+        </footer>
       </form>
-    </section>
+    </SupplierAuthMarketingLayout>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <SupplierAuthMarketingLayout
+          userTabHref="/auth/login"
+          userTabLabel="User login"
+          providerTabLabel="Provider login"
+          activeTab="user"
+          heading="User login"
+          subheading="Choose your preferred login method to log into our platform."
+          contactMode="email"
+          onContactModeChange={() => {}}
+        >
+          <div className="h-64 w-full max-w-[382px] animate-pulse rounded-2xl bg-slate-200/80" />
+        </SupplierAuthMarketingLayout>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

@@ -50,4 +50,13 @@ export type JobSummaryResponse = {
   status: string;
   budgetMin: number;
   budgetMax: number;
+  /** Event category label (e.g. אירוע חברה). */
+  category?: string;
+  location?: string;
+  /** ISO date or display-ready label */
+  eventDate?: string;
+  audienceLabel?: string;
+  description?: string;
+  /** True when this tender was created by current logged user. */
+  isMine?: boolean;
 };

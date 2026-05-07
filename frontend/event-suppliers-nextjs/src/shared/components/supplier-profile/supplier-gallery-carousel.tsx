@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import { CarouselArrowImg } from "@/shared/components/carousel-arrow-img";
 
 type SupplierGalleryCarouselProps = {
   images: string[];
@@ -23,26 +24,26 @@ export function SupplierGalleryCarousel({ images, title = "גלריה" }: Suppli
         <h3 className="text-start text-[28px] leading-7 text-[#0F172A] sm:text-[38px] sm:leading-7">{title}</h3>
       </div>
 
-      <div className="flex h-[208px] items-center justify-center gap-4 px-4 pb-4 pt-0">
+      <div className="flex items-center justify-center gap-2 px-1 pb-4 pt-0 sm:h-[208px] sm:gap-4 sm:px-4">
         <button
           type="button"
           onClick={() => setSlideIndex((prev) => Math.min(prev + 1, maxSlideIndex))}
           disabled={slideIndex === maxSlideIndex}
-          className="flex size-[42px] shrink-0 cursor-pointer items-center justify-center rounded-full bg-[#201C44] text-white disabled:cursor-not-allowed disabled:opacity-40"
+          className="hidden size-[42px] shrink-0 cursor-pointer items-center justify-center rounded-full bg-[#201C44] text-white disabled:cursor-not-allowed disabled:opacity-40 sm:flex"
           aria-label="תמונות קודמות"
         >
-          <span className="text-lg leading-none">→</span>
+          <CarouselArrowImg direction="right" invertOnDarkBg className="h-[22px] w-auto" />
         </button>
 
-        <div className="overflow-hidden" style={{ width: `${viewportWidth}px` }}>
+        <div className="w-full overflow-hidden sm:w-auto" style={{ width: `${viewportWidth}px`, maxWidth: "100%" }}>
           <div
-            className="flex gap-4 transition-transform duration-500 ease-out"
+            className="flex gap-3 transition-transform duration-500 ease-out sm:gap-4"
             style={{ transform: `translateX(-${translateX}px)` }}
           >
             {images.map((src, i) => (
               <div
                 key={`${src}-${i}`}
-                className="h-[192px] w-[288px] shrink-0 cursor-pointer overflow-hidden rounded-xl bg-[#E2E8F0] shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),0px_2px_4px_-2px_rgba(0,0,0,0.1)]"
+                className="h-[192px] w-[min(288px,calc(100vw-56px))] shrink-0 cursor-pointer overflow-hidden rounded-xl bg-[#E2E8F0] shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),0px_2px_4px_-2px_rgba(0,0,0,0.1)] sm:w-[288px]"
               >
                 <img src={src} alt="" className="h-full w-full object-cover transition-transform duration-500 hover:scale-[1.03]" />
               </div>
@@ -54,10 +55,10 @@ export function SupplierGalleryCarousel({ images, title = "גלריה" }: Suppli
           type="button"
           onClick={() => setSlideIndex((prev) => Math.max(prev - 1, 0))}
           disabled={slideIndex === 0}
-          className="flex size-[42px] shrink-0 cursor-pointer items-center justify-center rounded-full bg-[#201C44] text-white disabled:cursor-not-allowed disabled:opacity-40"
+          className="hidden size-[42px] shrink-0 cursor-pointer items-center justify-center rounded-full bg-[#201C44] text-white disabled:cursor-not-allowed disabled:opacity-40 sm:flex"
           aria-label="תמונות הבאות"
         >
-          <span className="text-lg leading-none">←</span>
+          <CarouselArrowImg direction="left" invertOnDarkBg className="h-[22px] w-auto" />
         </button>
       </div>
     </div>

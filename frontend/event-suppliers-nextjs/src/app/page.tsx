@@ -1,13 +1,27 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { getPostLoginFallbackPath } from "@/shared/lib/safe-redirect-path";
 import { SUPPLIER_LIST } from "@/shared/data/supplier-catalog";
+import { CtaPill } from "@/shared/components/cta-pill";
+import { CarouselArrowImg } from "@/shared/components/carousel-arrow-img";
 import { SupplierGlassCard } from "@/shared/components/supplier-glass-card";
+import { useAppSelector } from "@/store/hooks";
 
 export default function Home() {
+  const router = useRouter();
+  const sessionUser = useAppSelector((state) => state.auth.user);
   const [slideIndex, setSlideIndex] = useState(0);
+
+  useEffect(() => {
+    if (!sessionUser) return;
+    router.replace(getPostLoginFallbackPath(sessionUser.roles));
+  }, [sessionUser, router]);
+
+  if (sessionUser) return null;
+
   const stats = [
     { value: "0", label: "ללא פשרות על איכות", dot: "#10B981" },
     { value: "1.2k+", label: "אירועים הופקו", dot: "#10B981" },
@@ -21,17 +35,21 @@ export default function Home() {
 
   return (
     <section className="relative mx-auto w-full overflow-hidden bg-white">
-      <div className="absolute left-0 top-0 h-[1163px] w-full bg-[linear-gradient(180deg,#9BD3EF_0%,#FFFFFF_58%)]" />
-      <div className="absolute bottom-0 left-0 h-[1975px] w-full rotate-180 bg-[linear-gradient(180deg,#9BD3EF_0%,#FFFFFF_58%)]" />
+      <div className="absolute left-0 top-0 min-h-[1163px] w-full bg-[linear-gradient(180deg,#9BD3EF_0%,#FFFFFF_58%)] lg:h-[1163px]" />
+      <div
+        className="pointer-events-none absolute left-1/2 h-[1975.43px] w-[min(1440px,calc(100vw+80px))] max-w-none -translate-x-1/2 rotate-[-179.98deg] bg-[url('/2.png')] bg-cover bg-center bg-no-repeat md:left-[329.7px] md:w-[1440px] md:translate-x-0"
+        style={{ top: 1163.57 }}
+        aria-hidden="true"
+      />
 
-      <div className="pointer-events-none absolute left-[-140px] top-[110px] size-[300px] rotate-58 rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] blur-[3px] md:left-[-160px] md:size-[360px]" />
-      <div className="pointer-events-none absolute right-[-150px] top-[70px] size-[340px] rotate-[-120deg] rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] blur-[3px] md:right-[-180px] md:size-[420px]" />
-      <div className="pointer-events-none absolute left-[-95px] top-[2050px] size-[300px] rotate-99 rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] blur-[3px] md:top-[2180px] md:size-[360px]" />
-      <div className="pointer-events-none absolute right-[-60px] top-[1560px] size-[180px] rotate-149 rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] blur-[20px] md:right-0 md:size-[230px]" />
-      <div className="pointer-events-none absolute left-[515px] top-[132px] h-[79px] w-[89px] rotate-[-161deg] rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60.33%)] blur-[13.5px]" />
-      <div className="pointer-events-none absolute left-[407px] top-[1213px] h-[79px] w-[89px] rotate-[-161deg] rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60.33%)] blur-[13.5px]" />
+      <div className="pointer-events-none absolute left-[-140px] top-[110px] size-[min(300px,55vw)] max-w-[300px] rotate-58 rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] blur-[3px] md:left-[-160px] md:size-[360px]" />
+      <div className="pointer-events-none absolute right-[-150px] top-[70px] size-[min(340px,60vw)] max-w-[340px] rotate-[-120deg] rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] blur-[3px] md:right-[-180px] md:size-[420px]" />
+      <div className="pointer-events-none absolute left-[-95px] top-[2050px] size-[min(300px,55vw)] max-w-[300px] rotate-99 rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] blur-[3px] md:top-[2180px] md:size-[360px]" />
+      <div className="pointer-events-none absolute right-[-60px] top-[1560px] size-[min(180px,35vw)] max-w-[180px] rotate-149 rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60%)] blur-[20px] md:right-0 md:size-[230px]" />
+      <div className="pointer-events-none absolute left-[515px] top-[132px] hidden h-[79px] w-[89px] rotate-[-161deg] rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60.33%)] blur-[13.5px] min-[1100px]:block" />
+      <div className="pointer-events-none absolute left-[407px] top-[1213px] hidden h-[79px] w-[89px] rotate-[-161deg] rounded-full bg-[linear-gradient(180deg,#2998FF_0%,#FFFFFF_60.33%)] blur-[13.5px] min-[1100px]:block" />
 
-      <div className="relative z-10 mx-auto w-full max-w-[1200px] pt-10 sm:pt-44">
+      <div className="relative z-10 mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8 pt-10 sm:pt-44">
         <div className="mx-auto flex w-full max-w-[892px] flex-col items-center gap-5 text-center lg:gap-7">
           <div className="flex w-full flex-col items-center">
             <h1 className="w-full text-center text-[52px] leading-[0.92] text-[#201C44] sm:text-[64px] lg:text-[74px]">
@@ -42,57 +60,58 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="flex w-full flex-wrap items-center justify-center gap-2 lg:w-[455px] lg:gap-[7px]">
-            <Link
+          <div className="flex w-full max-w-full flex-wrap items-center justify-center gap-2 lg:w-[455px] lg:max-w-[455px] lg:gap-[7px]">
+            <CtaPill
               href="/ai-planner"
-              className="flex h-[46px] w-[184px] items-center justify-center rounded-[99px] bg-[#201C44] text-center text-[16px] leading-[14px] text-white! visited:text-white! hover:text-white! sm:h-[52px] sm:w-[206px] sm:text-[18px] lg:h-[60px] lg:w-[224px] lg:text-[22px]"
+              variant="primary"
+              size="responsive"
+              className="w-auto shrink-0"
             >
               תכנון אירוע עם AI
-            </Link>
-            <Link
+            </CtaPill>
+            <CtaPill
               href="/event-production"
-              className="flex h-[46px] w-[184px] items-center justify-center rounded-[99px] border-2 border-[#201C44] text-center text-[16px] leading-[14px] text-black! visited:text-black! hover:text-black! sm:h-[52px] sm:w-[206px] sm:text-[18px] lg:h-[60px] lg:w-[224px] lg:text-[22px]"
+              variant="outline"
+              size="responsive"
+              className="w-auto shrink-0"
             >
               תכנון עצמאי
-            </Link>
+            </CtaPill>
           </div>
 
-          <Link
-            href="/marketplace"
-            className="flex h-[40px] w-full max-w-[560px] items-center rounded-[99px] border border-[#201C44] bg-transparent px-4 text-[#201C44] sm:h-[44px] lg:h-[46px] lg:w-[653px] lg:max-w-[653px] lg:px-8"
-          >
-            <span className="flex h-[14px] w-[171px] items-center justify-end text-right text-[14px] leading-[14px] text-[#201C44]">
+          <CtaPill href="/marketplace" variant="field" className="mx-auto w-full">
+            <span className="flex min-h-[14px] min-w-0 max-w-full flex-1 items-center justify-end text-right text-[14px] leading-[14px] text-[#201C44] sm:max-w-[171px]">
               מצאו ספקים לאירוע שלכם
             </span>
-          </Link>
+          </CtaPill>
         </div>
 
         <div className="mt-16 lg:mt-14">
-          <div className="mb-6 flex h-[68px] w-full items-center gap-3">
-            <h2 className="whitespace-nowrap text-right text-[24px] leading-none text-[#201C44] sm:text-[30px]">
+          <div className="mb-6 flex min-h-[68px] w-full items-center gap-2 sm:gap-3">
+            <h2 className="max-w-[58%] shrink text-right text-[24px] leading-none text-[#201C44] sm:max-w-none sm:shrink-0 sm:whitespace-nowrap sm:text-[30px]">
               ספקים נבחרים
             </h2>
-            <span className="h-px flex-1 border-t border-[rgba(32,28,68,0.5)]" />
+            <span className="h-px min-w-6 flex-1 border-t border-[rgba(32,28,68,0.5)]" />
             <button
               type="button"
-              className="flex h-[40px] min-w-[152px] items-center justify-end gap-2 text-[18px] leading-[14px] text-[#201C44]"
+              className="flex h-[40px] shrink-0 items-center justify-end gap-2 text-[18px] leading-[14px] text-[#201C44] sm:min-w-[152px]"
             >
               <span>לכל הספקים</span>
               <span className="text-[14px] leading-none text-[#0F2D38]">←</span>
             </button>
           </div>
-          <div className="mx-auto flex w-full max-w-[1148px] items-center gap-4 lg:gap-[60px]">
+          <div className="mx-auto flex w-full max-w-[1148px] items-center gap-2 sm:gap-4 lg:gap-[60px]">
             <button
               type="button"
               aria-label="ספקים קודמים"
               onClick={() => setSlideIndex((prev) => Math.max(prev - 1, 0))}
               disabled={slideIndex === 0}
-              className="flex size-[58px] shrink-0 items-center justify-center rounded-full bg-white text-[30px] text-[#201C44] disabled:opacity-40"
+              className="flex size-12 shrink-0 items-center justify-center rounded-full bg-white text-[#201C44] disabled:opacity-40 sm:size-[58px]"
             >
-              →
+              <CarouselArrowImg direction="right" className="h-[26px] w-auto sm:h-[34px]" />
             </button>
 
-            <div className="grid w-full grid-cols-1 gap-6 md:grid-cols-3 md:gap-6">
+            <div className="grid min-w-0 flex-1 grid-cols-1 gap-6 md:grid-cols-3 md:gap-6">
               {visibleSlides.map((supplier) => (
                 <SupplierGlassCard
                   key={supplier.id}
@@ -112,15 +131,15 @@ export default function Home() {
               aria-label="ספקים הבאים"
               onClick={() => setSlideIndex((prev) => Math.min(prev + 1, maxSlideIndex))}
               disabled={slideIndex === maxSlideIndex}
-              className="flex size-[58px] shrink-0 items-center justify-center rounded-full bg-white text-[30px] text-[#201C44] disabled:opacity-40"
+              className="flex size-12 shrink-0 items-center justify-center rounded-full bg-white text-[#201C44] disabled:opacity-40 sm:size-[58px]"
             >
-              ←
+              <CarouselArrowImg direction="left" className="h-[26px] w-auto sm:h-[34px]" />
             </button>
           </div>
         </div>
 
-        <div className="mt-10 rounded-[40px] bg-[#00113A] px-4 py-5 text-white shadow-[0px_8px_32px_rgba(0,0,0,0.37)] backdrop-blur-[6px] lg:h-[120px] lg:px-6 lg:py-8">
-          <div className="mx-auto flex w-full max-w-[1240px] flex-col items-center justify-between gap-4 lg:h-[56px] lg:flex-row">
+        <div className="mt-10 rounded-[40px] bg-[#00113A] px-4 py-5 text-white shadow-[0px_8px_32px_rgba(0,0,0,0.37)] backdrop-blur-[6px] lg:min-h-[120px] lg:px-6 lg:py-8">
+          <div className="mx-auto flex w-full max-w-[1240px] flex-col items-center justify-between gap-4 lg:min-h-[56px] lg:flex-row">
            
 
             <div className="flex items-center gap-4 lg:gap-6">
@@ -136,12 +155,9 @@ export default function Home() {
                 </p>
               </div>
             </div>
-            <Link
-              href="/jobs/publish"
-              className="flex h-[48px] w-[194px] items-center justify-center rounded-[99px] bg-[#6AB7FF] px-8 text-center text-[16px] leading-6 text-black! visited:text-black! hover:text-black!"
-            >
+            <CtaPill href="/jobs/publish" variant="soft" size="lg" className="w-auto shrink-0">
               פרסום הצעת עבודה
-            </Link>
+            </CtaPill>
           </div>
         </div>
 
@@ -193,25 +209,30 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="mx-auto mt-12 flex w-full max-w-[520px] items-center justify-center gap-3">
-          <Link
+        <div className="mx-auto mt-12 flex w-full max-w-[680px] flex-wrap md:flex-nowrap items-center justify-center gap-3">
+          <CtaPill
             href="/auth/register"
-            className="relative flex h-[44px] w-1/2 items-center justify-center rounded-[99px] bg-[#201C44] text-center text-[20px] leading-[44px] text-white! visited:text-white! hover:text-white! sm:h-[60px] sm:text-[28px] sm:leading-[60px]"
+            variant="primary"
+            size="xl"
+            endIcon="arrowCircle"
+            className="min-w-[min(100%,260px)] flex-1 basis-[min(100%,380px)]"
           >
             פתיחת משתמש
-            <span className="pointer-events-none absolute left-4 top-1/2 size-3.5 -translate-y-1/2">
-              <span className="absolute left-[8.33%] right-[8.33%] top-[8.33%] bottom-[8.33%] rotate-180 bg-white" />
-            </span>
-          </Link>
-          <Link href="/auth/register" className="h-[44px] w-1/2 rounded-[99px] border-2 border-[#201C44] text-center text-[20px] leading-[40px] text-black! visited:text-black! hover:text-black! sm:h-[60px] sm:text-[28px] sm:leading-[56px]">
+          </CtaPill>
+          <CtaPill
+            href="/auth/register"
+            variant="outlineAccent"
+            size="xl"
+            className="min-w-[min(100%,260px)] flex-1 basis-[min(100%,320px)]"
+          >
             הצטרף כספק
-          </Link>
+          </CtaPill>
         </div>
       </div>
 
-      <footer className="mt-14 h-[499px] w-full border border-black/10 bg-[rgba(230,239,244,0.42)] backdrop-blur-[6px]">
-        <div className="mx-auto h-full w-full max-w-[1280px] pt-[69px]">
-          <div className="mx-8 grid h-[212px] grid-cols-1 gap-8 md:grid-cols-4 md:gap-12">
+      <footer className="mt-14 min-h-[499px] w-full border border-black/10 bg-[rgba(230,239,244,0.42)] backdrop-blur-[6px]">
+        <div className="mx-auto w-full max-w-[1280px] pt-10 sm:pt-[69px]">
+          <div className="mx-4 grid min-h-0 auto-rows-auto grid-cols-1 gap-8 sm:mx-8 md:min-h-[212px] md:grid-cols-4 md:gap-12">
           <div className="w-full max-w-[268px] justify-self-center text-right md:justify-self-end">
               <h4 className="text-[24px] leading-8 tracking-[-0.6px] text-black">עולם הספקים</h4>
               <p className="mt-6 text-[14px] leading-[23px] text-black">
@@ -277,20 +298,23 @@ export default function Home() {
            
           </div>
 
-          <div className="mx-8 mt-7 flex flex-col items-end gap-4 md:mt-[26px]">
-            <p className="text-[18px] leading-7 text-[#444650]">הירשמו לניוזלטר שלנו</p>
-            <div className="flex w-full max-w-[448px] items-center gap-3">
+          <div className="mx-4 mt-7 flex flex-col items-stretch gap-4 sm:mx-8 sm:items-end md:mt-[26px]">
+            <p className="text-center text-[18px] leading-7 text-[#444650] sm:text-right">הירשמו לניוזלטר שלנו</p>
+            <div className="flex w-full max-w-[448px] flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
               <input
-                className="h-[41px] w-[300px] rounded-[99px] border border-black px-6 text-right text-[16px] leading-[19px] text-black"
+                className="h-[41px] min-h-[41px] w-full min-w-0 rounded-[99px] border border-black px-6 text-right text-[16px] leading-[19px] text-black sm:max-w-[300px] sm:flex-1"
                 placeholder="כתובת האימייל שלך"
               />
-              <button type="button" className="h-[41px] w-[136px] rounded-[99px] bg-[#00113A] text-[16px] leading-6 text-white">
+              <button
+                type="button"
+                className="h-[41px] w-full shrink-0 rounded-[99px] bg-[#00113A] text-[16px] leading-6 text-white sm:w-[136px]"
+              >
                 הרשמה
               </button>
             </div>
           </div>
 
-          <div className="mx-8 mt-6 flex items-center justify-between border-t border-black/5 pt-8 text-[12px] leading-4 text-black">
+          <div className="mx-4 mt-6 flex flex-col gap-4 border-t border-black/5 pt-8 text-[12px] leading-4 text-black sm:mx-8 sm:flex-row sm:items-center sm:justify-between">
             <p>כל הזכויות שמורות © עיצוב</p>
             <p dir="ltr">עברית | EN</p>
           </div>

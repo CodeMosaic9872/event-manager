@@ -1,0 +1,16 @@
+import { EventConceptsClient } from "@/app/event-production/concepts/event-concepts-client";
+import { MarketingPageShell } from "@/shared/components/marketing-page-shell";
+
+export default function EventProductionConceptsPage() {
+  return (
+    <MarketingPageShell
+      dir="ltr"
+      lang="en"
+      showBackgroundImage
+      className="!bg-white"
+      contentClassName="items-stretch pt-20 sm:pt-24 lg:pt-[150px]"
+    >
+      <EventConceptsClient />
+    </MarketingPageShell>
+  );
+}
