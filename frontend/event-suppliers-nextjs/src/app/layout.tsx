@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Assistant } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/store/providers";
-import { MainNav } from "@/shared/components/main-nav";
+import { MarketingHeader } from "@/shared/components/marketing-header";
 
 const assistant = Assistant({
   variable: "--font-assistant",
@@ -32,7 +32,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <Providers>
-          <MainNav />
+          <MarketingHeader />
           <main className="flex w-full flex-1 flex-col">
             {children}
           </main>

@@ -18,14 +18,14 @@ import {
 import { useAppDispatch } from "@/store/hooks";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PHONE_RE = /^[\d\s\-+()]{7,15}$/;
+const PHONE_RE = /^(0\d{9}|\+972\d{9})$/;
 const PURPOSE = "login" as const;
 
 function validateContact(value: string, mode: "email" | "phone"): string | null {
   const trimmed = value.trim();
   if (!trimmed) return "Please enter your email or phone number.";
   if (mode === "email" && !EMAIL_RE.test(trimmed)) return "Please enter a valid email address.";
-  if (mode === "phone" && !PHONE_RE.test(trimmed)) return "Please enter a valid phone number.";
+  if (mode === "phone" && !PHONE_RE.test(trimmed)) return "Please enter a valid Israeli phone number (05XXXXXXXX or +972XXXXXXXXX).";
   return null;
 }
 
@@ -143,6 +143,7 @@ function LoginForm() {
               value={contact}
               onChange={(event) => setContact(event.target.value)}
               autoComplete={contactMode === "email" ? "email" : "tel"}
+              maxLength={contactMode === "phone" ? 13 : undefined}
             />
             <SupplierAuthMailIcon />
           </div>

@@ -13,7 +13,7 @@ export type MarketingPageShellProps = {
   contentClassName?: string;
 };
 
-/** Shared marketing funnel shell: slate canvas, gradient orbs, consistent max-width & vertical rhythm (AI planner, join supplier, event production, etc.). Nav lives in root layout. */
+/** Shared marketing funnel shell: slate canvas, gradient orbs, consistent max-width & vertical rhythm (AI planner, join supplier, event production, etc.). `MarketingHeader` lives in root layout. */
 const contentShellClasses =
   "relative z-10 mx-auto flex w-full max-w-[1440px] flex-col items-center px-4 pb-16 pt-20 sm:px-6 sm:pb-20 sm:pt-24 lg:pt-[123px]";
 

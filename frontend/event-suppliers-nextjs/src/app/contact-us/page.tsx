@@ -2,10 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { MarketingModal, MARKETING_SOFT_SURFACE_CLASS } from "@/shared/components/marketing-modal";
 import { MarketingPageShell } from "@/shared/components/marketing-page-shell";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const SOCIAL = [
   { label: "Facebook", href: "https://www.facebook.com", icon: "/facebook.svg" },
@@ -18,13 +20,7 @@ function SuccessBadgeCheckIcon() {
   return (
     <span className="flex size-[29px] shrink-0 items-center justify-center rounded-full bg-[#201C44]" aria-hidden>
       <svg width="14" height="11" viewBox="0 0 14 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path
-          d="M1 5.5L4.5 9L13 1"
-          stroke="white"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
+        <path d="M1 5.5L4.5 9L13 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </span>
   );
@@ -32,9 +28,32 @@ function SuccessBadgeCheckIcon() {
 
 export default function ContactUsPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  const emailError = useMemo(() => {
+    if (!email.trim()) return null;
+    if (!EMAIL_RE.test(email.trim())) return "Please enter a valid email address.";
+    return null;
+  }, [email]);
+
+  const canSubmit = email.trim().length > 0 && !emailError
+    && fullName.trim().length > 0
+    && subject.trim().length > 0
+    && message.trim().length > 0;
 
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setError("");
+
+    if (!canSubmit) {
+      setError("Please fill in all fields correctly.");
+      return;
+    }
+
     setSubmitted(true);
   };
 
@@ -69,8 +88,11 @@ export default function ContactUsPage() {
                 autoComplete="email"
                 required
                 placeholder="name@company.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="h-12 w-full rounded-lg border border-transparent bg-[#F8FAFC] px-4 text-right text-base text-[#191C1D] outline-none ring-1 ring-[rgba(32,28,68,0.08)] placeholder:text-[#6B7280] focus:ring-[#4721DF]/40"
               />
+              {emailError ? <p className="w-full text-right text-xs text-red-600">{emailError}</p> : null}
             </label>
             <label className="flex flex-col items-end gap-2 text-right">
               <span className="text-xs font-normal uppercase tracking-[0.12em] text-[#444650]">Full name</span>
@@ -80,20 +102,22 @@ export default function ContactUsPage() {
                 autoComplete="name"
                 required
                 placeholder="Full name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
                 className="h-12 w-full rounded-lg border border-transparent bg-[#F8FAFC] px-4 text-right text-base text-[#191C1D] outline-none ring-1 ring-[rgba(32,28,68,0.08)] placeholder:text-[#6B7280] focus:ring-[#4721DF]/40"
               />
             </label>
           </div>
 
           <label className="mt-6 flex flex-col items-end gap-2 text-right">
-            <span className="text-xs font-normal uppercase tracking-[0.12em] text-[#444650]">
-              Subject of the inquiry
-            </span>
+            <span className="text-xs font-normal uppercase tracking-[0.12em] text-[#444650]">Subject of the inquiry</span>
             <input
               name="subject"
               type="text"
               required
               placeholder="What can we help with?"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
               className="h-12 w-full rounded-lg border border-transparent bg-[#F8FAFC] px-4 text-right text-base text-[#191C1D] outline-none ring-1 ring-[rgba(32,28,68,0.08)] placeholder:text-[#6B7280] focus:ring-[#4721DF]/40"
             />
           </label>
@@ -105,14 +129,21 @@ export default function ContactUsPage() {
               required
               rows={5}
               placeholder="Write to us here."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
               className="min-h-[140px] w-full resize-y rounded-lg border border-transparent bg-[#F8FAFC] px-4 py-3 text-right text-base text-[#191C1D] outline-none ring-1 ring-[rgba(32,28,68,0.08)] placeholder:text-[#6B7280] focus:ring-[#4721DF]/40"
             />
           </label>
 
+          {error ? <p className="mt-4 text-right text-sm text-red-700">{error}</p> : null}
+
           <div className="mt-8 flex justify-end">
             <button
               type="submit"
-              className="inline-flex h-12 min-w-[200px] items-center justify-center rounded-[99px] bg-[#201C44] px-8 text-center text-base font-normal text-white transition hover:opacity-95"
+              disabled={!canSubmit}
+              className={`inline-flex h-12 min-w-[200px] items-center justify-center rounded-[99px] px-8 text-center text-base font-normal text-white transition ${
+                canSubmit ? "cursor-pointer bg-[#201C44] hover:opacity-95" : "cursor-not-allowed bg-[#201C44] opacity-60"
+              }`}
             >
               Sending a message
             </button>
@@ -131,14 +162,7 @@ export default function ContactUsPage() {
                   className="flex flex-col items-center gap-2 text-center text-xs text-[#00113A] transition hover:opacity-80"
                 >
                   <span className="flex size-12 items-center justify-center rounded-full bg-[#201C44]">
-                    <Image
-                      src={icon}
-                      alt=""
-                      width={20}
-                      height={20}
-                      className="brightness-0 invert"
-                      unoptimized
-                    />
+                    <Image src={icon} alt="" width={20} height={20} className="brightness-0 invert" unoptimized />
                   </span>
                   {label}
                 </a>
@@ -185,15 +209,7 @@ export default function ContactUsPage() {
               href="/"
               className="relative isolate flex h-14 w-full flex-row items-center justify-center gap-2 rounded-[99px] bg-[#201C44] px-8 py-4 text-base font-normal leading-6 text-white! transition hover:opacity-95"
             >
-              <Image
-                src="/left-arrow.svg"
-                alt=""
-                width={13}
-                height={13}
-                className="size-[13px] shrink-0 brightness-0 invert"
-                unoptimized
-                aria-hidden
-              />
+              <Image src="/left-arrow.svg" alt="" width={13} height={13} className="size-[13px] shrink-0 brightness-0 invert" unoptimized aria-hidden />
               Back to main page
             </Link>
           </div>
