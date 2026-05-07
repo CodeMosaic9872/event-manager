@@ -1,21 +1,25 @@
-import { Injectable, Optional, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Injectable, Optional, UnauthorizedException } from '@nestjs/common';
 import { compare, hash } from 'bcryptjs';
 import { randomBytes, randomUUID } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PlatformRole } from '../../common/constants/roles.constant';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../../common/utils/jwt.util';
 import { AutomationService } from '../notifications/automation.service';
+import { OtpService } from './otp.service';
+import { SmsService } from '../sms/sms.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly otpService: OtpService,
+    private readonly smsService: SmsService,
     @Optional() private readonly automationService?: AutomationService,
   ) {}
 
   private ensureActiveStatus(status: 'ACTIVE' | 'INACTIVE' | 'BLOCKED') {
     if (status !== 'ACTIVE') {
-      throw new UnauthorizedException('User account is not active');
+      throw new UnauthorizedException('Your account is not active. Please contact support.');
     }
   }
 
@@ -51,11 +55,40 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  async register(payload: { email: string; password?: string; role?: PlatformRole }) {
+  async register(payload: { email: string; phone: string; role?: PlatformRole }) {
     const role = payload.role ?? 'USER';
-    const existing = await this.prisma.user.findUnique({ where: { email: payload.email } });
+    const phone = this.smsService.normalizeIsraeliMobile(payload.phone);
+
+    await this.otpService.consumeVerifiedOtp(phone, 'register');
+
+    const existingByEmail = await this.prisma.user.findUnique({ where: { email: payload.email } });
+    const existingByPhone = await this.prisma.user.findUnique({ where: { phone } });
+
+    if (existingByEmail && existingByPhone && existingByEmail.id !== existingByPhone.id) {
+      throw new ConflictException('Email and phone belong to different accounts. Please use matching credentials.');
+    }
+    if (existingByEmail && existingByEmail.phone && existingByEmail.phone !== phone) {
+      throw new ConflictException('This email is already linked to another phone number.');
+    }
+    if (existingByPhone && existingByPhone.email && existingByPhone.email !== payload.email) {
+      throw new ConflictException('This phone number is already linked to another email.');
+    }
+
+    const existing = existingByEmail ?? existingByPhone;
+
     if (existing) {
       this.ensureActiveStatus(existing.status);
+
+      if (!existing.phone || !existing.email) {
+        await this.prisma.user.update({
+          where: { id: existing.id },
+          data: {
+            phone: existing.phone ?? phone,
+            email: existing.email ?? payload.email,
+          },
+        });
+      }
+
       const hasRole = await this.prisma.userRole.findUnique({
         where: { userId_role: { userId: existing.id, role } },
       });
@@ -66,19 +99,14 @@ export class AuthService {
         where: { id: existing.id },
         include: { roles: true },
       });
-      if (payload.password && !existing.passwordHash) {
-        await this.prisma.user.update({
-          where: { id: existing.id },
-          data: { passwordHash: await hash(payload.password, 10) },
-        });
-      }
       const { accessToken, refreshToken } = await this.issueTokenPair(fullUser);
       await this.automationService?.publish({
         eventId: `evt_user_registered_${existing.id}`,
         type: 'user.registered',
         payload: {
           userId: existing.id,
-          email: existing.email,
+          email: fullUser.email,
+          phone: fullUser.phone,
           role,
           isExistingAccount: true,
         },
@@ -93,7 +121,7 @@ export class AuthService {
     const created = await this.prisma.user.create({
       data: {
         email: payload.email,
-        passwordHash: payload.password ? await hash(payload.password, 10) : null,
+        phone,
         roles: { create: [{ role }] },
       },
       include: { roles: true },
@@ -105,6 +133,7 @@ export class AuthService {
       payload: {
         userId: created.id,
         email: created.email,
+        phone: created.phone,
         role,
         isExistingAccount: false,
       },
@@ -116,22 +145,19 @@ export class AuthService {
     };
   }
 
-  async login(payload: { email: string; password?: string }) {
+  async login(payload: { email: string; phone: string }) {
+    const phone = this.smsService.normalizeIsraeliMobile(payload.phone);
+
+    await this.otpService.consumeVerifiedOtp(phone, 'login');
+
     const user = await this.prisma.user.findUnique({
       where: { email: payload.email },
       include: { roles: true },
     });
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+    if (!user || user.phone !== phone) {
+      throw new UnauthorizedException('Invalid login details. Make sure email and phone are correct.');
     }
     this.ensureActiveStatus(user.status);
-    if (!user.passwordHash || !payload.password) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-    const isPasswordValid = await compare(payload.password, user.passwordHash);
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
     const { accessToken, refreshToken } = await this.issueTokenPair(user);
     return {
       accessToken,
@@ -159,14 +185,14 @@ export class AuthService {
       include: { roles: true },
     });
     if (!user) {
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new UnauthorizedException('Invalid refresh token.');
     }
     this.ensureActiveStatus(user.status);
     if (!user.refreshTokenHash) {
-      throw new UnauthorizedException('Refresh token was revoked');
+      throw new UnauthorizedException('Session expired. Please log in again.');
     }
     if (decoded.ver !== user.refreshTokenVersion) {
-      throw new UnauthorizedException('Refresh token was revoked');
+      throw new UnauthorizedException('Session expired. Please log in again.');
     }
     const isRefreshTokenValid = await compare(token, user.refreshTokenHash);
     if (!isRefreshTokenValid) {
@@ -204,7 +230,7 @@ export class AuthService {
       include: { roles: true },
     });
     if (!user) {
-      throw new UnauthorizedException('Invalid token');
+      throw new UnauthorizedException('Invalid access token.');
     }
     return {
       items: [this.toAuthUserSummary(user)],

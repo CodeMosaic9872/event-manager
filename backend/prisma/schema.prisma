@@ -113,6 +113,21 @@ model UserRole {
   @@unique([userId, role])
 }
 
+model OtpRequest {
+  id          String     @id @default(cuid())
+  phone       String
+  purpose     String
+  codeHash    String
+  attempts    Int        @default(0)
+  maxAttempts Int        @default(5)
+  expiresAt   DateTime
+  verifiedAt  DateTime?
+  consumedAt  DateTime?
+  createdAt   DateTime   @default(now())
+
+  @@index([phone, purpose, createdAt])
+}
+
 model AnonymousSession {
   id              String      @id @default(cuid())
   token           String      @unique

@@ -1,21 +1,73 @@
 import { Body, Controller, Get, HttpCode, Post, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
+import { OtpService } from './otp.service';
 import { AuthGuard } from '../../common/guards/auth.guard';
 import { AuthUser } from '../../common/interfaces/auth-user.interface';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { ApiAuthErrors } from '../../common/swagger/api-error-responses.decorator';
-import { AnonymousSessionDto, LinkAnonymousDto, LoginDto, RefreshDto, RegisterDto } from './dto/auth.dto';
-import { AuthTokensResponseDto, MeResponseDto, RefreshTokensResponseDto } from './dto/auth-response.dto';
+import {
+  AnonymousSessionDto,
+  LinkAnonymousDto,
+  LoginDto,
+  RefreshDto,
+  RegisterDto,
+  RequestOtpDto,
+  VerifyOtpDto,
+} from './dto/auth.dto';
+import {
+  AuthTokensResponseDto,
+  MeResponseDto,
+  RefreshTokensResponseDto,
+  RequestOtpResponseDto,
+  VerifyOtpResponseDto,
+} from './dto/auth-response.dto';
 
 @ApiTags('Auth')
 @ApiAuthErrors()
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly otpService: OtpService,
+  ) {}
+
+  @Post('request-otp')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Send an OTP code to a phone number for register/login',
+    description:
+      'Generates a 6-digit OTP and sends it via 019sms. When AUTH_FIXED_OTP_ENABLED=true, no SMS is dispatched and AUTH_FIXED_OTP_CODE (default 123456) is accepted by /auth/verify-otp. The OTP is bound to the (phone, purpose) pair and expires after OTP_VALID_MINUTES.',
+  })
+  @ApiOkResponse({
+    description: 'OTP request accepted',
+    type: RequestOtpResponseDto,
+  })
+  requestOtp(@Body() body: RequestOtpDto) {
+    return this.otpService.requestOtp(body.phone, body.purpose);
+  }
+
+  @Post('verify-otp')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Verify an OTP code previously sent to a phone number',
+    description:
+      'Marks the (phone, purpose) pair as OTP-verified for a short window. The verified OTP is then consumed when calling /auth/register or /auth/login with the same phone and purpose.',
+  })
+  @ApiOkResponse({
+    description: 'OTP verified',
+    type: VerifyOtpResponseDto,
+  })
+  verifyOtp(@Body() body: VerifyOtpDto) {
+    return this.otpService.verifyOtp(body.phone, body.code, body.purpose);
+  }
 
   @Post('register')
-  @ApiOperation({ summary: 'Register a new account or extend user role' })
+  @ApiOperation({
+    summary: 'Register a new account or extend user role (requires OTP-verified phone)',
+    description:
+      'Creates a new user with email and phone, or extends an existing user with the supplied role. The phone must have been OTP-verified via /auth/request-otp + /auth/verify-otp with purpose=register prior to this call.',
+  })
   @ApiCreatedResponse({
     description: 'User registration/login payload',
     type: AuthTokensResponseDto,
@@ -26,7 +78,11 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(200)
-  @ApiOperation({ summary: 'Login with email/password and receive JWT tokens' })
+  @ApiOperation({
+    summary: 'Login with email + phone (requires OTP-verified phone)',
+    description:
+      'Authenticates a user by email + phone combination. The phone must have been OTP-verified via /auth/request-otp + /auth/verify-otp with purpose=login prior to this call. No password is required.',
+  })
   @ApiOkResponse({
     description: 'Authenticated session tokens',
     type: AuthTokensResponseDto,

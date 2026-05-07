@@ -37,3 +37,25 @@ export class MeResponseDto {
   @ApiProperty({ example: 1 })
   totalItems!: number;
 }
+
+export class RequestOtpResponseDto {
+  @ApiProperty({ example: true })
+  sent!: boolean;
+
+  @ApiProperty({ example: 'OTP sent successfully.' })
+  message!: string;
+
+  @ApiProperty({ example: 'fixed', enum: ['fixed', 'live'] })
+  mode!: 'fixed' | 'live';
+
+  @ApiProperty({ example: '2026-05-07T22:35:00.000Z', type: String })
+  expiresAt!: Date;
+}
+
+export class VerifyOtpResponseDto {
+  @ApiProperty({ example: true })
+  verified!: true;
+
+  @ApiProperty({ example: 'OTP verified successfully.' })
+  message!: string;
+}
