@@ -35,31 +35,31 @@ export class AuthController {
   @Post('request-otp')
   @HttpCode(200)
   @ApiOperation({
-    summary: 'Send an OTP code to a phone number for register/login',
+    summary: 'Send an OTP code to phone or email for register/login',
     description:
-      'Generates a 6-digit OTP and sends it via 019sms. When AUTH_FIXED_OTP_ENABLED=true, no SMS is dispatched and AUTH_FIXED_OTP_CODE (default 123456) is accepted by /auth/verify-otp. The OTP is bound to the (phone, purpose) pair and expires after OTP_VALID_MINUTES.',
+      'Generates a 6-digit OTP and sends it to exactly one target: phone (via 019sms) or email (via SMTP). In fixed mode (AUTH_FIXED_OTP_ENABLED=true), OTP delivery is bypassed and AUTH_FIXED_OTP_CODE is accepted for verification.',
   })
   @ApiOkResponse({
     description: 'OTP request accepted',
     type: RequestOtpResponseDto,
   })
   requestOtp(@Body() body: RequestOtpDto) {
-    return this.otpService.requestOtp(body.phone, body.purpose);
+    return this.otpService.requestOtp(body);
   }
 
   @Post('verify-otp')
   @HttpCode(200)
   @ApiOperation({
-    summary: 'Verify an OTP code previously sent to a phone number',
+    summary: 'Verify an OTP code previously sent to phone or email',
     description:
-      'Marks the (phone, purpose) pair as OTP-verified for a short window. The verified OTP is then consumed when calling /auth/register or /auth/login with the same phone and purpose.',
+      'Marks the (phone/email, purpose) pair as OTP-verified for a short window. The verified OTP is then consumed when calling /auth/register or /auth/login with the same identifier and purpose.',
   })
   @ApiOkResponse({
     description: 'OTP verified',
     type: VerifyOtpResponseDto,
   })
   verifyOtp(@Body() body: VerifyOtpDto) {
-    return this.otpService.verifyOtp(body.phone, body.code, body.purpose);
+    return this.otpService.verifyOtp(body);
   }
 
   @Post('register')
@@ -79,9 +79,9 @@ export class AuthController {
   @Post('login')
   @HttpCode(200)
   @ApiOperation({
-    summary: 'Login with email + phone (requires OTP-verified phone)',
+    summary: 'Login with OTP (email OR phone)',
     description:
-      'Authenticates a user by email + phone combination. The phone must have been OTP-verified via /auth/request-otp + /auth/verify-otp with purpose=login prior to this call. No password is required.',
+      'Authenticates a user using an OTP code. Provide either email or phone (exactly one) along with the OTP code. This endpoint verifies and consumes the OTP internally, so you do not need to call /auth/verify-otp as a separate step.',
   })
   @ApiOkResponse({
     description: 'Authenticated session tokens',

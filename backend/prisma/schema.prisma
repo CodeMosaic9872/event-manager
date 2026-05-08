@@ -115,7 +115,9 @@ model UserRole {
 
 model OtpRequest {
   id          String     @id @default(cuid())
-  phone       String
+  channel     String
+  phone       String?
+  email       String?
   purpose     String
   codeHash    String
   attempts    Int        @default(0)
@@ -125,7 +127,9 @@ model OtpRequest {
   consumedAt  DateTime?
   createdAt   DateTime   @default(now())
 
+  @@index([channel, purpose, createdAt])
   @@index([phone, purpose, createdAt])
+  @@index([email, purpose, createdAt])
 }
 
 model AnonymousSession {
