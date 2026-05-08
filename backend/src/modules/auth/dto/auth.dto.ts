@@ -7,7 +7,7 @@ export class RegisterDto {
   email!: string;
 
   @ApiProperty({
-    description: 'User mobile phone (Israeli mobile, e.g. 05XXXXXXXX or +9725XXXXXXXX). Must be OTP-verified before calling /auth/register.',
+    description: 'User phone/mobile number (Israeli mobile, e.g. 05XXXXXXXX or +9725XXXXXXXX). Must be OTP-verified before calling /auth/register.',
     example: '0501234567',
   })
   @IsString()

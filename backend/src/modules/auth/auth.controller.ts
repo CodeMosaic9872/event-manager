@@ -66,7 +66,7 @@ export class AuthController {
   @ApiOperation({
     summary: 'Register a new account or extend user role (requires OTP-verified phone)',
     description:
-      'Creates a new user with email and phone, or extends an existing user with the supplied role. The phone must have been OTP-verified via /auth/request-otp + /auth/verify-otp with purpose=register prior to this call.',
+      'Creates a new user with email and phone, or extends an existing user with the supplied role. The phone number must have been OTP-verified via /auth/request-otp + /auth/verify-otp with purpose=register prior to this call.',
   })
   @ApiCreatedResponse({
     description: 'User registration/login payload',
