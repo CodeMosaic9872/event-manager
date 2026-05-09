@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { useRequestOtpMutation, useVerifyOtpMutation, useLoginMutation } from "@/shared/api/api";
+import { useRequestOtpMutation, useLoginMutation } from "@/shared/api/api";
 import { MarketingModal, MARKETING_GRADIENT_SURFACE_CLASS } from "@/shared/components/marketing-modal";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
 
@@ -55,8 +55,7 @@ type ModalStep = "gate" | "thankYou";
 
 export function RegistrationQuotaModal({ open, onClose, freeMessageLimit }: Props) {
   const [requestOtp, { isLoading: isRequestingOtp }] = useRequestOtpMutation();
-  const [verifyOtp, { isLoading: isVerifyingOtp }] = useVerifyOtpMutation();
-  const [login] = useLoginMutation();
+  const [login, { isLoading: isVerifyingOtp }] = useLoginMutation();
 
   const [step, setStep] = useState<ModalStep>("gate");
   const [accountTab, setAccountTab] = useState<"user" | "provider">("user");
@@ -75,7 +74,10 @@ export function RegistrationQuotaModal({ open, onClose, freeMessageLimit }: Prop
     if (!canRequestOtp) return;
     setError("");
     try {
-      await requestOtp({ phone: identity.trim(), purpose: PURPOSE }).unwrap();
+      await requestOtp({
+        purpose: PURPOSE,
+        ...(loginMethod === "email" ? { email: identity.trim() } : { phone: identity.trim() }),
+      }).unwrap();
       setOtpSent(true);
     } catch {
       setError("Failed to send verification code. Please try again.");
@@ -93,14 +95,10 @@ export function RegistrationQuotaModal({ open, onClose, freeMessageLimit }: Prop
 
     setError("");
     try {
-      await verifyOtp({ phone: loginIdentity, code: otpCode, purpose: PURPOSE }).unwrap();
-    } catch {
-      setError("Invalid verification code. Please try again.");
-      return;
-    }
-
-    try {
-      await login({ email: loginIdentity, phone: loginIdentity }).unwrap();
+      await login({
+        code: otpCode,
+        ...(loginMethod === "email" ? { email: loginIdentity } : { phone: loginIdentity }),
+      }).unwrap();
       setStep("thankYou");
     } catch {
       setError("Login failed. Please try again.");
@@ -251,7 +249,7 @@ export function RegistrationQuotaModal({ open, onClose, freeMessageLimit }: Prop
                     Send again
                   </button>
                 </div>
-                <div className="flex justify-center gap-2">
+                <div className="flex justify-center gap-1 sm:gap-2">
                   {otp.map((d, i) => (
                     <input
                       key={i}
@@ -264,7 +262,7 @@ export function RegistrationQuotaModal({ open, onClose, freeMessageLimit }: Prop
                         next[i] = v;
                         setOtp(next);
                       }}
-                      className="box-border size-14 rounded-xl border border-black/10 bg-white text-center text-[20px] outline-none backdrop-blur-sm"
+                      className="box-border sm:size-14 size-12 rounded-xl border border-black/10 bg-white text-center text-[20px] outline-none backdrop-blur-sm"
                     />
                   ))}
                 </div>

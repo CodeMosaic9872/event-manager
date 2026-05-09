@@ -2,10 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ChangeEvent, FormEvent, useMemo, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   useGetRecommendedSupplierJobsQuery,
   useGetSupplierReferralLinkQuery,
+  useGetMySupplierProfileQuery,
+  useUpdateSupplierProfileMutation,
+  useUpdateSupplierServiceAreasMutation,
 } from "@/shared/api/api";
 import { ProtectedRoute } from "@/shared/components/protected-route";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
@@ -200,6 +203,11 @@ export default function SupplierDashboardPage() {
   const { data: referralData } = useGetSupplierReferralLinkQuery(undefined, {
     skip: shouldSkipProtectedQueries,
   });
+  const { data: profileData } = useGetMySupplierProfileQuery(undefined, {
+    skip: shouldSkipProtectedQueries,
+  });
+  const [updateProfile, { isLoading: isSavingProfile }] = useUpdateSupplierProfileMutation();
+  const [updateServiceAreas, { isLoading: isSavingAreas }] = useUpdateSupplierServiceAreasMutation();
   const { data: recommendedJobs = [] } = useGetRecommendedSupplierJobsQuery(undefined, {
     skip: shouldSkipProtectedQueries,
   });
@@ -231,6 +239,12 @@ export default function SupplierDashboardPage() {
   const [verificationFileName, setVerificationFileName] = useState<string | null>(null);
   const verificationInputRef = useRef<HTMLInputElement | null>(null);
 
+  useEffect(() => {
+    if (!profileData) return;
+    setBusinessName(profileData.businessName);
+    if (profileData.description) setDescription(profileData.description);
+  }, [profileData]);
+
   const jobCards = useMemo(() => {
     return DEMO_JOB_CARDS.map((demo, i) => {
       const api = recommendedJobs[i];
@@ -253,8 +267,17 @@ export default function SupplierDashboardPage() {
     }
   };
 
-  const onSave = (event: FormEvent<HTMLFormElement>) => {
+  const onSave = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const slug = businessName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+    try {
+      await updateProfile({ businessName, slug, description }).unwrap();
+      await updateServiceAreas({
+        serviceAreas: [...selectedAreas].map((a) => ({ regionCode: a.toLowerCase().replace(/\s+/g, "_") })),
+      }).unwrap();
+    } catch {
+      /* silently fail */
+    }
     const areaSummary = [...selectedAreas].join(", ");
     dispatch(saveSupplierDraftField({ key: "businessName", value: businessName }));
     dispatch(saveSupplierDraftField({ key: "serviceArea", value: areaSummary }));
@@ -283,6 +306,8 @@ export default function SupplierDashboardPage() {
     setShowUploadSuccessModal(true);
     event.target.value = "";
   };
+
+  const isSaving = isSavingProfile || isSavingAreas;
 
   return (
     <ProtectedRoute roles={["supplier", "admin"]}>
@@ -496,9 +521,12 @@ export default function SupplierDashboardPage() {
             <div className="relative z-2 mt-10 flex justify-end">
               <button
                 type="submit"
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-[99px] bg-[#201C44] px-10 text-base font-normal leading-6 text-white shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1)] transition hover:opacity-95"
+                disabled={isSaving}
+                className={`inline-flex h-12 items-center justify-center gap-2 rounded-[99px] px-10 text-base font-normal leading-6 text-white shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1)] transition ${
+                  isSaving ? "cursor-not-allowed bg-[#201C44] opacity-60" : "cursor-pointer bg-[#201C44] hover:opacity-95"
+                }`}
               >
-                Save changes
+                {isSaving ? "Saving..." : "Save changes"}
                 <Image
                   src="/save.svg"
                   alt=""

@@ -4,7 +4,7 @@ import Image from "next/image";
 import { FormEvent, Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { setCredentials } from "@/features/auth/auth-slice";
-import { useLoginMutation, useRequestOtpMutation, useVerifyOtpMutation } from "@/shared/api/api";
+import { useLoginMutation, useRequestOtpMutation } from "@/shared/api/api";
 import {
   SupplierAuthMailIcon,
   SupplierAuthMarketingLayout,
@@ -33,7 +33,6 @@ function AdminLoginContent() {
 
   const [login, { isLoading: isLoggingIn }] = useLoginMutation();
   const [requestOtp, { isLoading: isRequestingOtp }] = useRequestOtpMutation();
-  const [verifyOtp, { isLoading: isVerifyingOtp }] = useVerifyOtpMutation();
 
   const [contact, setContact] = useState("");
   const [contactMode, setContactMode] = useState<"email" | "phone">("email");
@@ -55,7 +54,10 @@ function AdminLoginContent() {
     if (!canRequestOtp) return;
     setError("");
     try {
-      await requestOtp({ phone: contact.trim(), purpose: PURPOSE }).unwrap();
+      await requestOtp({
+        purpose: PURPOSE,
+        ...(contactMode === "email" ? { email: contact.trim() } : { phone: contact.trim() }),
+      }).unwrap();
       setOtpSent(true);
     } catch {
       setError("Failed to send verification code. Please try again.");
@@ -63,7 +65,7 @@ function AdminLoginContent() {
   };
 
   const otpComplete = otp.every((d) => d.length === 1);
-  const isLoading = isRequestingOtp || isVerifyingOtp || isLoggingIn;
+  const isLoading = isRequestingOtp || isLoggingIn;
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -77,14 +79,10 @@ function AdminLoginContent() {
     }
 
     try {
-      await verifyOtp({ phone: loginIdentity, code: otpCode, purpose: PURPOSE }).unwrap();
-    } catch {
-      setError("Invalid verification code. Please try again.");
-      return;
-    }
-
-    try {
-      const payload = await login({ email: loginIdentity, phone: loginIdentity }).unwrap();
+      const payload = await login({
+        code: otpCode,
+        ...(contactMode === "email" ? { email: loginIdentity } : { phone: loginIdentity }),
+      }).unwrap();
       const roles = payload.user.roles.map((role) => role.toLowerCase() as "user" | "supplier" | "admin");
       dispatch(
         setCredentials({
@@ -119,7 +117,7 @@ function AdminLoginContent() {
       contactMode={contactMode}
       onContactModeChange={setContactMode}
     >
-      <form className="flex w-full max-w-[382px] flex-col gap-6" onSubmit={onSubmit}>
+      <form className="flex w-full max-w-full flex-col gap-6 sm:max-w-[382px]" onSubmit={onSubmit}>
         <div className="flex flex-col gap-2">
           <label className="w-full pe-1 text-right text-[14px] leading-5 text-black">Email / Phone</label>
           <div className="relative">
@@ -161,7 +159,7 @@ function AdminLoginContent() {
             </button>
             <span className="text-right text-[14px] leading-5 text-black">Enter verification code (OTP)</span>
           </div>
-          <div className="flex w-full flex-row justify-center gap-2">
+          <div className="flex w-full flex-row justify-center gap-1 sm:gap-2">
             {otp.map((digit, index) => (
               <input
                 key={index}
@@ -170,7 +168,7 @@ function AdminLoginContent() {
                 maxLength={1}
                 value={digit}
                 onChange={(event) => setOtpDigit(index, event.target.value)}
-                className="box-border size-14 rounded-xl border border-black/10 bg-white text-center text-[18px] tabular-nums outline-none backdrop-blur-sm focus:ring-2 focus:ring-[#4721DF]/30"
+                className="box-border sm:size-14 size-12 rounded-xl border border-black/10 bg-white text-center text-[18px] tabular-nums outline-none backdrop-blur-sm focus:ring-2 focus:ring-[#4721DF]/30"
                 aria-label={`Digit ${index + 1}`}
               />
             ))}
@@ -185,7 +183,7 @@ function AdminLoginContent() {
           className={`flex h-[58px] w-full flex-row items-center justify-center gap-2 rounded-[99px] border px-4 text-[16px] font-normal leading-6 transition ${
             otpComplete && !isLoading
               ? "cursor-pointer border-transparent bg-[#201C44] text-white hover:bg-[#151238]"
-              : "cursor-not-allowed border-black/10 bg-black/10 text-black opacity-100"
+              : "cursor-not-allowed border-transparent bg-[#201C44] text-white opacity-60"
           }`}
         >
           <span>{isLoggingIn ? "Logging in..." : "Login as admin"}</span>

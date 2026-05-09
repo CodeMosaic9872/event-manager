@@ -18,6 +18,8 @@ import {
   SupplierAuthMarketingLayout,
 } from "@/shared/components/supplier-auth/supplier-auth-marketing-layout";
 import { getSafeInternalRedirectPath } from "@/shared/lib/safe-redirect-path";
+import { MarketingPageShell } from "@/shared/components/marketing-page-shell";
+import { marketingPloniFont } from "@/shared/lib/marketing-typography";
 import { useAppDispatch } from "@/store/hooks";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -53,6 +55,7 @@ function SupplierRegisterInner() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [otpSent, setOtpSent] = useState(false);
   const [error, setError] = useState("");
+  const [step, setStep] = useState<"contact" | "verify">("contact");
 
   const contactError = useMemo(() => validateContact(contact, contactMode), [contact, contactMode]);
   const canRequestOtp = !isRequestingOtp && contact.trim().length > 0 && !contactError;
@@ -77,6 +80,7 @@ function SupplierRegisterInner() {
     try {
       await requestOtp({ phone: contact.trim(), purpose: PURPOSE }).unwrap();
       setOtpSent(true);
+      setStep("verify");
     } catch {
       setError("Failed to send verification code. Please try again.");
     }
@@ -106,7 +110,11 @@ function SupplierRegisterInner() {
     }
 
     try {
-      const payload = await register({ email: identity, phone: identity, role: "SUPPLIER" }).unwrap();
+      const payload = await register({
+        email: identity,
+        phone: identity,
+        role: "SUPPLIER",
+      }).unwrap();
       dispatch(
         setCredentials({
           user: {
@@ -141,7 +149,73 @@ function SupplierRegisterInner() {
   };
 
   if (fromPurchase && postAuthPaymentView !== null) {
+    if (step === "verify") {
     return (
+      <MarketingPageShell showBackgroundImage dir="rtl" lang="he">
+        <div
+          className="flex min-h-screen items-center justify-center px-4"
+          style={{ background: "linear-gradient(180deg, #9BD3EF 0%, #FFFFFF 58.17%)", fontFamily: marketingPloniFont }}
+        >
+          <div className="relative w-full max-w-[480px] overflow-hidden rounded-[24px] border border-[rgba(134,85,246,0.2)] bg-[rgba(71,33,223,0.07)] px-6 py-10 shadow-[0px_8px_32px_rgba(0,0,0,0.37)] backdrop-blur-[6px] sm:px-12 sm:py-12">
+            <h1 className="mb-2 text-center text-[28px] font-normal leading-9 tracking-[-0.75px] text-black sm:text-[30px]">
+              Create a new account
+            </h1>
+            <p className="mb-8 text-center text-[14px] leading-5 text-black/70">
+              A verification code will be sent to you shortly.
+            </p>
+
+            <form className="flex flex-col items-center gap-6" onSubmit={handleVerifyAndRegister}>
+              <div className="flex w-full flex-col gap-4 border-t border-black/10 pt-4">
+                <div className="flex w-full flex-row items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={handleRequestOtp}
+                    disabled={isRequestingOtp}
+                    className="cursor-pointer text-[16px] leading-6 text-black underline hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    To resend
+                  </button>
+                  <span className="text-right text-[16px] leading-5 text-black">
+                    Enter verification code
+                  </span>
+                </div>
+                <div className="flex w-full flex-row justify-center gap-[29px]">
+                  {otp.map((digit, i) => (
+                    <input
+                      key={i}
+                      id={`reg-otp-${i}`}
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => setOtpDigit(i, e.target.value)}
+                      className="box-border size-14 rounded-xl border border-black/10 bg-white text-center text-[18px] tabular-nums outline-none backdrop-blur-[8px] focus:ring-2 focus:ring-[#4721DF]/30"
+                      aria-label={`Digit ${i + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {error ? <p className="text-center text-sm text-red-600">{error}</p> : null}
+
+              <button
+                type="submit"
+                disabled={!canSubmit}
+                className={`flex h-[58px] w-full max-w-[382px] flex-row items-center justify-center gap-2 rounded-[99px] border px-4 text-[16px] font-normal leading-6 transition ${
+                  canSubmit
+                    ? "cursor-pointer border-transparent bg-[#201C44] text-white hover:bg-[#151238]"
+                    : "cursor-not-allowed border-black/10 bg-black/10 text-black opacity-100"
+                }`}
+              >
+                <span>{isVerifyingOtp || isRegistering ? "Creating..." : "Logging in to the system"}</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </MarketingPageShell>
+    );
+  }
+
+  return (
       <SupplierAuthPaymentResultView
         outcome={postAuthPaymentView}
         onOutcomeChange={setPostAuthPaymentView}
@@ -205,7 +279,7 @@ function SupplierRegisterInner() {
             </button>
             <span className="text-right text-[14px] leading-5 text-black">Enter verification code (OTP)</span>
           </div>
-          <div className="flex w-full flex-row justify-center gap-2">
+          <div className="flex w-full flex-row justify-center gap-1 sm:gap-2">
             {otp.map((digit, i) => (
               <input
                 key={i}
@@ -214,7 +288,7 @@ function SupplierRegisterInner() {
                 maxLength={1}
                 value={digit}
                 onChange={(e) => setOtpDigit(i, e.target.value)}
-                className="box-border size-14 rounded-xl border border-black/10 bg-white text-center text-[18px] tabular-nums outline-none backdrop-blur-sm focus:ring-2 focus:ring-[#4721DF]/30"
+                className="box-border sm:size-14 size-12 rounded-xl border border-black/10 bg-white text-center text-[18px] tabular-nums outline-none backdrop-blur-sm focus:ring-2 focus:ring-[#4721DF]/30"
                 aria-label={`Digit ${i + 1}`}
               />
             ))}
@@ -229,7 +303,7 @@ function SupplierRegisterInner() {
           className={`flex h-[58px] w-full flex-row items-center justify-center gap-2 rounded-[99px] border px-4 text-[16px] font-normal leading-6 transition disabled:cursor-not-allowed ${
             canSubmit
               ? "cursor-pointer border-transparent bg-[#201C44] text-white hover:bg-[#151238]"
-              : "cursor-not-allowed border-black/10 bg-black/10 text-black opacity-100"
+              : "cursor-not-allowed border-transparent bg-[#201C44] text-white opacity-60"
           }`}
         >
           <span>{isRegistering ? "Creating…" : "Create supplier account"}</span>

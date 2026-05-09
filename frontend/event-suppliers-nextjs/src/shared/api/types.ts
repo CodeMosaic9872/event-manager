@@ -7,18 +7,18 @@ import type {
   SuppliersListResponse,
 } from "@/shared/types";
 
-export type LoginPayload = { email: string; phone: string };
+export type LoginPayload = { email?: string; phone?: string; code: string };
 export type RegisterPayload = {
-  email: string;
-  phone: string;
+  email?: string;
+  phone?: string;
   role?: "USER" | "SUPPLIER" | "ADMIN";
   fullName?: string;
   companyName?: string;
 };
 export type RefreshPayload = { token: string };
-export type RequestOtpPayload = { phone: string; purpose: "register" | "login" };
+export type RequestOtpPayload = { phone?: string; email?: string; purpose: "register" | "login" };
 export type RequestOtpResponse = { sent: boolean; message: string; mode: string; expiresAt: string };
-export type VerifyOtpPayload = { phone: string; code: string; purpose: "register" | "login" };
+export type VerifyOtpPayload = { phone?: string; email?: string; code: string; purpose: "register" | "login" };
 export type VerifyOtpResponse = { verified: boolean; message: string };
 export type SuppliersQuery = {
   q?: string;
@@ -40,6 +40,13 @@ export type CreateJobPayload = {
   budgetMax?: number;
   guestCount?: number;
 };
+export type UpsertSupplierProfilePayload = {
+  businessName: string;
+  slug?: string;
+  description?: string;
+};
+export type ServiceAreaItem = { regionCode: string; cityCode?: string };
+export type UpdateSupplierServiceAreasPayload = { serviceAreas: ServiceAreaItem[] };
 export type CreateConversationResponse = { id: string };
 export type SendMessagePayload = { id: string; message: string };
 export type NotificationPreferences = {
