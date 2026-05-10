@@ -23,6 +23,16 @@ export class CreateJobDto {
   @IsString()
   eventTypeId?: string;
 
+  @ApiPropertyOptional({ description: 'Supplier category id for this tender', example: 'cat_123' })
+  @IsOptional()
+  @IsString()
+  categoryId?: string;
+
+  @ApiPropertyOptional({ description: 'Subcategory id (must belong to categoryId)', example: 'sub_123' })
+  @IsOptional()
+  @IsString()
+  subcategoryId?: string;
+
   @ApiPropertyOptional({ description: 'Event location text', example: 'Haifa, Israel' })
   @IsOptional()
   @IsString()
@@ -67,6 +77,21 @@ export class UpdateJobDto {
   @IsOptional()
   @IsString()
   eventDate?: string;
+
+  @ApiPropertyOptional({ description: 'Event type id' })
+  @IsOptional()
+  @IsString()
+  eventTypeId?: string;
+
+  @ApiPropertyOptional({ description: 'Supplier category id' })
+  @IsOptional()
+  @IsString()
+  categoryId?: string;
+
+  @ApiPropertyOptional({ description: 'Subcategory id (must match categoryId)' })
+  @IsOptional()
+  @IsString()
+  subcategoryId?: string;
 }
 
 export class ApplyJobDto {

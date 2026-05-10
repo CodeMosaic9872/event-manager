@@ -9,6 +9,7 @@ import { JobBoardModule } from './modules/job-board/job-board.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ReferralsModule } from './modules/referrals/referrals.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { ConceptsModule } from './modules/concepts/concepts.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { AdminModule } from './modules/admin/admin.module';
     AuthModule,
     TaxonomyModule,
     SuppliersModule,
+    ConceptsModule,
     AiPlanningModule,
     JobBoardModule,
     NotificationsModule,
