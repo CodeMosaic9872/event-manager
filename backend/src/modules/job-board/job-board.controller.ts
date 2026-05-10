@@ -4,7 +4,6 @@ import { JobBoardService } from './job-board.service';
 import { JobPublishGuard } from './guards/job-publish.guard';
 import { SupplierOnlyGuard } from './guards/supplier-only.guard';
 import { AuthGuard } from '../../common/guards/auth.guard';
-import { OptionalAuthGuard } from '../../common/guards/optional-auth.guard';
 import { AuthUser } from '../../common/interfaces/auth-user.interface';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { ApiProtectedErrors } from '../../common/swagger/api-error-responses.decorator';
@@ -41,13 +40,13 @@ export class JobBoardController {
 
   @Get(':id')
   @ApiOperation({
-    summary: 'Get a job by id (published: anyone; draft/other: owner only with Bearer token)',
+    summary: 'Get a job by id (any status: DRAFT, PUBLISHED, CLOSED, ARCHIVED)',
+    description:
+      'Unauthenticated access is allowed. Treat job ids as opaque; only users with the link can open drafts.',
   })
   @ApiOkResponse({ type: JobDetailResponseDto })
-  @UseGuards(OptionalAuthGuard)
-  getJobById(@Param('id') id: string, @CurrentUser() user: AuthUser | undefined) {
-    const requesterId = user && !user.id.startsWith('anonymous:') ? user.id : undefined;
-    return this.jobBoardService.getJobById(id, requesterId);
+  getJobById(@Param('id') id: string) {
+    return this.jobBoardService.getJobById(id);
   }
 
   @Post()
