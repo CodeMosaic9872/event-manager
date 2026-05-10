@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
+import { useGetSuppliersQuery } from "@/shared/api/api";
 import { CarouselArrowImg } from "@/shared/components/carousel-arrow-img";
 import { SupplierGlassCard } from "@/shared/components/supplier-glass-card";
 import { savedSuppliersDemo } from "@/shared/data/saved-suppliers.demo";
@@ -21,6 +22,13 @@ export function AdditionalSuppliersSection({
   className = "",
 }: AdditionalSuppliersSectionProps) {
   const carouselRef = useRef<HTMLDivElement>(null);
+  const { data: apiData } = useGetSuppliersQuery({ take: 8 });
+
+  const suppliers = (apiData?.items?.length ? apiData.items : null) ?? savedSuppliersDemo.map((s) => ({
+    id: s.name,
+    businessName: s.name,
+    ratingAvg: s.rating,
+  }));
 
   const scrollCarousel = (dir: "next" | "prev") => {
     const el = carouselRef.current;
@@ -65,18 +73,21 @@ export function AdditionalSuppliersSection({
           ref={carouselRef}
           className="flex min-w-0 flex-1 gap-6 overflow-x-auto pb-4 pt-10 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
-          {savedSuppliersDemo.map((supplier) => (
-            <div key={supplier.name} className="w-[288px] shrink-0">
-              <SupplierGlassCard
-                name={supplier.name}
-                subtitle={supplier.subtitle}
-                description={supplier.description}
-                location={supplier.location}
-                rating={supplier.rating}
-                imageUrl={supplier.imageUrl}
-              />
-            </div>
-          ))}
+          {suppliers.map((supplier) => {
+            const demo = savedSuppliersDemo.find((d) => d.name === supplier.businessName);
+            return (
+              <div key={supplier.id} className="w-[288px] shrink-0">
+                <SupplierGlassCard
+                  name={supplier.businessName}
+                  subtitle={demo?.subtitle ?? ""}
+                  description={demo?.description ?? ""}
+                  location={demo?.location ?? ""}
+                  rating={String(supplier.ratingAvg ?? demo?.rating ?? 0)}
+                  imageUrl={demo?.imageUrl || undefined}
+                />
+              </div>
+            );
+          })}
         </div>
 
         <button

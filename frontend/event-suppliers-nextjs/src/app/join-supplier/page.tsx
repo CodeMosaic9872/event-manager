@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MarketingGradientSurface } from "@/shared/components/marketing-modal";
 import { MarketingPageShell } from "@/shared/components/marketing-page-shell";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_RE = /^(0\d{9}|\+972\d{9})$/;
 
 const SUPPLIER_CATEGORIES = [
   "Music & DJ",
@@ -31,9 +34,33 @@ export default function JoinSupplierPage() {
   const [businessName, setBusinessName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+
+  const emailError = useMemo(() => {
+    if (!email.trim()) return null;
+    if (!EMAIL_RE.test(email.trim())) return "Please enter a valid email address.";
+    return null;
+  }, [email]);
+
+  const phoneError = useMemo(() => {
+    if (!phone.trim()) return null;
+    if (!PHONE_RE.test(phone.trim())) return "Please enter a valid Israeli phone number (05XXXXXXXX or +972XXXXXXXXX).";
+    return null;
+  }, [phone]);
+
+  const canContinue = fullName.trim().length > 0 && businessName.trim().length > 0
+    && email.trim().length > 0 && !emailError
+    && phone.trim().length > 0 && !phoneError;
 
   const handleContinue = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setError("");
+
+    if (!canContinue) {
+      setError("Please fill in all required fields correctly.");
+      return;
+    }
+
     try {
       sessionStorage.setItem(
         "supplierJoinStep1",
@@ -157,24 +184,12 @@ export default function JoinSupplierPage() {
                       </option>
                     ))}
                   </select>
-                  {/* Chevron on inline-end = physical left in RTL */}
                   <span
                     className="pointer-events-none absolute top-1/2 inset-e-3 -translate-y-1/2 text-white"
                     aria-hidden
                   >
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path
-                        d="M6 9l6 6 6-6"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </span>
                 </div>
@@ -201,22 +216,12 @@ export default function JoinSupplierPage() {
                     className="pointer-events-none absolute top-1/2 inset-s-3 -translate-y-1/2 text-[#475569]"
                     aria-hidden
                   >
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.75"
-                    >
-                      <path
-                        d="M4 6h16v12H4V6zm0 0l8 6 8-6"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+                      <path d="M4 6h16v12H4V6zm0 0l8 6 8-6" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </span>
                 </div>
+                {emailError ? <p className="pe-1 text-right text-xs text-red-600">{emailError}</p> : null}
               </label>
               <label className="flex flex-col gap-2">
                 <span className="text-right text-[14px] font-medium leading-5 text-[#0f172a]">
@@ -231,31 +236,33 @@ export default function JoinSupplierPage() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     dir="ltr"
+                    maxLength={13}
                     className={`${inputShell} text-end font-mono text-[15px]`}
                   />
                   <span
                     className="pointer-events-none absolute top-1/2 inset-s-3 -translate-y-1/2 text-[#475569]"
                     aria-hidden
                   >
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.75"
-                    >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
                       <rect x="5" y="2" width="14" height="20" rx="2" />
                       <path d="M12 18h.01" strokeLinecap="round" />
                     </svg>
                   </span>
                 </div>
+                {phoneError ? <p className="pe-1 text-right text-xs text-red-600">{phoneError}</p> : null}
               </label>
             </div>
 
+            {error ? <p className="text-right text-sm text-red-700">{error}</p> : null}
+
             <button
               type="submit"
-              className="mt-2 flex h-[56px] w-full flex-row items-center justify-center gap-3 rounded-full bg-[#201C44] px-6 text-[17px] font-medium text-white shadow-[0_10px_28px_rgba(32,28,68,0.38)] transition hover:bg-[#151238] hover:shadow-[0_12px_32px_rgba(32,28,68,0.42)]"
+              disabled={!canContinue}
+              className={`mt-2 flex h-[56px] w-full flex-row items-center justify-center gap-3 rounded-full px-6 text-[17px] font-medium text-white shadow-[0_10px_28px_rgba(32,28,68,0.38)] transition ${
+                canContinue
+                  ? "cursor-pointer bg-[#201C44] hover:bg-[#151238] hover:shadow-[0_12px_32px_rgba(32,28,68,0.42)]"
+                  : "cursor-not-allowed bg-[#201C44] opacity-60"
+              }`}
             >
               <span>Continue to the next step</span>
               <span

@@ -1,7 +1,11 @@
 import type { EndpointBuilder } from "@reduxjs/toolkit/query";
 import { suppliers } from "@/shared/data/mock-data";
 import type { Supplier, SupplierProfileResponse, SuppliersListResponse } from "@/shared/types";
-import type { SuppliersQuery } from "@/shared/api/types";
+import type {
+  SuppliersQuery,
+  UpsertSupplierProfilePayload,
+  UpdateSupplierServiceAreasPayload,
+} from "@/shared/api/types";
 
 export function createSuppliersEndpoints(
   builder: EndpointBuilder<any, any, any>,
@@ -61,6 +65,23 @@ export function createSuppliersEndpoints(
         );
         return { data: filtered };
       },
+      providesTags: ["Suppliers"],
+    }),
+    getMySupplierProfile: builder.query<SupplierProfileResponse, void>({
+      query: () => ({ url: "/v1/supplier/profile" }),
+    }),
+    createSupplierProfile: builder.mutation<SupplierProfileResponse, UpsertSupplierProfilePayload>({
+      query: (body) => ({ url: "/v1/supplier/profile", method: "POST", body }),
+    }),
+    updateSupplierProfile: builder.mutation<SupplierProfileResponse, UpsertSupplierProfilePayload>({
+      query: (body) => ({ url: "/v1/supplier/profile", method: "PATCH", body }),
+    }),
+    updateSupplierServiceAreas: builder.mutation<void, UpdateSupplierServiceAreasPayload>({
+      query: (body) => ({ url: "/v1/supplier/service-areas", method: "PATCH", body }),
+    }),
+    getUserFavorites: builder.query<SuppliersListResponse, void>({
+      query: () => ({ url: "/v1/users/me/favorites" }),
+      transformErrorResponse: () => ({ items: [], nextCursor: null, facets: {} }),
       providesTags: ["Suppliers"],
     }),
   };
