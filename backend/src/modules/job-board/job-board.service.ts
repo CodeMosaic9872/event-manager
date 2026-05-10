@@ -24,6 +24,23 @@ export class JobBoardService {
     return { skip: (safePage - 1) * safeLimit, take: safeLimit };
   }
 
+  async getJobById(jobId: string, requesterUserId?: string) {
+    const job = await this.prisma.jobPost.findUnique({
+      where: { id: jobId },
+      include: jobPostListInclude,
+    });
+    if (!job) {
+      throw new NotFoundException('Job not found');
+    }
+    if (job.status === 'PUBLISHED') {
+      return job;
+    }
+    if (requesterUserId && !requesterUserId.startsWith('anonymous:') && job.ownerUserId === requesterUserId) {
+      return job;
+    }
+    throw new NotFoundException('Job not found');
+  }
+
   async listPublicJobs(page?: number, limit?: number) {
     const pg = this.toPagination(page, limit);
     const where = { status: 'PUBLISHED' } as const;

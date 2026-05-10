@@ -4,6 +4,7 @@ import { JobBoardService } from './job-board.service';
 import { JobPublishGuard } from './guards/job-publish.guard';
 import { SupplierOnlyGuard } from './guards/supplier-only.guard';
 import { AuthGuard } from '../../common/guards/auth.guard';
+import { OptionalAuthGuard } from '../../common/guards/optional-auth.guard';
 import { AuthUser } from '../../common/interfaces/auth-user.interface';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { ApiProtectedErrors } from '../../common/swagger/api-error-responses.decorator';
@@ -15,6 +16,7 @@ import {
   CreatedJobResponseDto,
   JobApplicationResponseDto,
   JobApplicationsCountResponseDto,
+  JobDetailResponseDto,
   JobSummaryResponseDto,
   RecommendedJobResponseDto,
   UserMeStatsResponseDto,
@@ -35,6 +37,17 @@ export class JobBoardController {
   })
   listPublicJobs(@Query() query: PaginationQueryDto) {
     return this.jobBoardService.listPublicJobs(query.page, query.limit);
+  }
+
+  @Get(':id')
+  @ApiOperation({
+    summary: 'Get a job by id (published: anyone; draft/other: owner only with Bearer token)',
+  })
+  @ApiOkResponse({ type: JobDetailResponseDto })
+  @UseGuards(OptionalAuthGuard)
+  getJobById(@Param('id') id: string, @CurrentUser() user: AuthUser | undefined) {
+    const requesterId = user && !user.id.startsWith('anonymous:') ? user.id : undefined;
+    return this.jobBoardService.getJobById(id, requesterId);
   }
 
   @Post()

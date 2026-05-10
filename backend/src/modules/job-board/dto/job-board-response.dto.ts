@@ -71,6 +71,41 @@ export class JobSummaryResponseDto {
   subcategory!: SubcategorySummaryDto | null;
 }
 
+export class JobDetailResponseDto extends JobSummaryResponseDto {
+  @ApiProperty()
+  ownerUserId!: string;
+
+  @ApiPropertyOptional({ nullable: true })
+  eventTypeId!: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  categoryId!: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  subcategoryId!: string | null;
+
+  @ApiProperty()
+  description!: string;
+
+  @ApiPropertyOptional({ nullable: true })
+  eventDate!: Date | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  locationText!: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  guestCount!: number | null;
+
+  @ApiProperty()
+  createdAt!: Date;
+
+  @ApiProperty()
+  updatedAt!: Date;
+
+  @ApiPropertyOptional({ nullable: true })
+  publishedAt!: Date | null;
+}
+
 export class CreatedJobResponseDto {
   @ApiProperty({ example: 'job_1' })
   id!: string;
