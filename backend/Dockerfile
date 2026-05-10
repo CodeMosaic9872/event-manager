@@ -34,4 +34,7 @@ EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:3001/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/src/main.js"]
+# Schema sync: this repo historically used `db push` (no prisma/migrations). `migrate deploy` on a
+# non-empty DB with no migration history fails with P3005 — see https://pris.ly/d/migrate-baseline
+# When you commit real migrations, switch to: npx prisma migrate deploy
+CMD ["sh", "-c", "npx prisma db push && node dist/src/main.js"]
