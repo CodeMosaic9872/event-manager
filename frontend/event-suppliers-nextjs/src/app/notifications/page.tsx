@@ -1,18 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   useGetNotificationPreferencesQuery,
   useUpdateNotificationPreferencesMutation,
 } from "@/shared/api/api";
+import { useAppSelector } from "@/store/hooks";
 
 export default function NotificationsPage() {
-  const { data, isLoading } = useGetNotificationPreferencesQuery();
+  const router = useRouter();
+  const sessionUser = useAppSelector((s) => s.auth.user);
+  const isHydrated = useAppSelector((s) => s.auth.isHydrated);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    if (!sessionUser) router.replace("/auth/login?next=/notifications");
+  }, [isHydrated, sessionUser, router]);
+
+  const { data, isLoading } = useGetNotificationPreferencesQuery(undefined, {
+    skip: !isHydrated || !sessionUser,
+  });
   const [updatePrefs, { isLoading: isSaving }] = useUpdateNotificationPreferencesMutation();
   const [local, setLocal] = useState({
     emailEnabled: true,
     pushEnabled: true,
   });
+
+  if (!isHydrated) return null;
+  if (!sessionUser) return null;
 
   const state = data || local;
 

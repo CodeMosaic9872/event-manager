@@ -11,7 +11,7 @@ import {
   getSafeInternalRedirectPath,
 } from "@/shared/lib/safe-redirect-path";
 import type { UserRole } from "@/shared/types";
-import { useAppDispatch } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { MarketingPageShell } from "@/shared/components/marketing-page-shell";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
 import { SupplierRegisterFormWithSuspense } from "./supplier-register-form";
@@ -33,7 +33,17 @@ function GoogleGlyph() {
 
 function RegisterPageContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const sessionUser = useAppSelector((s) => s.auth.user);
+  const sessionHydrated = useAppSelector((s) => s.auth.isHydrated);
   const isSupplier = searchParams.get("role")?.toUpperCase() === "SUPPLIER";
+
+  useEffect(() => {
+    if (!sessionHydrated || !sessionUser) return;
+    const next = searchParams.get("next");
+    router.replace(getSafeInternalRedirectPath(next, getPostLoginFallbackPath(sessionUser.roles)));
+  }, [sessionHydrated, sessionUser, router, searchParams]);
+
   if (isSupplier) {
     return <SupplierRegisterFormWithSuspense />;
   }
@@ -60,6 +70,15 @@ function GenericRegisterForm() {
   const [requestOtp, { isLoading: isRequestingOtp }] = useRequestOtpMutation();
   const [verifyOtp, { isLoading: isVerifyingOtp }] = useVerifyOtpMutation();
   const router = useRouter();
+  const sessionUser = useAppSelector((s) => s.auth.user);
+  const sessionHydrated = useAppSelector((s) => s.auth.isHydrated);
+
+  useEffect(() => {
+    if (!sessionHydrated || !sessionUser) return;
+    const roles = sessionUser.roles;
+    const next = new URLSearchParams(window.location.search).get("next");
+    router.replace(getSafeInternalRedirectPath(next, getPostLoginFallbackPath(roles)));
+  }, [sessionHydrated, sessionUser, router]);
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");

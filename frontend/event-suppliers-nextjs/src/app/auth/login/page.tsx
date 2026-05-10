@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { FormEvent, Suspense, useMemo, useState } from "react";
+import { FormEvent, Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { setCredentials } from "@/features/auth/auth-slice";
 import { useLoginMutation, useRequestOtpMutation } from "@/shared/api/api";
@@ -15,7 +15,7 @@ import {
   getPostLoginFallbackPath,
   getSafeInternalRedirectPath,
 } from "@/shared/lib/safe-redirect-path";
-import { useAppDispatch } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_RE = /^(0\d{9}|\+972\d{9})$/;
@@ -35,6 +35,8 @@ function LoginForm() {
   const [requestOtp, { isLoading: isRequestingOtp }] = useRequestOtpMutation();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const sessionUser = useAppSelector((s) => s.auth.user);
+  const sessionHydrated = useAppSelector((s) => s.auth.isHydrated);
   const nextParam = searchParams.get("next");
   const supplierLoginHref = nextParam
     ? `/auth/login/supplier?next=${encodeURIComponent(nextParam)}`
@@ -44,6 +46,13 @@ function LoginForm() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [otpSent, setOtpSent] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!sessionHydrated) return;
+    if (!sessionUser) return;
+    const roles = sessionUser.roles;
+    router.replace(getSafeInternalRedirectPath(nextParam, getPostLoginFallbackPath(roles)));
+  }, [sessionHydrated, sessionUser, router, nextParam]);
 
   const contactError = useMemo(() => validateContact(contact, contactMode), [contact, contactMode]);
   const canRequestOtp = !isRequestingOtp && contact.trim().length > 0 && !contactError;

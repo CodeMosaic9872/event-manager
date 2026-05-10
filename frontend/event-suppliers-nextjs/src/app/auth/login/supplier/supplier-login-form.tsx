@@ -85,6 +85,14 @@ function SupplierLoginInner() {
     router.replace(safe.startsWith("/supplier") ? safe : fallback);
   }, [sessionUser, fromPurchase, nextRaw, router]);
 
+  const sessionHydrated = useAppSelector((s) => s.auth.isHydrated);
+  useEffect(() => {
+    if (!sessionHydrated || !sessionUser) return;
+    const isSupplier = sessionUser.roles.some((role) => role === "supplier" || role === "admin");
+    if (isSupplier) return;
+    router.replace(getSafeInternalRedirectPath(nextRaw, getPostLoginFallbackPath(sessionUser.roles)));
+  }, [sessionHydrated, sessionUser, router, nextRaw]);
+
   const handleRequestOtp = async () => {
     if (!canRequestOtp) return;
     setError("");

@@ -4,11 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useGetJobsQuery } from "@/shared/api/api";
+import { useGetUserJobsQuery, useGetUserFavoritesQuery, useGetEventTypesQuery } from "@/shared/api/api";
 import { AdditionalSuppliersSection } from "@/features/suppliers/components/additional-suppliers-section";
 import { SupplierJobOfferCard } from "@/shared/components/jobs/supplier-job-offer-card";
-import { demoSupplierJobOffers } from "@/shared/data/supplier-job-offers.demo";
-import { mergeJobList } from "@/shared/lib/merge-job-list";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
 import { useAppSelector } from "@/store/hooks";
 
@@ -97,35 +95,42 @@ export default function UserDashboardPage() {
   const router = useRouter();
   const pathname = usePathname();
   const sessionUser = useAppSelector((state) => state.auth.user);
-  const localPublishedJobs = useAppSelector((state) => state.jobBoard.jobs);
-  const { data: apiJobs, isLoading } = useGetJobsQuery();
+  const isAuthHydrated = useAppSelector((state) => state.auth.isHydrated);
+  const { data: apiJobs, isLoading } = useGetUserJobsQuery(undefined, {
+    skip: !isAuthHydrated || !sessionUser,
+  });
+  const { data: favoritesData } = useGetUserFavoritesQuery(undefined, {
+    skip: !isAuthHydrated || !sessionUser,
+  });
+  const favoritesCount = favoritesData?.items?.length ?? 0;
+  const { data: eventTypes } = useGetEventTypesQuery();
 
-  const allJobs = useMemo(
-    () => mergeJobList(apiJobs, localPublishedJobs),
-    [apiJobs, localPublishedJobs],
-  );
+  const concepts = useMemo(() => {
+    if (eventTypes && eventTypes.length > 0) {
+      return eventTypes.slice(0, 2).map((et, i) => ({
+        title: et.name,
+        href: "/event-production/concepts",
+        image: et.image || likedConcepts[i]?.image || "",
+        panelBg: likedConcepts[i]?.panelBg || "bg-[#EEF5FF]",
+      }));
+    }
+    return likedConcepts;
+  }, [eventTypes]);
 
-  const myTenders = useMemo(() => {
-    const mine = allJobs.filter((j) => j.isMine);
-    const dummyMine = demoSupplierJobOffers.map((j) => ({
-      ...j,
-      isMine: true as const,
-    }));
-    const mineIds = new Set(mine.map((j) => j.id));
-    return [...mine, ...dummyMine.filter((j) => !mineIds.has(j.id))];
-  }, [allJobs]);
+  const myTenders = useMemo(() => (Array.isArray(apiJobs) ? apiJobs : []), [apiJobs]);
 
   const choosingSuppliersHref = useMemo(() => {
-    const tenderId = myTenders[0]?.id ?? demoSupplierJobOffers[0]?.id;
+    const tenderId = myTenders[0]?.id;
     return tenderId ? `/user/tenders/${tenderId}/suppliers` : "/jobs/publish";
   }, [myTenders]);
 
   const welcomeName = displayNameFromUser(sessionUser?.email);
 
   useEffect(() => {
+    if (!isAuthHydrated) return;
     if (sessionUser) return;
     router.replace(`/auth/login?next=${encodeURIComponent(pathname)}`);
-  }, [sessionUser, router, pathname]);
+  }, [sessionUser, isAuthHydrated, router, pathname]);
 
   if (!sessionUser) return null;
 
@@ -170,7 +175,7 @@ export default function UserDashboardPage() {
               <div className="min-w-0 flex-1">
                 <QuickActionCard
                   title="Supplier Approval Page"
-                  description="You have 3 suppliers awaiting approval."
+                  description={`You have ${favoritesCount} supplier${favoritesCount !== 1 ? "s" : ""} saved.`}
                   buttonLabel="Choosing suppliers"
                   href={choosingSuppliersHref}
                   iconSrc="/calender-white.svg"
@@ -208,13 +213,13 @@ export default function UserDashboardPage() {
               className="w-full rounded-[14px] border border-[#4721DF] bg-[rgba(230,241,255,0.64)] p-8 text-[#00113A]"
               dir="rtl"
             >
-              <p className="text-start text-base leading-6">אין עדיין מכרזים שפרסמת.</p>
+              <p className="text-start text-base leading-6">No tenders published yet.</p>
               <div className="mt-4 flex justify-start">
                 <Link
                   href="/jobs/publish"
                   className="inline-flex h-11 items-center justify-center rounded-[99px] bg-[#201C44] px-8 text-sm text-white!"
                 >
-                  פרסום מכרז חדש
+                  Publish a new tender
                 </Link>
               </div>
             </div>
@@ -277,7 +282,7 @@ export default function UserDashboardPage() {
             </Link>
           </div>
           <div className="mx-auto grid w-full grid-cols-1 gap-6 md:grid-cols-2 md:gap-x-6">
-            {likedConcepts.map((c) => (
+            {concepts.map((c) => (
               <article
                 key={c.title}
                 className={`w-full max-w-[452px] justify-self-center overflow-hidden rounded-lg border border-[#4721DF] shadow-[0px_1px_2px_rgba(0,0,0,0.05)] md:max-w-none ${c.panelBg}`}

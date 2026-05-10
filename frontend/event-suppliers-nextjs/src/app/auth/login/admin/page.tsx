@@ -50,6 +50,13 @@ function AdminLoginContent() {
     router.replace(nextPath.startsWith("/admin") ? nextPath : "/admin");
   }, [sessionUser, router, nextPath]);
 
+  const sessionHydrated = useAppSelector((s) => s.auth.isHydrated);
+  useEffect(() => {
+    if (!sessionHydrated || !sessionUser) return;
+    if (sessionUser.roles.includes("admin")) return;
+    router.replace("/");
+  }, [sessionHydrated, sessionUser, router]);
+
   const handleRequestOtp = async () => {
     if (!canRequestOtp) return;
     setError("");

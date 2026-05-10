@@ -79,5 +79,10 @@ export function createSuppliersEndpoints(
     updateSupplierServiceAreas: builder.mutation<void, UpdateSupplierServiceAreasPayload>({
       query: (body) => ({ url: "/v1/supplier/service-areas", method: "PATCH", body }),
     }),
+    getUserFavorites: builder.query<SuppliersListResponse, void>({
+      query: () => ({ url: "/v1/users/me/favorites" }),
+      transformErrorResponse: () => ({ items: [], nextCursor: null, facets: {} }),
+      providesTags: ["Suppliers"],
+    }),
   };
 }
