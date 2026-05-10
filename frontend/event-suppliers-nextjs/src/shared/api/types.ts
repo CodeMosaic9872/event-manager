@@ -40,7 +40,18 @@ export type CreateJobPayload = {
   budgetMax?: number;
   guestCount?: number;
 };
-export type UpdateJobPayload = Partial<CreateJobPayload>;
+export type UpdateJobPayload = Partial<CreateJobPayload & { status?: string }>;
+export type JobApplication = {
+  id: string;
+  jobId: string;
+  supplierId: string;
+  supplierName: string;
+  supplierRating?: number;
+  supplierReviewCount?: number;
+  price?: number;
+  message?: string;
+  status?: string;
+};
 export type UpsertSupplierProfilePayload = {
   businessName: string;
   slug?: string;

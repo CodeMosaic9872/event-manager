@@ -6,6 +6,7 @@ import { useParams, usePathname, useRouter } from "next/navigation";
 import { useGetUserJobQuery, useUpdateUserJobMutation, useGetEventTypesQuery, useGetCategoriesQuery, useGetSubcategoriesQuery } from "@/shared/api/api";
 import { useAppSelector } from "@/store/hooks";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
+import { LoadingSkeleton } from "@/shared/components/loading-skeleton";
 import { MarketingPageShell } from "@/shared/components/marketing-page-shell";
 import type { JobSummaryResponse } from "@/shared/types";
 
@@ -69,7 +70,7 @@ export default function EditTenderPage() {
   const sessionUser = useAppSelector((state) => state.auth.user);
   const isAuthHydrated = useAppSelector((state) => state.auth.isHydrated);
 
-  const { data: currentTender } = useGetUserJobQuery(tenderId!, { skip: !tenderId || !isAuthHydrated || !sessionUser });
+  const { data: currentTender, isError: isFetchError, isLoading: isFetching } = useGetUserJobQuery(tenderId!, { skip: !tenderId || !isAuthHydrated || !sessionUser });
   const [updateJob, { isLoading: isSaving }] = useUpdateUserJobMutation();
 
   const [form, setForm] = useState<TenderForm | null>(null);
@@ -116,10 +117,38 @@ export default function EditTenderPage() {
 
   if (!isAuthHydrated) return null;
   if (!sessionUser) return null;
-  if (!tenderId || !currentTender || !form) {
+  if (isFetchError) {
     return (
       <MarketingPageShell showBackgroundImage className="min-h-screen bg-white" contentClassName="!max-w-[1440px] !px-4 !pb-24 !pt-20 sm:!px-6 sm:!pt-24 lg:!pt-[123px]">
-        <p className="text-center text-[#00113A]" style={{ fontFamily: marketingPloniFont }}>Loading tender...</p>
+        <div className="mx-auto max-w-[576px] rounded-[24px] border border-red-300 bg-red-50 p-10 text-center shadow-lg">
+          <svg className="mx-auto mb-4 size-12 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 8v4M12 16h.01" />
+          </svg>
+          <h2 className="text-xl text-red-800" style={{ fontFamily: marketingPloniFont }}>Could not load tender</h2>
+          <p className="mt-2 text-sm text-red-600">The API returned an error. Check your connection or the tender ID.</p>
+          <div className="mt-6 flex justify-center gap-4">
+            <Link href="/user/dashboard" className="rounded-[99px] border border-red-300 px-6 py-2 text-sm text-red-700 hover:bg-red-100">Back to dashboard</Link>
+            <button onClick={() => window.location.reload()} className="rounded-[99px] bg-red-600 px-6 py-2 text-sm text-white hover:bg-red-700">Retry</button>
+          </div>
+        </div>
+      </MarketingPageShell>
+    );
+  }
+  if (!tenderId || (!currentTender && isFetching) || !form) {
+    return (
+      <MarketingPageShell showBackgroundImage className="min-h-screen bg-white" contentClassName="!max-w-[1440px] !px-4 !pb-24 !pt-20 sm:!px-6 sm:!pt-24 lg:!pt-[123px]">
+        <LoadingSkeleton />
+      </MarketingPageShell>
+    );
+  }
+  if (!currentTender) {
+    return (
+      <MarketingPageShell showBackgroundImage className="min-h-screen bg-white" contentClassName="!max-w-[1440px] !px-4 !pb-24 !pt-20 sm:!px-6 sm:!pt-24 lg:!pt-[123px]">
+        <p className="text-center text-[#00113A]" style={{ fontFamily: marketingPloniFont }}>Tender not found.</p>
+        <div className="mt-4 flex justify-center">
+          <Link href="/user/dashboard" className="text-[#0061A7] underline">Back to dashboard</Link>
+        </div>
       </MarketingPageShell>
     );
   }
@@ -198,7 +227,15 @@ export default function EditTenderPage() {
             <textarea required className="h-[170px] w-full rounded-lg bg-white/60 px-4 py-5 text-right text-lg text-[#191C1D] outline-none placeholder:text-[#6B7280]" placeholder="Detail the event..." value={form.description} onChange={(e) => setField("description", e.target.value)} />
           </section>
 
-          {error && <p className="mt-4 text-center text-red-500">{error}</p>}
+          {error && (
+            <div className="mt-4 flex items-center gap-3 rounded-lg border border-red-300 bg-red-50 p-4 text-right text-sm text-red-800">
+              <svg className="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 8v4M12 16h.01" />
+              </svg>
+              <span className="flex-1">{error}</span>
+            </div>
+          )}
 
           <div className="mt-10 flex w-full flex-row-reverse flex-wrap items-center justify-end gap-3">
             <Link href={`/user/tenders/${tenderId}/suppliers`} className="inline-flex h-[53px] min-w-[160px] items-center justify-center rounded-[99px] border-2 border-[rgba(32,28,68,0.2)] px-6 text-center text-lg leading-tight text-[#201C44] sm:min-w-[174px] sm:text-[22px] sm:leading-[14px]">

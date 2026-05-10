@@ -15,7 +15,7 @@ export default function JobsPage() {
   const pathname = usePathname();
   const sessionUser = useAppSelector((state) => state.auth.user);
   const localPublishedJobs = useAppSelector((state) => state.jobBoard.jobs);
-  const { data: apiJobs, isLoading } = useGetJobsQuery();
+  const { data: apiJobs, isLoading } = useGetJobsQuery({ status: "PUBLISHED" });
   const [selectedCategory, setSelectedCategory] = useState("all");
 
   const allJobs = useMemo(

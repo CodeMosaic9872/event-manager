@@ -69,7 +69,7 @@ export function MarketingHeader() {
             {user ? (
               <button
                 type="button"
-                className="rounded-[99px] border border-[#4721DF] px-4 text-sm leading-[14px] text-[#4721DF]"
+                className="flex h-[39px] items-center justify-center rounded-[99px] border border-[#6ab7ff] bg-[#e0edff] px-4 text-center text-sm leading-tight text-[#1e1b4b] transition hover:bg-[#d2e4fc]"
                 onClick={() => dispatch(logout())}
               >
                 Log out

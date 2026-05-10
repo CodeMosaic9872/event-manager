@@ -5,14 +5,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
-import { useCreateJobMutation, useGetEventTypesQuery, useGetCategoriesQuery, useGetSubcategoriesQuery } from "@/shared/api/api";
+import { useCreateJobMutation, usePublishJobMutation, useGetEventTypesQuery, useGetCategoriesQuery, useGetSubcategoriesQuery } from "@/shared/api/api";
 import { MarketingPageShell } from "@/shared/components/marketing-page-shell";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
 
 function PublishJobContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [createJob, { isLoading }] = useCreateJobMutation();
+  const [createJob] = useCreateJobMutation();
+  const [publishJob] = usePublishJobMutation();
   const user = useAppSelector((state) => state.auth.user);
   const isAuthHydrated = useAppSelector((state) => state.auth.isHydrated);
 
@@ -24,6 +25,7 @@ function PublishJobContent() {
   });
 
   const [isPublished, setIsPublished] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState(() => ({
     title: searchParams.get("title") ?? "",
@@ -61,19 +63,25 @@ function PublishJobContent() {
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
+    setIsSubmitting(true);
 
-    if (!isAuthHydrated) return;
+    if (!isAuthHydrated) {
+      setIsSubmitting(false);
+      return;
+    }
     if (!user) {
       router.push(`/auth/login?next=${encodeURIComponent("/jobs/publish")}`);
+      setIsSubmitting(false);
       return;
     }
     if (!canSubmit) {
       setError("Please fill in all required fields correctly.");
+      setIsSubmitting(false);
       return;
     }
 
     try {
-      await createJob({
+      const result = await createJob({
         title: form.title.trim(),
         description: form.description.trim(),
         eventDate: form.date || undefined,
@@ -82,11 +90,14 @@ function PublishJobContent() {
         budgetMin: budgetNum,
         budgetMax: budgetNum,
       }).unwrap();
+      await publishJob(result.id).unwrap();
     } catch {
-      setError("Failed to publish. Please try again.");
+      setIsSubmitting(false);
+      setError("Something went wrong. Check your connection and try again.");
       return;
     }
 
+    setIsSubmitting(false);
     setIsPublished(true);
   };
 
@@ -276,7 +287,15 @@ function PublishJobContent() {
               {descError ? <p className="mt-1 text-xs text-red-600">{descError}</p> : null}
             </section>
 
-            {error ? <p className="mt-4 text-center text-sm text-red-700">{error}</p> : null}
+            {error ? (
+              <div className="mt-4 flex items-center gap-3 rounded-lg border border-red-300 bg-red-50 p-4 text-right text-sm text-red-800">
+                <svg className="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 8v4M12 16h.01" />
+                </svg>
+                <span className="flex-1">{error}</span>
+              </div>
+            ) : null}
 
             <div className="mt-10 flex w-full flex-row-reverse items-center justify-end gap-3">
               <Link href="/jobs" className="inline-flex h-[53px] min-w-[118px] items-center justify-center rounded-[99px] border-2 border-[rgba(32,28,68,0.2)] px-6 text-[22px] leading-[14px] text-[#201C44]">
@@ -284,12 +303,12 @@ function PublishJobContent() {
               </Link>
               <button
                 type="submit"
-                disabled={isLoading || !canSubmit}
+                disabled={isSubmitting || !canSubmit}
                 className={`inline-flex h-[53px] min-w-[224px] items-center justify-center rounded-[99px] px-8 text-center text-[22px] leading-[14px] text-white transition ${
-                  canSubmit && !isLoading ? "cursor-pointer bg-[#201C44] hover:bg-[#151238]" : "cursor-not-allowed bg-[#201C44] opacity-60"
+                  canSubmit && !isSubmitting ? "cursor-pointer bg-[#201C44] hover:bg-[#151238]" : "cursor-not-allowed bg-[#201C44] opacity-60"
                 }`}
               >
-                {isLoading ? "Publishing..." : "Advertising now"}
+                {isSubmitting ? "Publishing..." : "Advertising now"}
               </button>
             </div>
           </form>
