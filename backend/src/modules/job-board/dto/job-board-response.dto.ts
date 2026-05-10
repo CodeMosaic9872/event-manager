@@ -1,4 +1,49 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
+export class EventTypeSummaryDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  key!: string;
+
+  @ApiProperty()
+  name!: string;
+
+  @ApiPropertyOptional({ nullable: true })
+  nameEn!: string | null;
+}
+
+export class CategorySummaryDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  key!: string;
+
+  @ApiProperty()
+  name!: string;
+
+  @ApiPropertyOptional({ nullable: true })
+  nameEn!: string | null;
+}
+
+export class SubcategorySummaryDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  categoryId!: string;
+
+  @ApiProperty()
+  key!: string;
+
+  @ApiProperty()
+  name!: string;
+
+  @ApiPropertyOptional({ nullable: true })
+  nameEn!: string | null;
+}
 
 export class JobSummaryResponseDto {
   @ApiProperty({ example: 'job_1' })
@@ -10,11 +55,20 @@ export class JobSummaryResponseDto {
   @ApiProperty({ example: 'PUBLISHED' })
   status!: string;
 
-  @ApiProperty({ example: 5000 })
-  budgetMin!: number;
+  @ApiProperty({ example: 5000, required: false, nullable: true })
+  budgetMin!: number | null;
 
-  @ApiProperty({ example: 12000 })
-  budgetMax!: number;
+  @ApiProperty({ example: 12000, required: false, nullable: true })
+  budgetMax!: number | null;
+
+  @ApiPropertyOptional({ type: EventTypeSummaryDto, nullable: true })
+  eventType!: EventTypeSummaryDto | null;
+
+  @ApiPropertyOptional({ type: CategorySummaryDto, nullable: true })
+  category!: CategorySummaryDto | null;
+
+  @ApiPropertyOptional({ type: SubcategorySummaryDto, nullable: true })
+  subcategory!: SubcategorySummaryDto | null;
 }
 
 export class CreatedJobResponseDto {
@@ -22,13 +76,22 @@ export class CreatedJobResponseDto {
   id!: string;
 
   @ApiProperty({ example: 'usr_123' })
-  userId!: string;
+  ownerUserId!: string;
 
   @ApiProperty({ example: 'Wedding DJ needed' })
   title!: string;
 
   @ApiProperty({ example: 'DRAFT' })
   status!: string;
+
+  @ApiPropertyOptional({ type: EventTypeSummaryDto, nullable: true })
+  eventType!: EventTypeSummaryDto | null;
+
+  @ApiPropertyOptional({ type: CategorySummaryDto, nullable: true })
+  category!: CategorySummaryDto | null;
+
+  @ApiPropertyOptional({ type: SubcategorySummaryDto, nullable: true })
+  subcategory!: SubcategorySummaryDto | null;
 }
 
 export class JobApplicationResponseDto {
@@ -75,4 +138,50 @@ export class RecommendedJobResponseDto {
 
   @ApiProperty({ example: 12000, required: false, nullable: true })
   budgetMax!: number | null;
+
+  @ApiPropertyOptional({ type: EventTypeSummaryDto, nullable: true })
+  eventType!: EventTypeSummaryDto | null;
+
+  @ApiPropertyOptional({ type: CategorySummaryDto, nullable: true })
+  category!: CategorySummaryDto | null;
+
+  @ApiPropertyOptional({ type: SubcategorySummaryDto, nullable: true })
+  subcategory!: SubcategorySummaryDto | null;
+}
+
+export class JobApplicationsCountResponseDto {
+  @ApiProperty({ example: 3, description: 'Applications matching the status filter for this job' })
+  count!: number;
+
+  @ApiProperty({
+    example: ['SUBMITTED'],
+    isArray: true,
+    description: 'Statuses included in the count',
+  })
+  statuses!: string[];
+}
+
+export class UserMeStatsResponseDto {
+  @ApiProperty({
+    description: 'Job applications awaiting review (default: SUBMITTED only) across all jobs you own',
+  })
+  pendingApplicationsTotal!: number;
+
+  @ApiProperty()
+  favoriteSuppliersCount!: number;
+
+  @ApiProperty()
+  savedConceptsCount!: number;
+
+  @ApiProperty()
+  jobsPublishedCount!: number;
+
+  @ApiProperty()
+  jobsDraftCount!: number;
+
+  @ApiProperty()
+  jobsClosedCount!: number;
+
+  @ApiProperty()
+  jobsArchivedCount!: number;
 }

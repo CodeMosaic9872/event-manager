@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Patch, Post, Query, UnauthorizedException, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { JobBoardService } from './job-board.service';
 import { JobPublishGuard } from './guards/job-publish.guard';
 import { SupplierOnlyGuard } from './guards/supplier-only.guard';
@@ -14,8 +14,10 @@ import { ApplyJobDto, CreateJobDto, UpdateJobApplicationStatusDto, UpdateJobDto 
 import {
   CreatedJobResponseDto,
   JobApplicationResponseDto,
+  JobApplicationsCountResponseDto,
   JobSummaryResponseDto,
   RecommendedJobResponseDto,
+  UserMeStatsResponseDto,
 } from './dto/job-board-response.dto';
 
 @ApiTags('Job Board')
@@ -170,6 +172,46 @@ export class JobApplicationController {
 @Controller()
 export class JobQueryController {
   constructor(private readonly jobBoardService: JobBoardService) {}
+
+  @Get('users/me/stats')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Dashboard counters for the current user (jobs, pending applications, favorites, saved concepts)',
+  })
+  @ApiOkResponse({ type: UserMeStatsResponseDto })
+  @UseGuards(AuthGuard)
+  userMeStats(@CurrentUser() user: AuthUser | undefined) {
+    const userId = user?.id;
+    if (!userId || userId.startsWith('anonymous:')) {
+      throw new UnauthorizedException('Authenticated user required');
+    }
+    return this.jobBoardService.getUserMeStats(userId);
+  }
+
+  @Get('users/me/jobs/:jobId/applications/count')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Count job applications for one of your tenders (default: SUBMITTED only)',
+  })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    description: 'Comma-separated statuses: SUBMITTED,SHORTLISTED,REJECTED,WITHDRAWN (default SUBMITTED)',
+    example: 'SUBMITTED',
+  })
+  @ApiOkResponse({ type: JobApplicationsCountResponseDto })
+  @UseGuards(AuthGuard)
+  jobApplicationsCount(
+    @CurrentUser() user: AuthUser | undefined,
+    @Param('jobId') jobId: string,
+    @Query('status') status?: string,
+  ) {
+    const userId = user?.id;
+    if (!userId || userId.startsWith('anonymous:')) {
+      throw new UnauthorizedException('Authenticated user required');
+    }
+    return this.jobBoardService.countApplicationsForOwnerJob(jobId, userId, status);
+  }
 
   @Get('users/me/jobs')
   @ApiBearerAuth()

@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsIn, IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
+import { IsEmail, IsIn, IsNotEmpty, IsOptional, IsString, Matches, ValidateIf } from 'class-validator';
 
 export class RegisterDto {
   @ApiProperty({ description: 'User email', example: 'user@example.com' })
@@ -7,7 +7,7 @@ export class RegisterDto {
   email!: string;
 
   @ApiProperty({
-    description: 'User mobile phone (Israeli mobile, e.g. 05XXXXXXXX or +9725XXXXXXXX). Must be OTP-verified before calling /auth/register.',
+    description: 'User phone/mobile number (Israeli mobile, e.g. 05XXXXXXXX or +9725XXXXXXXX). Must be OTP-verified before calling /auth/register.',
     example: '0501234567',
   })
   @IsString()
@@ -26,17 +26,30 @@ export class RegisterDto {
 }
 
 export class LoginDto {
-  @ApiProperty({ description: 'User email', example: 'user@example.com' })
+  @ApiPropertyOptional({
+    description: 'User email (provide either email OR phone, not both)',
+    example: 'user@example.com',
+  })
+  @ValidateIf((o: LoginDto) => !o.phone)
   @IsEmail()
-  email!: string;
+  email?: string;
 
-  @ApiProperty({
-    description: 'User mobile phone (Israeli mobile, e.g. 05XXXXXXXX or +9725XXXXXXXX). Must be OTP-verified before calling /auth/login.',
+  @ApiPropertyOptional({
+    description: 'User mobile phone (Israeli mobile). Provide either phone OR email, not both.',
     example: '0501234567',
   })
+  @ValidateIf((o: LoginDto) => !o.email)
   @IsString()
   @IsNotEmpty()
-  phone!: string;
+  phone?: string;
+
+  @ApiProperty({
+    description: 'OTP code received via SMS/email (or fixed code when AUTH_FIXED_OTP_ENABLED=true)',
+    example: '123456',
+  })
+  @IsString()
+  @Matches(/^\d{4,8}$/, { message: 'code must be 4-8 digits' })
+  code!: string;
 }
 
 export class RefreshDto {
@@ -64,13 +77,22 @@ export class LinkAnonymousDto {
 }
 
 export class RequestOtpDto {
-  @ApiProperty({
-    description: 'Israeli mobile phone (e.g. 05XXXXXXXX or +9725XXXXXXXX)',
+  @ApiPropertyOptional({
+    description: 'Israeli mobile phone (provide either phone OR email)',
     example: '0501234567',
   })
+  @ValidateIf((o: RequestOtpDto) => !o.email)
   @IsString()
   @IsNotEmpty()
-  phone!: string;
+  phone?: string;
+
+  @ApiPropertyOptional({
+    description: 'Email address (provide either email OR phone)',
+    example: 'user@example.com',
+  })
+  @ValidateIf((o: RequestOtpDto) => !o.phone)
+  @IsEmail()
+  email?: string;
 
   @ApiProperty({
     description: 'OTP purpose - register or login',
@@ -83,13 +105,22 @@ export class RequestOtpDto {
 }
 
 export class VerifyOtpDto {
-  @ApiProperty({
-    description: 'Israeli mobile phone (e.g. 05XXXXXXXX or +9725XXXXXXXX)',
+  @ApiPropertyOptional({
+    description: 'Israeli mobile phone (provide either phone OR email)',
     example: '0501234567',
   })
+  @ValidateIf((o: VerifyOtpDto) => !o.email)
   @IsString()
   @IsNotEmpty()
-  phone!: string;
+  phone?: string;
+
+  @ApiPropertyOptional({
+    description: 'Email address (provide either email OR phone)',
+    example: 'user@example.com',
+  })
+  @ValidateIf((o: VerifyOtpDto) => !o.phone)
+  @IsEmail()
+  email?: string;
 
   @ApiProperty({
     description: '6-digit OTP code received via SMS',

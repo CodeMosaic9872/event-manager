@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, Optional, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, Optional, UnauthorizedException } from '@nestjs/common';
 import { compare, hash } from 'bcryptjs';
 import { randomBytes, randomUUID } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -59,7 +59,7 @@ export class AuthService {
     const role = payload.role ?? 'USER';
     const phone = this.smsService.normalizeIsraeliMobile(payload.phone);
 
-    await this.otpService.consumeVerifiedOtp(phone, 'register');
+    await this.otpService.consumeVerifiedOtp({ phone, purpose: 'register' });
 
     const existingByEmail = await this.prisma.user.findUnique({ where: { email: payload.email } });
     const existingByPhone = await this.prisma.user.findUnique({ where: { phone } });
@@ -145,18 +145,37 @@ export class AuthService {
     };
   }
 
-  async login(payload: { email: string; phone: string }) {
-    const phone = this.smsService.normalizeIsraeliMobile(payload.phone);
-
-    await this.otpService.consumeVerifiedOtp(phone, 'login');
-
-    const user = await this.prisma.user.findUnique({
-      where: { email: payload.email },
-      include: { roles: true },
-    });
-    if (!user || user.phone !== phone) {
-      throw new UnauthorizedException('Invalid login details. Make sure email and phone are correct.');
+  async login(payload: { email?: string; phone?: string; code: string }) {
+    const hasEmail = Boolean(payload.email);
+    const hasPhone = Boolean(payload.phone);
+    if ((hasEmail && hasPhone) || (!hasEmail && !hasPhone)) {
+      throw new BadRequestException('Provide either email or phone (exactly one).');
     }
+
+    const normalizedEmail = payload.email?.trim().toLowerCase();
+    const normalizedPhone = payload.phone ? this.smsService.normalizeIsraeliMobile(payload.phone) : undefined;
+
+    const user = normalizedEmail
+      ? await this.prisma.user.findUnique({
+          where: { email: normalizedEmail },
+          include: { roles: true },
+        })
+      : await this.prisma.user.findUnique({
+          where: { phone: normalizedPhone! },
+          include: { roles: true },
+        });
+
+    if (!user || !user.phone) {
+      throw new UnauthorizedException('Invalid login details. Make sure email/phone is correct.');
+    }
+
+    await this.otpService.verifyAndConsumeOtp({
+      email: normalizedEmail,
+      phone: normalizedPhone,
+      code: payload.code,
+      purpose: 'login',
+    });
+
     this.ensureActiveStatus(user.status);
     const { accessToken, refreshToken } = await this.issueTokenPair(user);
     return {

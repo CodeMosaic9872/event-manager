@@ -261,8 +261,18 @@ export class AdminService {
 
   async listJobs(page?: number, limit?: number) {
     const pg = this.toPagination(page, limit);
+    const jobInclude = {
+      eventType: { select: { id: true, key: true, name: true, nameEn: true } },
+      category: { select: { id: true, key: true, name: true, nameEn: true } },
+      subcategory: { select: { id: true, categoryId: true, key: true, name: true, nameEn: true } },
+    } as const;
     const [items, totalItems] = await this.prisma.$transaction([
-      this.prisma.jobPost.findMany({ orderBy: { createdAt: 'desc' }, skip: pg.skip, take: pg.take }),
+      this.prisma.jobPost.findMany({
+        orderBy: { createdAt: 'desc' },
+        skip: pg.skip,
+        take: pg.take,
+        include: jobInclude,
+      }),
       this.prisma.jobPost.count(),
     ]);
     return { items, totalItems };
@@ -271,10 +281,15 @@ export class AdminService {
   async listJobApplications(jobId?: string, page?: number, limit?: number) {
     const pg = this.toPagination(page, limit);
     const where = { jobPostId: jobId ?? undefined };
+    const jobInclude = {
+      eventType: { select: { id: true, key: true, name: true, nameEn: true } },
+      category: { select: { id: true, key: true, name: true, nameEn: true } },
+      subcategory: { select: { id: true, categoryId: true, key: true, name: true, nameEn: true } },
+    } as const;
     const [items, totalItems] = await this.prisma.$transaction([
       this.prisma.jobApplication.findMany({
         where,
-        include: { supplier: true, jobPost: true },
+        include: { supplier: true, jobPost: { include: jobInclude } },
         orderBy: { submittedAt: 'desc' },
         skip: pg.skip,
         take: pg.take,
