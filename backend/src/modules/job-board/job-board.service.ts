@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JobApplicationStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AutomationService } from '../notifications/automation.service';
@@ -35,10 +41,17 @@ export class JobBoardService {
     if (job.status === 'PUBLISHED') {
       return job;
     }
-    if (requesterUserId && !requesterUserId.startsWith('anonymous:') && job.ownerUserId === requesterUserId) {
-      return job;
+    const loggedInUserId =
+      requesterUserId && !requesterUserId.startsWith('anonymous:') ? requesterUserId : undefined;
+    if (!loggedInUserId) {
+      throw new UnauthorizedException(
+        'This tender is not published. Sign in with the account that created it to view or edit it.',
+      );
     }
-    throw new NotFoundException('Job not found');
+    if (job.ownerUserId !== loggedInUserId) {
+      throw new ForbiddenException('You do not have access to this job');
+    }
+    return job;
   }
 
   async listPublicJobs(page?: number, limit?: number) {

@@ -19,46 +19,34 @@ export class PaginationResponseInterceptor implements NestInterceptor {
     const page = this.parsePositiveInt(request.query?.page, 1);
     const limit = this.parsePositiveInt(request.query?.limit, 20);
 
-    return next.handle().pipe(map((data) => this.toUnifiedSuccessResponse(data, request?.method === 'GET', page, limit)));
+    return next.handle().pipe(map((data) => this.toUnifiedSuccessResponse(data, page, limit)));
   }
 
-  private toUnifiedSuccessResponse(data: unknown, isGetRequest: boolean, page: number, limit: number) {
+  private toUnifiedSuccessResponse(data: unknown, page: number, limit: number) {
     if (data && typeof data === 'object' && (data as Record<string, unknown>).success === true) {
       return data;
     }
 
-    const pagination = isGetRequest ? this.extractPagination(data, page, limit) : null;
-    const base = {
+    const pagination = this.extractPagination(data, page, limit);
+    const response: Record<string, unknown> = {
       success: true,
       data,
-    } as Record<string, unknown>;
+    };
 
     if (pagination) {
-      base.pagination = pagination;
+      response.pagination = pagination;
     }
 
-    // Compatibility: preserve previous top-level response fields while adding unified envelope.
-    if (data && typeof data === 'object' && !Array.isArray(data)) {
-      return {
-        ...base,
-        ...(data as Record<string, unknown>),
-      };
-    }
-
-    // Compatibility for list endpoints that previously returned arrays.
-    if (Array.isArray(data)) {
-      return {
-        ...base,
-        items: data,
-      };
-    }
-
-    return base;
+    return response;
   }
 
+  /**
+   * Only list-shaped GET bodies get envelope `pagination`. Single resources (one job, one supplier, …)
+   * omit it; list endpoints use `{ items, totalItems? }`, raw arrays, or a full `pagination` object.
+   */
   private extractPagination(data: unknown, page: number, limit: number): PaginationMeta | null {
     if (data === null || data === undefined) {
-      return this.toMeta(page, limit, 0);
+      return null;
     }
     if (Array.isArray(data)) {
       return this.toMeta(page, limit, data.length);
@@ -66,15 +54,27 @@ export class PaginationResponseInterceptor implements NestInterceptor {
     if (typeof data === 'object') {
       const record = data as Record<string, unknown>;
       if ('pagination' in record && record.pagination && typeof record.pagination === 'object') {
-        return record.pagination as PaginationMeta;
+        const p = record.pagination as Record<string, unknown>;
+        if (
+          typeof p.page === 'number' &&
+          typeof p.limit === 'number' &&
+          typeof p.totalItems === 'number' &&
+          typeof p.totalPages === 'number'
+        ) {
+          return p as PaginationMeta;
+        }
       }
       if (Array.isArray(record.items)) {
+        // Single resource + nested paginated list (e.g. AI conversation + messages): keep paging inside `data` only.
+        if ('conversation' in record) {
+          return null;
+        }
         const totalItems = typeof record.totalItems === 'number' ? record.totalItems : record.items.length;
         return this.toMeta(page, limit, totalItems);
       }
-      return this.toMeta(page, limit, 1);
+      return null;
     }
-    return this.toMeta(page, limit, 1);
+    return null;
   }
 
   private parsePositiveInt(value: unknown, fallback: number) {
