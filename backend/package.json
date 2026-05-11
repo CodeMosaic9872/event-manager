@@ -20,7 +20,8 @@
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f api",
     "test:spaces": "ts-node scripts/test-do-spaces-connection.ts",
-    "test:spaces:full": "ts-node scripts/test-do-spaces-connection.ts --presign --upload"
+    "test:spaces:full": "ts-node scripts/test-do-spaces-connection.ts --presign --upload",
+    "test:cardcom": "ts-node scripts/test-cardcom-connection.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.896.0",

@@ -90,7 +90,11 @@ export class AdminService {
     const where: Prisma.UserWhereInput = {
       supplier: {
         is: {
-          isActive: false,
+          payments: {
+            none: {
+              status: 'PAID',
+            },
+          },
         },
       },
     };

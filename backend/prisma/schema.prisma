@@ -78,6 +78,30 @@ enum ReferralRewardStatus {
   PAID
 }
 
+enum PaymentProvider {
+  CARDCOM
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
+enum BillingInterval {
+  MONTHLY
+  SEMI_ANNUAL
+  ANNUAL
+  BIENNIAL
+}
+
 model User {
   id          String      @id @default(cuid())
   email       String?     @unique
@@ -104,6 +128,7 @@ model User {
   referralAttributions ReferralAttribution[] @relation("ReferredUserAttributions")
   supplierShareEvents SupplierShareEvent[]
   supplierReviews     SupplierReview[]
+  supplierPayments    SupplierPayment[]
 }
 
 model UserRole {
@@ -182,6 +207,8 @@ model Supplier {
   referralRewards ReferralReward[]
   shareEvents    SupplierShareEvent[]
   reviews        SupplierReview[]
+  payments       SupplierPayment[]
+  subscription   SupplierSubscription?
 }
 
 model SupplierDraft {
@@ -208,6 +235,64 @@ model SupplierApprovalHistory {
   createdAt    DateTime               @default(now())
 
   supplier     Supplier               @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+}
+
+model SupplierPayment {
+  id                         String          @id @default(cuid())
+  supplierId                 String
+  userId                     String?
+  subscriptionId             String?
+  provider                   PaymentProvider @default(CARDCOM)
+  status                     PaymentStatus   @default(PENDING)
+  amount                     Decimal         @db.Decimal(12, 2)
+  currency                   String          @default("ILS")
+  planKey                    String?
+  description                String?
+  /// Correlation id sent to CardCom as ReturnValue (unique per payment attempt).
+  returnValue                String          @unique
+  cardcomLowProfileId        String?         @unique
+  cardcomLowProfileVersion   Int?
+  cardcomInternalDealNumber  String?
+  cardcomToken               String?
+  tokenExpiresAt             DateTime?
+  statusReason               String?
+  paidAt                     DateTime?
+  requestSnapshot            Json?
+  indicatorPayload           Json?
+  createdAt                  DateTime        @default(now())
+  updatedAt                  DateTime        @updatedAt
+
+  supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  user     User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  subscription SupplierSubscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  @@index([supplierId, createdAt])
+  @@index([cardcomLowProfileId])
+  @@index([status])
+  @@index([subscriptionId, createdAt])
+}
+
+model SupplierSubscription {
+  id                         String             @id @default(cuid())
+  supplierId                 String             @unique
+  status                     SubscriptionStatus @default(ACTIVE)
+  interval                   BillingInterval
+  planKey                    String?
+  amount                     Decimal            @db.Decimal(12, 2)
+  currency                   String             @default("ILS")
+  cardcomToken               String
+  tokenExpiresAt             DateTime?
+  nextBillingAt              DateTime
+  lastRenewedAt              DateTime?
+  consecutiveFailures        Int                @default(0)
+  canceledAt                 DateTime?
+  createdAt                  DateTime           @default(now())
+  updatedAt                  DateTime           @updatedAt
+
+  supplier                   Supplier           @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  payments                   SupplierPayment[]
+
+  @@index([status, nextBillingAt])
 }
 
 model EventType {
