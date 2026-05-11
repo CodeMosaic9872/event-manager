@@ -502,6 +502,36 @@ export class SuppliersService {
     });
   }
 
+  async uploadMediaFile(
+    userId: string,
+    file: { buffer: Buffer; originalname: string; mimetype: string; size: number },
+    payload?: { mediaType?: string; sortOrder?: number },
+  ) {
+    const supplier = await this.prisma.supplier.findUnique({ where: { ownerUserId: userId } });
+    if (!supplier) {
+      throw new NotFoundException('Supplier profile not found');
+    }
+    if (!file?.buffer?.length) {
+      throw new BadRequestException('Empty file');
+    }
+    const contentType = file.mimetype?.trim() ? file.mimetype.trim() : 'application/octet-stream';
+    const uploaded = await this.mediaStorage.putSupplierObject({
+      supplierId: supplier.id,
+      buffer: file.buffer,
+      fileName: file.originalname || 'upload.bin',
+      contentType,
+    });
+    return this.prisma.supplierMedia.create({
+      data: {
+        supplierId: supplier.id,
+        mediaType: payload?.mediaType?.trim() ? payload.mediaType.trim() : 'image',
+        url: uploaded.publicUrl,
+        sortOrder: payload?.sortOrder ?? 0,
+        metadataJson: {} as Prisma.InputJsonValue,
+      },
+    });
+  }
+
   async createMediaUploadUrl(userId: string, payload: { fileName: string; contentType: string }) {
     const supplier = await this.prisma.supplier.findUnique({ where: { ownerUserId: userId } });
     if (!supplier) {

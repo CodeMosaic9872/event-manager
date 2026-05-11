@@ -1,5 +1,27 @@
-import { Body, Controller, Get, HttpCode, Patch, Post, UnauthorizedException, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Patch,
+  Post,
+  UnauthorizedException,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
+import { memoryStorage } from 'multer';
 import { AuthService } from './auth.service';
 import { OtpService } from './otp.service';
 import { AuthGuard } from '../../common/guards/auth.guard';
@@ -19,6 +41,9 @@ import {
 import {
   CompleteUserProfileImageUploadDto,
   CreateUserProfileMediaUploadUrlDto,
+  CreateTestMediaUploadUrlDto,
+  UploadUserProfileImageFileDto,
+  VerifyTestMediaUploadDto,
   VerifyUserProfileMediaUploadDto,
 } from './dto/user-profile-media.dto';
 import {
@@ -219,5 +244,92 @@ export class AuthController {
       throw new UnauthorizedException('Only registered users are supported');
     }
     return this.authService.completeProfileImageUpload(userId, body);
+  }
+
+  @Post('me/media/upload-file')
+  @ApiBearerAuth()
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({
+    summary: 'Upload avatar/cover file directly and update current user profile image URL',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['file', 'imageKind'],
+      properties: {
+        file: { type: 'string', format: 'binary' },
+        imageKind: { type: 'string', enum: ['avatar', 'cover'] },
+      },
+    },
+  })
+  @ApiOkResponse({
+    description: 'Updated user profile',
+    type: MeResponseDto,
+  })
+  @UseGuards(AuthGuard)
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      limits: { fileSize: 15 * 1024 * 1024 },
+    }),
+  )
+  uploadProfileImageFile(
+    @CurrentUser() user: AuthUser | undefined,
+    @UploadedFile() file: Express.Multer.File | undefined,
+    @Body() body: UploadUserProfileImageFileDto,
+  ) {
+    const userId = user?.id;
+    if (!userId || userId.startsWith('anonymous:')) {
+      throw new UnauthorizedException('Only registered users are supported');
+    }
+    if (!file) {
+      throw new BadRequestException('Missing multipart field "file"');
+    }
+    return this.authService.uploadProfileImageFile(userId, file, body.imageKind);
+  }
+
+  @Post('test/media/upload')
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({
+    summary: '[Testing only] Upload a file directly (Postman form-data field: file)',
+    description: 'No auth. Multipart body with a single part named "file". Max size 15 MB.',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['file'],
+      properties: {
+        file: { type: 'string', format: 'binary' },
+      },
+    },
+  })
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      limits: { fileSize: 15 * 1024 * 1024 },
+    }),
+  )
+  uploadTestMediaFile(@UploadedFile() file?: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('Missing multipart field "file" (use form-data in Postman)');
+    }
+    return this.authService.uploadTestMediaFile(file);
+  }
+
+  @Post('test/media/upload-url')
+  @ApiOperation({
+    summary: '[Testing only] Get presigned upload URL without authentication',
+    description: 'Use only for manual QA/Postman. Returns upload URL under test-uploads/ prefix.',
+  })
+  createTestMediaUploadUrl(@Body() body: CreateTestMediaUploadUrlDto) {
+    return this.authService.createTestMediaUploadUrl(body);
+  }
+
+  @Post('test/media/verify-upload')
+  @ApiOperation({
+    summary: '[Testing only] Verify uploaded object for unauthenticated test flow',
+  })
+  verifyTestMediaUpload(@Body() body: VerifyTestMediaUploadDto) {
+    return this.authService.verifyTestMediaUpload(body);
   }
 }

@@ -73,3 +73,17 @@ export class UpdateSupplierServiceAreasDto {
   @Type(() => ServiceAreaItemDto)
   serviceAreas!: ServiceAreaItemDto[];
 }
+
+export class UploadSupplierMediaFileDto {
+  @ApiPropertyOptional({ description: 'Media type', example: 'image', default: 'image' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  mediaType?: string;
+
+  @ApiPropertyOptional({ description: 'Sort order in gallery', example: '1' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(16)
+  sortOrder?: string;
+}

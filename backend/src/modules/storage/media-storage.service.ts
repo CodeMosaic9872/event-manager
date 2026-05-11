@@ -70,6 +70,26 @@ export class MediaStorageService {
     return { uploadUrl, expiresInSeconds: expiresIn, publicBaseUrl: config.publicBaseUrl };
   }
 
+  private async putObject(input: { key: string; buffer: Buffer; contentType: string }) {
+    const config = this.getConfig();
+    const client = this.createClient(config);
+    await client.send(
+      new PutObjectCommand({
+        Bucket: config.bucket,
+        Key: input.key,
+        Body: input.buffer,
+        ContentType: input.contentType,
+        ACL: 'public-read',
+      }),
+    );
+    return {
+      key: input.key,
+      publicUrl: `${config.publicBaseUrl}/${input.key}`,
+      contentType: input.contentType,
+      size: input.buffer.length,
+    };
+  }
+
   async createUploadUrl(input: { supplierId: string; fileName: string; contentType: string }) {
     const safeFileName = input.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
     const key = `suppliers/${input.supplierId}/${randomUUID()}-${safeFileName}`;
@@ -116,5 +136,59 @@ export class MediaStorageService {
       exists: true as const,
       ...head,
     };
+  }
+
+  async createTestUploadUrl(input: { fileName: string; contentType: string }) {
+    const safeFileName = input.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const key = `test-uploads/${randomUUID()}-${safeFileName}`;
+    const { uploadUrl, expiresInSeconds, publicBaseUrl } = await this.createSignedPutUrl(key, input.contentType);
+    return {
+      key,
+      uploadUrl,
+      publicUrl: `${publicBaseUrl}/${key}`,
+      expiresInSeconds,
+    };
+  }
+
+  async verifyTestUpload(input: { key: string }) {
+    const expectedPrefix = 'test-uploads/';
+    if (!input.key.startsWith(expectedPrefix)) {
+      throw new BadRequestException('Upload key does not belong to test uploads');
+    }
+    const head = await this.headObject(input.key);
+    return {
+      exists: true as const,
+      ...head,
+    };
+  }
+
+  async putTestObject(input: { buffer: Buffer; fileName: string; contentType: string }) {
+    const safeFileName = input.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const key = `test-uploads/${randomUUID()}-${safeFileName}`;
+    return this.putObject({
+      key,
+      buffer: input.buffer,
+      contentType: input.contentType,
+    });
+  }
+
+  async putUserObject(input: { userId: string; buffer: Buffer; fileName: string; contentType: string }) {
+    const safeFileName = input.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const key = `users/${input.userId}/${randomUUID()}-${safeFileName}`;
+    return this.putObject({
+      key,
+      buffer: input.buffer,
+      contentType: input.contentType,
+    });
+  }
+
+  async putSupplierObject(input: { supplierId: string; buffer: Buffer; fileName: string; contentType: string }) {
+    const safeFileName = input.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const key = `suppliers/${input.supplierId}/${randomUUID()}-${safeFileName}`;
+    return this.putObject({
+      key,
+      buffer: input.buffer,
+      contentType: input.contentType,
+    });
   }
 }

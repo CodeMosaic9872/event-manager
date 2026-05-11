@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -9,16 +10,22 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
   UnauthorizedException,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
+  ApiBody,
   ApiBearerAuth,
+  ApiConsumes,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SuppliersService } from './suppliers.service';
 import { verifyAccessToken } from '../../common/utils/jwt.util';
@@ -38,6 +45,7 @@ import { VerifyMediaUploadDto } from './dto/verify-media-upload.dto';
 import { CompleteMediaUploadDto } from './dto/complete-media-upload.dto';
 import {
   AddSupplierMediaDto,
+  UploadSupplierMediaFileDto,
   UpdateSupplierAttributesDto,
   UpdateSupplierServiceAreasDto,
 } from './dto/supplier-private-profile.dto';
@@ -199,6 +207,53 @@ export class SuppliersController {
       throw new UnauthorizedException('Authenticated user required');
     }
     return this.suppliersService.addMedia(userId, body);
+  }
+
+  @Post('supplier/media/upload-file')
+  @ApiBearerAuth()
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Upload supplier media file directly and create media record' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['file'],
+      properties: {
+        file: { type: 'string', format: 'binary' },
+        mediaType: { type: 'string', example: 'image' },
+        sortOrder: { type: 'string', example: '1' },
+      },
+    },
+  })
+  @UseGuards(AuthGuard)
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      limits: { fileSize: 20 * 1024 * 1024 },
+    }),
+  )
+  uploadMediaFile(
+    @CurrentUser() user: AuthUser | undefined,
+    @UploadedFile() file: Express.Multer.File | undefined,
+    @Body() body: UploadSupplierMediaFileDto,
+  ) {
+    const userId = user?.id;
+    if (!userId || userId.startsWith('anonymous:')) {
+      throw new UnauthorizedException('Authenticated user required');
+    }
+    if (!file) {
+      throw new BadRequestException('Missing multipart field "file"');
+    }
+    const parsedSortOrder =
+      body.sortOrder !== undefined && body.sortOrder !== ''
+        ? Number.parseInt(body.sortOrder, 10)
+        : undefined;
+    if (parsedSortOrder !== undefined && Number.isNaN(parsedSortOrder)) {
+      throw new BadRequestException('sortOrder must be a number');
+    }
+    return this.suppliersService.uploadMediaFile(userId, file, {
+      mediaType: body.mediaType,
+      sortOrder: parsedSortOrder,
+    });
   }
 
   @Post('supplier/media/upload-url')

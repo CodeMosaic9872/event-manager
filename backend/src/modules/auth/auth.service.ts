@@ -1,4 +1,10 @@
-import { BadRequestException, ConflictException, Injectable, Optional, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  Optional,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { compare, hash } from 'bcryptjs';
 import { randomBytes, randomUUID } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -307,5 +313,46 @@ export class AuthService {
       return this.updateProfile(userId, { avatarImageUrl: verified.publicUrl });
     }
     return this.updateProfile(userId, { coverImageUrl: verified.publicUrl });
+  }
+
+  createTestMediaUploadUrl(payload: { fileName: string; contentType: string }) {
+    return this.mediaStorage.createTestUploadUrl(payload);
+  }
+
+  verifyTestMediaUpload(payload: { key: string }) {
+    return this.mediaStorage.verifyTestUpload(payload);
+  }
+
+  uploadTestMediaFile(file: { buffer: Buffer; originalname: string; mimetype: string; size: number }) {
+    if (!file?.buffer?.length) {
+      throw new BadRequestException('Empty file');
+    }
+    const contentType = file.mimetype?.trim() ? file.mimetype.trim() : 'application/octet-stream';
+    return this.mediaStorage.putTestObject({
+      buffer: file.buffer,
+      fileName: file.originalname || 'upload.bin',
+      contentType,
+    });
+  }
+
+  async uploadProfileImageFile(
+    userId: string,
+    file: { buffer: Buffer; originalname: string; mimetype: string; size: number },
+    imageKind: 'avatar' | 'cover',
+  ) {
+    if (!file?.buffer?.length) {
+      throw new BadRequestException('Empty file');
+    }
+    const contentType = file.mimetype?.trim() ? file.mimetype.trim() : 'application/octet-stream';
+    const uploaded = await this.mediaStorage.putUserObject({
+      userId,
+      buffer: file.buffer,
+      fileName: file.originalname || `${imageKind}.bin`,
+      contentType,
+    });
+    if (imageKind === 'avatar') {
+      return this.updateProfile(userId, { avatarImageUrl: uploaded.publicUrl });
+    }
+    return this.updateProfile(userId, { coverImageUrl: uploaded.publicUrl });
   }
 }

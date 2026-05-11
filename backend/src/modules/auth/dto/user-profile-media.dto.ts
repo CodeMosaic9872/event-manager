@@ -30,3 +30,28 @@ export class CompleteUserProfileImageUploadDto {
   @IsIn(['avatar', 'cover'])
   imageKind!: 'avatar' | 'cover';
 }
+
+export class CreateTestMediaUploadUrlDto {
+  @ApiProperty({ example: 'test-image.jpg' })
+  @IsString()
+  @MaxLength(255)
+  fileName!: string;
+
+  @ApiProperty({ example: 'image/jpeg' })
+  @IsString()
+  @MaxLength(100)
+  contentType!: string;
+}
+
+export class VerifyTestMediaUploadDto {
+  @ApiProperty({ example: 'test-uploads/uuid-test-image.jpg' })
+  @IsString()
+  @MaxLength(512)
+  key!: string;
+}
+
+export class UploadUserProfileImageFileDto {
+  @ApiProperty({ enum: ['avatar', 'cover'], example: 'avatar' })
+  @IsIn(['avatar', 'cover'])
+  imageKind!: 'avatar' | 'cover';
+}
