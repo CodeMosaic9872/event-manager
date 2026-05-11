@@ -17,6 +17,11 @@ import {
   VerifyOtpDto,
 } from './dto/auth.dto';
 import {
+  CompleteUserProfileImageUploadDto,
+  CreateUserProfileMediaUploadUrlDto,
+  VerifyUserProfileMediaUploadDto,
+} from './dto/user-profile-media.dto';
+import {
   AuthTokensResponseDto,
   MeResponseDto,
   RefreshTokensResponseDto,
@@ -166,5 +171,53 @@ export class AuthController {
       throw new UnauthorizedException('Only registered users are supported on /me');
     }
     return this.authService.updateProfile(userId, body);
+  }
+
+  @Post('me/media/upload-url')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get presigned upload URL for user profile images (DigitalOcean Spaces)' })
+  @UseGuards(AuthGuard)
+  createProfileMediaUploadUrl(
+    @CurrentUser() user: AuthUser | undefined,
+    @Body() body: CreateUserProfileMediaUploadUrlDto,
+  ) {
+    const userId = user?.id;
+    if (!userId || userId.startsWith('anonymous:')) {
+      throw new UnauthorizedException('Only registered users are supported');
+    }
+    return this.authService.createProfileMediaUploadUrl(userId, body);
+  }
+
+  @Post('me/media/verify-upload')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Verify uploaded user media object exists in DigitalOcean Spaces' })
+  @UseGuards(AuthGuard)
+  verifyProfileMediaUpload(@CurrentUser() user: AuthUser | undefined, @Body() body: VerifyUserProfileMediaUploadDto) {
+    const userId = user?.id;
+    if (!userId || userId.startsWith('anonymous:')) {
+      throw new UnauthorizedException('Only registered users are supported');
+    }
+    return this.authService.verifyProfileMediaUpload(userId, body);
+  }
+
+  @Post('me/media/complete-profile-image')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Verify uploaded object and set avatar or cover image URL on the current user',
+  })
+  @ApiOkResponse({
+    description: 'Updated user profile',
+    type: MeResponseDto,
+  })
+  @UseGuards(AuthGuard)
+  completeProfileImageUpload(
+    @CurrentUser() user: AuthUser | undefined,
+    @Body() body: CompleteUserProfileImageUploadDto,
+  ) {
+    const userId = user?.id;
+    if (!userId || userId.startsWith('anonymous:')) {
+      throw new UnauthorizedException('Only registered users are supported');
+    }
+    return this.authService.completeProfileImageUpload(userId, body);
   }
 }

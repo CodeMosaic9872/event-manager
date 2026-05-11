@@ -7,6 +7,7 @@ import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../../com
 import { AutomationService } from '../notifications/automation.service';
 import { OtpService } from './otp.service';
 import { SmsService } from '../sms/sms.service';
+import { MediaStorageService } from '../storage/media-storage.service';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +15,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly otpService: OtpService,
     private readonly smsService: SmsService,
+    private readonly mediaStorage: MediaStorageService,
     @Optional() private readonly automationService?: AutomationService,
   ) {}
 
@@ -285,5 +287,25 @@ export class AuthService {
       items: [this.toAuthUserSummary(user)],
       totalItems: 1,
     };
+  }
+
+  createProfileMediaUploadUrl(userId: string, payload: { fileName: string; contentType: string }) {
+    return this.mediaStorage.createUserUploadUrl({
+      userId,
+      fileName: payload.fileName,
+      contentType: payload.contentType,
+    });
+  }
+
+  verifyProfileMediaUpload(userId: string, payload: { key: string }) {
+    return this.mediaStorage.verifyUserUpload({ userId, key: payload.key });
+  }
+
+  async completeProfileImageUpload(userId: string, payload: { key: string; imageKind: 'avatar' | 'cover' }) {
+    const verified = await this.mediaStorage.verifyUserUpload({ userId, key: payload.key });
+    if (payload.imageKind === 'avatar') {
+      return this.updateProfile(userId, { avatarImageUrl: verified.publicUrl });
+    }
+    return this.updateProfile(userId, { coverImageUrl: verified.publicUrl });
   }
 }

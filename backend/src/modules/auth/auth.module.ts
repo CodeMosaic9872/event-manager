@@ -4,9 +4,10 @@ import { AuthService } from './auth.service';
 import { OtpService } from './otp.service';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { SmsModule } from '../sms/sms.module';
+import { StorageModule } from '../storage/storage.module';
 
 @Module({
-  imports: [NotificationsModule, SmsModule],
+  imports: [NotificationsModule, SmsModule, StorageModule],
   controllers: [AuthController],
   providers: [AuthService, OtpService],
   exports: [AuthService],

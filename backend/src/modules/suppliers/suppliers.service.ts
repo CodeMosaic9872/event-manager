@@ -2,7 +2,7 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException, 
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ListSuppliersQueryDto } from './dto/list-suppliers-query.dto';
-import { MediaStorageService } from './media-storage.service';
+import { MediaStorageService } from '../storage/media-storage.service';
 import { AutomationService } from '../notifications/automation.service';
 
 @Injectable()
