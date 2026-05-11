@@ -144,10 +144,12 @@ function MarketplaceContent() {
   };
 
   const countLabel = useMemo(() => {
-    if (apiData?.facets && typeof apiData.facets === "object" && "totalCount" in apiData.facets) {
-      return String((apiData.facets as any).totalCount);
-    }
-    return accumulatedSuppliers.length;
+    const totalFromApi = apiData?.facets && typeof apiData.facets === "object" && "totalCount" in apiData.facets
+      ? (apiData.facets as any).totalCount
+      : undefined;
+    if (totalFromApi != null) return String(totalFromApi);
+    if (Array.isArray(accumulatedSuppliers)) return accumulatedSuppliers.length;
+    return 0;
   }, [apiData, accumulatedSuppliers]);
 
   return (
@@ -219,7 +221,7 @@ function MarketplaceContent() {
                   <div key={i} className="h-[340px] animate-pulse rounded-2xl bg-gray-100" />
                 ))}
               </div>
-            ) : accumulatedSuppliers.length === 0 ? (
+            ) : (accumulatedSuppliers?.length ?? 0) === 0 ? (
               <p className="py-20 text-center text-lg text-gray-400">לא נמצאו ספקים. נסה לשנות את המסננים.</p>
             ) : (
               <>

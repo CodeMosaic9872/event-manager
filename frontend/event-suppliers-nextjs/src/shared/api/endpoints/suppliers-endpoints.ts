@@ -16,6 +16,14 @@ export function createSuppliersEndpoints(
   return {
     getSuppliers: builder.query<SuppliersListResponse, SuppliersQuery>({
       query: (params) => ({ url: "/v1/suppliers", params }),
+      transformResponse: (response: unknown) => {
+        if (response && typeof response === "object") {
+          const r = response as any;
+          if (r.data && r.data.items) return r.data as SuppliersListResponse;
+          if (r.items) return response as SuppliersListResponse;
+        }
+        return { items: [], nextCursor: null, facets: {} };
+      },
       transformErrorResponse: () =>
         isProduction
           ? { items: [], nextCursor: null, facets: {} }
@@ -31,21 +39,14 @@ export function createSuppliersEndpoints(
       providesTags: ["Suppliers"],
     }),
     getSupplierById: builder.query<SupplierProfileResponse, string>({
-      queryFn: async (supplierId, _api, _extra, baseQuery) => {
-        const response = await baseQuery({ url: `/v1/suppliers/${supplierId}` });
-        if (!response.error && response.data) {
-          return { data: response.data as SupplierProfileResponse };
+      query: (supplierId) => ({ url: `/v1/suppliers/${supplierId}` }),
+      transformResponse: (response: unknown) => {
+        if (response && typeof response === "object") {
+          const r = response as any;
+          if (r.data) return r.data as SupplierProfileResponse;
+          return response as SupplierProfileResponse;
         }
-        const fallback = suppliers.find((supplier) => supplier.id === supplierId);
-        if (!fallback) return { error: { status: 404, data: "Not found" } };
-        return {
-          data: {
-            id: fallback.id,
-            slug: fallback.id,
-            businessName: fallback.businessName,
-            description: fallback.description,
-          },
-        };
+        return response as SupplierProfileResponse;
       },
       providesTags: ["Suppliers"],
     }),
@@ -83,6 +84,10 @@ export function createSuppliersEndpoints(
       query: () => ({ url: "/v1/users/me/favorites" }),
       transformErrorResponse: () => ({ items: [], nextCursor: null, facets: {} }),
       providesTags: ["Suppliers"],
+    }),
+    createSupplierReview: builder.mutation<{ status: string }, { supplierId: string; rating: number; body: string; authorName: string }>({
+      query: ({ supplierId, ...body }) => ({ url: `/v1/suppliers/${supplierId}/reviews`, method: "POST", body }),
+      invalidatesTags: ["Suppliers"],
     }),
   };
 }

@@ -58,7 +58,7 @@ export function SupplierGlassCard({
         </div>
 
         <div className="absolute left-1/2 top-[-47px] flex size-24 -translate-x-1/2 items-center justify-center rounded-full border-4 border-[#6AB7FF] bg-[rgba(71,71,71,0.002)]">
-          <img src={imageUrl} alt={name} className="size-[88px] rounded-full object-cover" />
+          <img src={imageUrl || "/avatars/1.jpg"} alt={name} className="size-[88px] rounded-full object-cover" />
         </div>
 
         <div className="mt-2 flex items-center gap-1 text-[#FEC324]">

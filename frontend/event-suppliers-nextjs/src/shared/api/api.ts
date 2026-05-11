@@ -128,6 +128,7 @@ export const {
   useCancelJobMutation,
   useSelectApplicationMutation,
   useGetUserFavoritesQuery,
+  useCreateSupplierReviewMutation,
   useGetEventTypesQuery,
   useGetCategoriesQuery,
   useGetSubcategoriesQuery,

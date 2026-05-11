@@ -42,6 +42,33 @@ export type SupplierProfileResponse = {
   slug: string;
   businessName: string;
   description: string;
+  email?: string;
+  category?: string;
+  subcategory?: string;
+  city?: string;
+  ratingAvg?: number;
+  reviewCount?: number;
+  phone?: string;
+  whatsapp?: string;
+  website?: string;
+  instagram?: string;
+  facebook?: string;
+  avatarUrl?: string;
+  heroBannerUrl?: string;
+  gallery?: string[];
+  reviews?: Array<{
+    id: string;
+    author: string;
+    dateLabel: string;
+    body: string;
+    badgeLabel?: string;
+  }>;
+  similar?: Array<{
+    id: string;
+    businessName: string;
+    ratingAvg: number;
+    avatarUrl?: string;
+  }>;
 };
 
 export type JobSummaryResponse = {
