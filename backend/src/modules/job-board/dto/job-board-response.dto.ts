@@ -106,6 +106,15 @@ export class JobDetailResponseDto extends JobSummaryResponseDto {
   publishedAt!: Date | null;
 }
 
+/** Paginated job list (`GET /jobs`, `GET /users/me/jobs`). Items include taxonomy relations. */
+export class PaginatedJobPostsResponseDto {
+  @ApiProperty({ type: [JobDetailResponseDto] })
+  items!: JobDetailResponseDto[];
+
+  @ApiProperty({ example: 24 })
+  totalItems!: number;
+}
+
 export class CreatedJobResponseDto {
   @ApiProperty({ example: 'job_1' })
   id!: string;

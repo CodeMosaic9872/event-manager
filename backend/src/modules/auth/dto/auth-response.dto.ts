@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class AuthUserSummaryDto {
   @ApiProperty({ example: 'usr_123' })
@@ -9,6 +9,12 @@ export class AuthUserSummaryDto {
 
   @ApiProperty({ example: ['USER', 'SUPPLIER'], type: [String] })
   roles!: string[];
+
+  @ApiPropertyOptional({ example: 'https://cdn.example.com/users/usr_123/avatar.jpg', nullable: true })
+  avatarImageUrl!: string | null;
+
+  @ApiPropertyOptional({ example: 'https://cdn.example.com/users/usr_123/cover.jpg', nullable: true })
+  coverImageUrl!: string | null;
 }
 
 export class AuthTokensResponseDto {

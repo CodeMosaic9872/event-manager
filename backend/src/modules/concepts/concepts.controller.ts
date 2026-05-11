@@ -6,7 +6,12 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { ApiProtectedErrors } from '../../common/swagger/api-error-responses.decorator';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import { ConceptsService } from './concepts.service';
-import { CreateSavedConceptDto, SavedConceptResponseDto } from './dto/saved-concept.dto';
+import {
+  CreateSavedConceptDto,
+  DeleteConceptResponseDto,
+  SavedConceptListResponseDto,
+  SavedConceptResponseDto,
+} from './dto/saved-concept.dto';
 
 @ApiTags('User Concepts')
 @ApiProtectedErrors()
@@ -19,8 +24,8 @@ export class ConceptsController {
   @Get()
   @ApiOperation({ summary: 'List saved / liked event concepts for the current user' })
   @ApiOkResponse({
-    description: 'items and totalItems (pagination matches other users/me lists)',
-    schema: { example: { items: [], totalItems: 0 } },
+    description: 'Paginated saved concepts',
+    type: SavedConceptListResponseDto,
   })
   list(@CurrentUser() user: AuthUser | undefined, @Query() query: PaginationQueryDto) {
     const userId = user?.id;
@@ -43,9 +48,7 @@ export class ConceptsController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Remove a saved concept' })
-  @ApiOkResponse({
-    schema: { example: { deleted: true } },
-  })
+  @ApiOkResponse({ type: DeleteConceptResponseDto })
   remove(@CurrentUser() user: AuthUser | undefined, @Param('id') id: string) {
     const userId = user?.id;
     if (!userId || userId.startsWith('anonymous:')) {

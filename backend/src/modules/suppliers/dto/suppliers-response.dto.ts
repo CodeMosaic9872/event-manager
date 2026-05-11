@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 class SupplierListItemDto {
   @ApiProperty({ example: 'sup_1' })
@@ -9,6 +9,12 @@ class SupplierListItemDto {
 
   @ApiProperty({ example: 4.8 })
   ratingAvg!: number;
+
+  @ApiPropertyOptional({ nullable: true })
+  avatarImageUrl!: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  coverImageUrl!: string | null;
 }
 
 export class SuppliersListResponseDto {
@@ -34,6 +40,12 @@ export class SupplierProfileResponseDto {
 
   @ApiProperty({ example: 'Wedding and private event DJ services' })
   description!: string;
+
+  @ApiPropertyOptional({ nullable: true })
+  avatarImageUrl!: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  coverImageUrl!: string | null;
 }
 
 export class ShareTrackResponseDto {

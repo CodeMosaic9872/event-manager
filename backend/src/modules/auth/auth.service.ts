@@ -23,11 +23,19 @@ export class AuthService {
     }
   }
 
-  private toAuthUserSummary(user: { id: string; email?: string | null; roles: { role: PlatformRole }[] }) {
+  private toAuthUserSummary(user: {
+    id: string;
+    email?: string | null;
+    avatarImageUrl?: string | null;
+    coverImageUrl?: string | null;
+    roles: { role: PlatformRole }[];
+  }) {
     return {
       id: user.id,
       email: user.email ?? '',
       roles: user.roles.map((roleRow) => roleRow.role),
+      avatarImageUrl: user.avatarImageUrl ?? null,
+      coverImageUrl: user.coverImageUrl ?? null,
     };
   }
 
@@ -251,6 +259,28 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Invalid access token.');
     }
+    return {
+      items: [this.toAuthUserSummary(user)],
+      totalItems: 1,
+    };
+  }
+
+  async updateProfile(userId: string, dto: { avatarImageUrl?: string; coverImageUrl?: string }) {
+    const data: { avatarImageUrl?: string | null; coverImageUrl?: string | null } = {};
+    if (dto.avatarImageUrl !== undefined) {
+      data.avatarImageUrl = dto.avatarImageUrl.trim() ? dto.avatarImageUrl.trim() : null;
+    }
+    if (dto.coverImageUrl !== undefined) {
+      data.coverImageUrl = dto.coverImageUrl.trim() ? dto.coverImageUrl.trim() : null;
+    }
+    if (Object.keys(data).length === 0) {
+      return this.me(userId);
+    }
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data,
+      include: { roles: true },
+    });
     return {
       items: [this.toAuthUserSummary(user)],
       totalItems: 1,

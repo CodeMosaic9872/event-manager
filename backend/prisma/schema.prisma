@@ -86,6 +86,8 @@ model User {
   refreshTokenHash String?
   refreshTokenVersion Int  @default(0)
   refreshTokenCompromisedAt DateTime?
+  avatarImageUrl String?
+  coverImageUrl  String?
   status      UserStatus  @default(ACTIVE)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
@@ -152,6 +154,8 @@ model Supplier {
   businessName   String
   slug           String                 @unique
   description    String?
+  avatarImageUrl String?
+  coverImageUrl  String?
   approvalStatus SupplierApprovalStatus @default(DRAFT)
   isActive       Boolean                @default(true)
   isVerified     Boolean                @default(false)

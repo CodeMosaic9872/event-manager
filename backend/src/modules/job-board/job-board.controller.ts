@@ -16,7 +16,7 @@ import {
   JobApplicationResponseDto,
   JobApplicationsCountResponseDto,
   JobDetailResponseDto,
-  JobSummaryResponseDto,
+  PaginatedJobPostsResponseDto,
   RecommendedJobResponseDto,
   UserMeStatsResponseDto,
 } from './dto/job-board-response.dto';
@@ -30,9 +30,8 @@ export class JobBoardController {
   @Get()
   @ApiOperation({ summary: 'List public published jobs' })
   @ApiOkResponse({
-    description: 'Published jobs list',
-    type: JobSummaryResponseDto,
-    isArray: true,
+    description: 'Published jobs with taxonomy relations',
+    type: PaginatedJobPostsResponseDto,
   })
   listPublicJobs(@Query() query: PaginationQueryDto) {
     return this.jobBoardService.listPublicJobs(query.page, query.limit);
@@ -228,6 +227,10 @@ export class JobQueryController {
   @Get('users/me/jobs')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'List current user owned jobs' })
+  @ApiOkResponse({
+    description: 'Owned jobs with taxonomy relations',
+    type: PaginatedJobPostsResponseDto,
+  })
   @UseGuards(AuthGuard)
   userJobs(@CurrentUser() user: AuthUser | undefined, @Query() query: PaginationQueryDto) {
     const userId = user?.id;

@@ -235,7 +235,24 @@ export class SuppliersService {
     return supplier;
   }
 
-  async upsertProfile(userId: string, payload: { businessName: string; slug: string; description?: string }) {
+  async upsertProfile(
+    userId: string,
+    payload: {
+      businessName: string;
+      slug: string;
+      description?: string;
+      avatarImageUrl?: string;
+      coverImageUrl?: string;
+    },
+  ) {
+    const imageFields = {
+      ...(payload.avatarImageUrl !== undefined && {
+        avatarImageUrl: payload.avatarImageUrl.trim() ? payload.avatarImageUrl.trim() : null,
+      }),
+      ...(payload.coverImageUrl !== undefined && {
+        coverImageUrl: payload.coverImageUrl.trim() ? payload.coverImageUrl.trim() : null,
+      }),
+    };
     const existing = await this.prisma.supplier.findUnique({ where: { ownerUserId: userId } });
     if (existing) {
       return this.prisma.supplier.update({
@@ -245,6 +262,7 @@ export class SuppliersService {
           slug: payload.slug,
           description: payload.description ?? null,
           approvalStatus: 'PENDING',
+          ...imageFields,
         },
       });
     }
@@ -255,6 +273,12 @@ export class SuppliersService {
         slug: payload.slug,
         description: payload.description ?? null,
         approvalStatus: 'PENDING',
+        ...(payload.avatarImageUrl !== undefined && {
+          avatarImageUrl: payload.avatarImageUrl.trim() ? payload.avatarImageUrl.trim() : null,
+        }),
+        ...(payload.coverImageUrl !== undefined && {
+          coverImageUrl: payload.coverImageUrl.trim() ? payload.coverImageUrl.trim() : null,
+        }),
       },
     });
   }

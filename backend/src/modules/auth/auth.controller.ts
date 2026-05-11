@@ -1,5 +1,5 @@
-import { Body, Controller, Get, HttpCode, Post, UnauthorizedException, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, Patch, Post, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { OtpService } from './otp.service';
 import { AuthGuard } from '../../common/guards/auth.guard';
@@ -13,6 +13,7 @@ import {
   RefreshDto,
   RegisterDto,
   RequestOtpDto,
+  UpdateUserProfileDto,
   VerifyOtpDto,
 } from './dto/auth.dto';
 import {
@@ -148,5 +149,22 @@ export class AuthController {
       throw new UnauthorizedException('Only registered users are supported on /me');
     }
     return this.authService.me(userId);
+  }
+
+  @Patch('me')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update current user profile (avatar and cover image URLs)' })
+  @ApiBody({ type: UpdateUserProfileDto })
+  @ApiOkResponse({
+    description: 'Updated user profile',
+    type: MeResponseDto,
+  })
+  @UseGuards(AuthGuard)
+  patchMe(@CurrentUser() user: AuthUser | undefined, @Body() body: UpdateUserProfileDto) {
+    const userId = user?.id;
+    if (!userId || userId.startsWith('anonymous:')) {
+      throw new UnauthorizedException('Only registered users are supported on /me');
+    }
+    return this.authService.updateProfile(userId, body);
   }
 }
