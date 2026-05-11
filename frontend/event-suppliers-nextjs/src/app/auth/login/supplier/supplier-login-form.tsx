@@ -248,7 +248,7 @@ function SupplierLoginInner() {
         >
           <span>{isLoggingIn ? "Logging in..." : "Logging in to the system"}</span>
           <span className={otpComplete && !isLoading ? "opacity-90 brightness-0 invert" : "opacity-70"} aria-hidden>
-            <Image src="/go-to.svg" alt="" width={18} height={18} unoptimized />
+            <Image src="/icons/go-to.svg" alt="" width={18} height={18} unoptimized />
           </span>
         </button>
       </form>

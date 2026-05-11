@@ -70,7 +70,7 @@ export function JoinSupplierStep3GallerySection({
       >
         <span className="mb-3 flex size-16 items-center justify-center rounded-full bg-[#6AB7FF]">
           <Image
-            src="/upload.svg"
+            src="/icons/upload.svg"
             alt=""
             width={41}
             height={40}
@@ -108,7 +108,7 @@ export function JoinSupplierStep3GallerySection({
               ) : (
                 <div className="flex size-full items-center justify-center">
                   <Image
-                    src="/gallery.svg"
+                    src="/icons/gallery.svg"
                     alt=""
                     width={24}
                     height={24}

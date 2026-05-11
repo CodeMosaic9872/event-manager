@@ -52,11 +52,42 @@ export type JobApplication = {
   message?: string;
   status?: string;
 };
+export type CreateReviewPayload = { rating: number; title?: string; comment?: string };
+export type UpdateReviewPayload = { rating?: number; title?: string; comment?: string };
+export type ReviewResponse = {
+  id: string;
+  supplierId: string;
+  authorUserId: string;
+  author?: { id: string } | null;
+  rating: number;
+  title?: string | null;
+  comment?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+export type ReviewListResponse = {
+  items: ReviewResponse[];
+  totalItems: number;
+};
+export type CreateMediaUploadUrlPayload = { fileName: string; contentType: string };
+export type CreateMediaUploadUrlResponse = { uploadUrl: string; key: string; publicUrl?: string };
+export type CompleteMediaUploadPayload = { key: string; mediaType: string; sortOrder?: number };
+export type CompleteMediaUploadResponse = { id: string; url: string; mediaType: string };
 export type UpsertSupplierProfilePayload = {
   businessName: string;
-  slug?: string;
+  slug: string;
   description?: string;
+  phone?: string;
+  website?: string;
+  socialLinks?: SocialLink[];
+  subcategories?: string[];
+  serviceAreas?: string[];
+  labelsRules?: string[];
+  labelsNiche?: string[];
+  address?: string;
+  extraLanguage?: string;
 };
+export type SocialLink = { platform: string; url: string };
 export type ServiceAreaItem = { regionCode: string; cityCode?: string };
 export type UpdateSupplierServiceAreasPayload = { serviceAreas: ServiceAreaItem[] };
 export type CreateConversationResponse = { id: string };

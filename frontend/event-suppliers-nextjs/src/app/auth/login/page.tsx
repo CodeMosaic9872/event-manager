@@ -223,7 +223,7 @@ function LoginForm() {
             aria-hidden
           >
             <Image
-              src="/go-to.svg"
+              src="/icons/go-to.svg"
               alt=""
               width={18}
               height={18}

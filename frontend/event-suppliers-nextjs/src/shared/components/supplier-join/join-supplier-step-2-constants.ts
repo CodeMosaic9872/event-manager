@@ -45,10 +45,10 @@ export const JOIN_SUPPLIER_STEP2_LANGUAGES = [
 export type JoinSupplierStep2SocialField = { key: string; label: string; placeholder: string };
 
 export const JOIN_SUPPLIER_STEP2_SOCIAL_FIELDS: JoinSupplierStep2SocialField[] = [
-  { key: "tiktok", label: "Link to TikTok", placeholder: "https://" },
-  { key: "instagram", label: "Link to Instagram", placeholder: "https://" },
-  { key: "whatsapp", label: "WhatsApp link", placeholder: "https://" },
-  { key: "website", label: "website", placeholder: "https://" },
-  { key: "facebook", label: "Link to Facebook", placeholder: "https://" },
-  { key: "youtube", label: "Link to YouTube", placeholder: "https://" },
+  { key: "tiktok", label: "Link to TikTok", placeholder: "https://tiktok.com/@yourhandle" },
+  { key: "instagram", label: "Link to Instagram", placeholder: "https://instagram.com/yourhandle" },
+  { key: "whatsapp", label: "WhatsApp link", placeholder: "https://wa.me/972501234567" },
+  { key: "website", label: "website", placeholder: "https://www.yourbusiness.com" },
+  { key: "facebook", label: "Link to Facebook", placeholder: "https://facebook.com/yourpage" },
+  { key: "youtube", label: "Link to YouTube", placeholder: "https://youtube.com/@yourchannel" },
 ];

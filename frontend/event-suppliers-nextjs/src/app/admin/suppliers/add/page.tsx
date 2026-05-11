@@ -409,7 +409,7 @@ export default function AdminAddSupplierPage() {
             <section className="mx-auto mt-8 w-full">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <h3 className="text-right text-base font-normal leading-5 text-black">Gallery management</h3>
-                <Image src="/gallery.svg" alt="" width={22} height={22} unoptimized />
+                <Image src="/icons/gallery.svg" alt="" width={22} height={22} unoptimized />
               </div>
 
               <input
@@ -543,7 +543,7 @@ export default function AdminAddSupplierPage() {
               >
                 <span className="flex w-10 shrink-0 justify-start sm:w-12">
                   <Image
-                    src="/left-arrow.svg"
+                    src="/icons/left-arrow.svg"
                     alt=""
                     width={13}
                     height={13}

@@ -11,36 +11,36 @@ const KPI_CARDS = [
     value: "1,240",
     delta: "5.2%+ from last month",
     action: "To view the supplier table",
-    icon: "/total-suppliers.svg",
+    icon: "/icons/total-suppliers.svg",
   },
   {
     title: "Total revenue",
     value: "₪450,230",
     delta: "12%+ from last month",
     action: "To view the full report",
-    icon: "/total-revenue.svg",
+    icon: "/icons/total-revenue.svg",
   },
     {
       title: "Pending approvals",
       value: "12",
       delta: "",
       action: "To view the full report",
-      icon: "/pending-approvals.svg",
+      icon: "/icons/pending-approvals.svg",
     },
       {
     title: "Active users",
     value: "8,500",
     delta: "0.5%- from last month",
     action: "Export to Excel",
-    icon: "/active-users.svg",
+    icon: "/icons/active-users.svg",
   },
 ] as const;
 
 const SUPPLIER_METRICS = [
-  { month: "June", total: "Total 124", metric: "Phone clicks", icon: "/phone.svg" },
-  { month: "June", total: "Total 56", metric: "Sending a message", icon: "/message.svg" },
-  { month: "June", total: "Total 456", metric: "Profile views", icon: "/eye.svg" },
-  { month: "June", total: "Total 21 (income ₪2,000)", metric: "Number of job offers closed", icon: "/cash.svg" },
+  { month: "June", total: "Total 124", metric: "Phone clicks", icon: "/icons/phone.svg" },
+  { month: "June", total: "Total 56", metric: "Sending a message", icon: "/icons/message.svg" },
+  { month: "June", total: "Total 456", metric: "Profile views", icon: "/icons/eye.svg" },
+  { month: "June", total: "Total 21 (income ₪2,000)", metric: "Number of job offers closed", icon: "/icons/cash.svg" },
 ] as const;
 
 const PENDING_APPROVALS = [

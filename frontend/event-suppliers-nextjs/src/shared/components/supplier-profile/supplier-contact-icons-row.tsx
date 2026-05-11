@@ -11,29 +11,35 @@ type ContactLink = {
 function Icon({ kind }: { kind: ContactLink["icon"] }) {
   const cls = "size-5 object-contain invert brightness-0";
   switch (kind) {
-    case "facebook": return <img src="/facebook.svg" alt="" className={cls} />;
-    case "mail": return <img src="/mail.svg" alt="" className={cls} />;
-    case "globe": return <img src="/globe.svg" alt="" className={cls} />;
-    case "instagram": return <img src="/instagram.svg" alt="" className={cls} />;
-    case "phone": return <img src="/phone.svg" alt="" className={cls} />;
-    case "whatsapp": return <img src="/whatsapp.svg" alt="" className={cls} />;
+    case "facebook": return <img src="/icons/facebook.svg" alt="" className={cls} />;
+    case "mail": return <img src="/icons/mail.svg" alt="" className={cls} />;
+    case "globe": return <img src="/icons/globe.svg" alt="" className={cls} />;
+    case "instagram": return <img src="/icons/instagram.svg" alt="" className={cls} />;
+    case "phone": return <img src="/icons/phone.svg" alt="" className={cls} />;
+    case "whatsapp": return <img src="/icons/whatsapp.svg" alt="" className={cls} />;
     case "bookmark": return <span className="flex size-5 items-center justify-center text-sm font-bold leading-none text-white" aria-hidden>⌗</span>;
-    case "share": return <img src="/share.svg" alt="" className={cls} />;
+    case "share": return <img src="/icons/share.svg" alt="" className={cls} />;
     default: return null;
   }
 }
 
 function buildLinks(profile: SupplierProfileResponse): ContactLink[] {
   const links: ContactLink[] = [];
-  if (profile.facebook) links.push({ label: "\u05E4\u05D9\u05D9\u05E1\u05D1\u05D5\u05E7", href: profile.facebook, icon: "facebook" });
-  if (profile.email) links.push({ label: "\u05D0\u05D9\u05DE\u05D9\u05D9\u05DC", href: `mailto:${profile.email}`, icon: "mail" });
-  if (profile.website) links.push({ label: "\u05D0\u05EA\u05E8", href: profile.website, icon: "globe" });
-  if (profile.instagram) links.push({ label: "\u05D0\u05D9\u05E0\u05E1\u05D8\u05D2\u05E8\u05DD", href: profile.instagram, icon: "instagram" });
   if (profile.phone) {
-    links.push({ label: "\u05D8\u05DC\u05E4\u05D5\u05DF", href: `tel:${profile.phone}`, icon: "phone" });
-    links.push({ label: "\u05D5\u05D5\u05D0\u05D8\u05E1\u05D0\u05E4", href: `https://wa.me/${profile.phone.replace(/[^\d]/g, "")}`, icon: "whatsapp" });
+    links.push({ label: "טלפון", href: `tel:${profile.phone}`, icon: "phone" });
+    links.push({ label: "וואטסאפ", href: `https://wa.me/${profile.phone.replace(/[^\d]/g, "")}`, icon: "whatsapp" });
   }
-  links.push({ label: "\u05E9\u05D9\u05EA\u05D5\u05E3", href: "#share", icon: "share" });
+  (profile.socialLinks ?? []).forEach((link) => {
+    switch (link.platform) {
+      case "facebook": links.push({ label: "פייסבוק", href: link.url, icon: "facebook" }); break;
+      case "instagram": links.push({ label: "אינסטגרם", href: link.url, icon: "instagram" }); break;
+      case "tiktok": links.push({ label: "TikTok", href: link.url, icon: "globe" }); break;
+      case "youtube": links.push({ label: "YouTube", href: link.url, icon: "globe" }); break;
+    }
+  });
+  if (profile.website) links.push({ label: "אתר", href: profile.website, icon: "globe" });
+  if (profile.email) links.push({ label: "אימייל", href: `mailto:${profile.email}`, icon: "mail" });
+  links.push({ label: "שיתוף", href: "#share", icon: "share" });
   return links;
 }
 

@@ -10,7 +10,6 @@ import { createTaxonomyEndpoints } from "@/shared/api/endpoints/taxonomy-endpoin
 const baseUrl =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   "http://localhost:4000";
-const isProduction = process.env.NODE_ENV === "production";
 
 const rawBaseQuery = fetchBaseQuery({
   baseUrl,
@@ -89,7 +88,7 @@ export const api = createApi({
   refetchOnReconnect: true,
   endpoints: (builder) => ({
     ...createAuthEndpoints(builder),
-    ...createSuppliersEndpoints(builder, { isProduction }),
+    ...createSuppliersEndpoints(builder),
     ...createTaxonomyEndpoints(builder),
     ...createJobsEndpoints(builder),
     ...createAiAndNotificationEndpoints(builder),
@@ -103,6 +102,10 @@ export const {
   useVerifyOtpMutation,
   useRefreshTokenMutation,
   useMeQuery,
+  useUpdateMeMutation,
+  useCreateUserMediaUploadUrlMutation,
+  useCompleteUserMediaUploadMutation,
+  useUploadUserProfileFileMutation,
   useGetSuppliersQuery,
   useGetSupplierByIdQuery,
   useGetSupplierSuggestionsQuery,
@@ -118,7 +121,6 @@ export const {
   useUpdateNotificationPreferencesMutation,
   useGetSupplierReferralLinkQuery,
   useGetRecommendedSupplierJobsQuery,
-  useGetSuppliersLegacyMockQuery,
   useGetUserJobsQuery,
   useGetUserJobQuery,
   useUpdateUserJobMutation,
@@ -129,6 +131,11 @@ export const {
   useSelectApplicationMutation,
   useGetUserFavoritesQuery,
   useCreateSupplierReviewMutation,
+  useGetSupplierReviewsQuery,
+  useUpdateMySupplierReviewMutation,
+  useDeleteMySupplierReviewMutation,
+  useCreateMediaUploadUrlMutation,
+  useCompleteMediaUploadMutation,
   useGetEventTypesQuery,
   useGetCategoriesQuery,
   useGetSubcategoriesQuery,

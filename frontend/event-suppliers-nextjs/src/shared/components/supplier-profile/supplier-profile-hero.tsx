@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 
-const DEFAULT_COVER = "/cover.png";
+const DEFAULT_COVER = "/images/cover.png";
 const DEFAULT_AVATAR = "/avatars/1.jpg";
 
 type SupplierProfileHeroProps = {

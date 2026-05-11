@@ -38,7 +38,7 @@ export function TenderOutcomePanel({
   return (
     <article className={PANEL_CLASS} style={{ fontFamily: marketingPloniFont }}>
       <div className="mx-auto mb-4 flex size-[60px] items-center justify-center">
-        <Image src="/submitted.svg" alt="" width={60} height={60} unoptimized />
+        <Image src="/icons/submitted.svg" alt="" width={60} height={60} unoptimized />
       </div>
       <h1 className="mx-auto max-w-[379px] text-balance text-[36px] font-normal leading-10 tracking-[-0.72px] text-[#00113A]">
         {title}
@@ -53,7 +53,7 @@ export function TenderOutcomePanel({
           className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-[99px] bg-[#201C44] px-8 text-center text-base leading-6 text-white!"
         >
           {primaryLabel}
-          <Image src="/left-arrow.svg" alt="" width={14} height={14} className="brightness-0 invert" unoptimized />
+          <Image src="/icons/left-arrow.svg" alt="" width={14} height={14} className="brightness-0 invert" unoptimized />
         </Link>
 
         <Link
@@ -61,7 +61,7 @@ export function TenderOutcomePanel({
           className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-[4px] px-8 text-center text-base leading-6 text-[#00113A]"
         >
           {secondaryLabel}
-          <Image src="/dashboard.svg" alt="" width={15} height={15} className="brightness-0 saturate-100" unoptimized />
+          <Image src="/icons/dashboard.svg" alt="" width={15} height={15} className="brightness-0 saturate-100" unoptimized />
         </Link>
       </div>
 

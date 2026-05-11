@@ -308,7 +308,7 @@ function SupplierRegisterInner() {
         >
           <span>{isRegistering ? "Creating…" : "Create supplier account"}</span>
           <span className={canSubmit ? "opacity-90 brightness-0 invert" : "opacity-70"} aria-hidden>
-            <Image src="/go-to.svg" alt="" width={18} height={18} />
+            <Image src="/icons/go-to.svg" alt="" width={18} height={18} />
           </span>
         </button>
       </form>

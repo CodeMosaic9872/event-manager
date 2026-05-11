@@ -38,7 +38,7 @@ export default function Home() {
       <div
         className="absolute left-0 top-0 min-h-[1163px] w-full lg:h-[1163px]"
         style={{
-          backgroundImage: "url('/background-1.png'), url('/background-2.png')",
+          backgroundImage: "url('/images/background-1.png'), url('/images/background-2.png')",
           backgroundSize: "cover",
           backgroundPosition: "top center",
           backgroundRepeat: "no-repeat",
@@ -139,7 +139,7 @@ export default function Home() {
 
             <div className="flex items-center gap-4 lg:gap-6">
             <div className="flex size-12 items-center justify-center rounded-xl bg-[#6AB7FF]">
-                <img src="/hammer.svg" alt="" className="h-[19px] w-[18px] invert-15 sepia-16 saturate-2100 hue-rotate-220 brightness-40 contrast-95" />
+                <img src="/icons/hammer.svg" alt="" className="h-[19px] w-[18px] invert-15 sepia-16 saturate-2100 hue-rotate-220 brightness-40 contrast-95" />
               </div>
               <div className="flex flex-col gap-1">
                 <p className="text-[24px] leading-7 tracking-[-0.5px] text-white lg:text-[32px]">
@@ -235,13 +235,13 @@ export default function Home() {
               </p>
               <div className="mt-6 flex items-center gap-4">
                 <span className="flex size-10 items-center justify-center rounded-full border border-black/10 bg-[rgba(230,239,244,0.42)]">
-                  <img src="/whatsapp.svg" alt="" className="size-5" />
+                  <img src="/icons/whatsapp.svg" alt="" className="size-5" />
                 </span>
                 <span className="flex size-10 items-center justify-center rounded-full border border-black/10 bg-[rgba(230,239,244,0.42)]">
-                  <img src="/facebook.svg" alt="" className="size-5" />
+                  <img src="/icons/facebook.svg" alt="" className="size-5" />
                 </span>
                 <span className="flex size-10 items-center justify-center rounded-full border border-black/10 bg-[rgba(230,239,244,0.42)]">
-                  <img src="/instagram.svg" alt="" className="size-5" />
+                  <img src="/icons/instagram.svg" alt="" className="size-5" />
                 </span>
               </div>
             </div>
@@ -276,15 +276,15 @@ export default function Home() {
               </h4>
               <ul className="mt-6 space-y-4 text-[14px] leading-5 text-black">
                 <li className="flex items-center gap-2">
-                  <img src="/mail.svg" alt="" className="h-3 w-[15px]" />
+                  <img src="/icons/mail.svg" alt="" className="h-3 w-[15px]" />
                   <span>hello@galaxyevents.co.il</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <img src="/phone.svg" alt="" className="size-[13.5px]" />
+                  <img src="/icons/phone.svg" alt="" className="size-[13.5px]" />
                   <span>03-755-1234</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <img src="/globe.svg" alt="" className="size-[15px]" />
+                  <img src="/icons/globe.svg" alt="" className="size-[15px]" />
                   <span>תל אביב, מגדל ToHa</span>
                 </li>
               </ul>

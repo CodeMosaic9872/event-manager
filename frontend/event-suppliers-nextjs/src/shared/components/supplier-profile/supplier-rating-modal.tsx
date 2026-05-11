@@ -26,19 +26,15 @@ function StarIcon({ filled }: { filled: boolean }) {
 
 export function SupplierRatingModal({ open, onClose, supplierId, avatarUrl, supplierName, supplierSubtitle }: SupplierRatingModalProps) {
   const [rating, setRating] = useState(4);
-  const [fullName, setFullName] = useState("");
-  const [review, setReview] = useState("");
+  const [title, setTitle] = useState("");
+  const [comment, setComment] = useState("");
   const [submitReview, { isLoading: isSubmitting }] = useCreateSupplierReviewMutation();
   const [error, setError] = useState("");
 
   const handleSubmit = async () => {
     setError("");
-    if (!fullName.trim() || !review.trim()) {
-      setError("Please fill in both name and review.");
-      return;
-    }
     try {
-      await submitReview({ supplierId, rating, body: review.trim(), authorName: fullName.trim() }).unwrap();
+      await submitReview({ supplierId, rating, title: title.trim() || undefined, comment: comment.trim() || undefined }).unwrap();
       onClose();
     } catch {
       setError("Failed to submit review. Please try again.");
@@ -88,15 +84,15 @@ export function SupplierRatingModal({ open, onClose, supplierId, avatarUrl, supp
 
           <div className="flex w-full max-w-[574px] flex-col gap-2">
             <label className="flex w-full flex-col items-end gap-2">
-              <span className="text-lg leading-5 text-black">שם מלא</span>
-              <input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="שם מלא" dir="rtl" className="box-border min-h-[52px] w-full rounded-[20px] bg-white px-4 py-4 text-right text-base leading-6 text-[#757682] placeholder:text-[#757682]" />
+              <span className="text-lg leading-5 text-black">כותרת</span>
+              <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="כותרת" dir="rtl" className="box-border min-h-[52px] w-full rounded-[20px] bg-white px-4 py-4 text-right text-base leading-6 text-[#757682] placeholder:text-[#757682]" />
             </label>
           </div>
 
           <div className="flex w-full max-w-[574px] flex-col gap-2">
             <label className="flex w-full flex-col items-end gap-2">
               <span className="text-lg leading-5 text-black">כתוב ביקורת</span>
-              <textarea value={review} onChange={(e) => setReview(e.target.value)} placeholder="שתפו את החוויה שלכם עם הספק..." dir="rtl" rows={4} className="box-border min-h-[128px] w-full resize-none rounded-[20px] bg-white px-4 py-4 text-right text-base leading-6 text-[#757682] placeholder:text-[#757682]" />
+              <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="שתפו את החוויה שלכם עם הספק..." dir="rtl" rows={4} className="box-border min-h-[128px] w-full resize-none rounded-[20px] bg-white px-4 py-4 text-right text-base leading-6 text-[#757682] placeholder:text-[#757682]" />
             </label>
           </div>
 

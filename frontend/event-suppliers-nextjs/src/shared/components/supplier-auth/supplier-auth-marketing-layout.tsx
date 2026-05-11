@@ -107,7 +107,7 @@ export function SupplierAuthMarketingLayout({
 export function SupplierAuthMailIcon() {
   return (
     <span className="pointer-events-none absolute inset-e-4 top-1/2 -translate-y-1/2">
-      <Image src="/mail.svg" alt="" width={20} height={20} className="opacity-80" unoptimized />
+      <Image src="/icons/mail.svg" alt="" width={20} height={20} className="opacity-80" unoptimized />
     </span>
   );
 }

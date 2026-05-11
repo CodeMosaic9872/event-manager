@@ -1,9 +1,49 @@
 export type UserRole = "guest" | "user" | "supplier" | "admin";
 
+export type MarketplaceProfile = {
+  id: string;
+  slug: string;
+  businessName: string;
+  description: string;
+  email?: string | null;
+  category?: string | null;
+  subcategory?: string | null;
+  city?: string | null;
+  ratingAvg?: number | null;
+  reviewCount?: number;
+  phone?: string | null;
+  whatsapp?: string | null;
+  website?: string | null;
+  instagram?: string | null;
+  facebook?: string | null;
+  avatarImageUrl?: string | null;
+  coverImageUrl?: string | null;
+  gallery?: string[];
+  kosher?: string | null;
+  form3010?: string | null;
+  socialLinks?: Array<{ platform: string; url: string }>;
+  subcategories?: string[];
+  serviceAreas?: string[];
+  labelsRules?: string[];
+  labelsNiche?: string[];
+  address?: string | null;
+  extraLanguage?: string | null;
+  similar?: Array<{
+    id: string;
+    businessName: string;
+    ratingAvg: number;
+    avatarUrl?: string;
+  }>;
+};
+
 export type AuthUser = {
   id: string;
   email: string;
   roles: UserRole[];
+  avatarImageUrl?: string | null;
+  coverImageUrl?: string | null;
+  supplier?: any | null;
+  marketplaceProfile?: MarketplaceProfile | null;
 };
 
 export type Supplier = {
@@ -53,16 +93,18 @@ export type SupplierProfileResponse = {
   website?: string;
   instagram?: string;
   facebook?: string;
-  avatarUrl?: string;
-  heroBannerUrl?: string;
+  avatarImageUrl?: string;
+  coverImageUrl?: string;
   gallery?: string[];
-  reviews?: Array<{
-    id: string;
-    author: string;
-    dateLabel: string;
-    body: string;
-    badgeLabel?: string;
-  }>;
+  kosher?: string;
+  form3010?: string;
+  subcategories?: string[];
+  serviceAreas?: string[];
+  labelsRules?: string[];
+  labelsNiche?: string[];
+  address?: string;
+  extraLanguage?: string;
+  socialLinks?: Array<{ platform: string; url: string }>;
   similar?: Array<{
     id: string;
     businessName: string;

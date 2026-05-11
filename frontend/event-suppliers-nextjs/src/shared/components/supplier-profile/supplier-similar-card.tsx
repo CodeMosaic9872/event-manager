@@ -29,7 +29,7 @@ export function SupplierSimilarCard({ id, name, subtitle, rating, imageUrl }: Su
         </div>
         <div className="flex h-7 w-full flex-row items-center justify-between self-stretch pt-2" dir="ltr">
           <span className="inline-flex shrink-0 items-center justify-start" aria-hidden>
-            <Image src="/right_arrow.svg" alt="" width={16} height={16} className="h-4 w-4 rotate-180" />
+            <Image src="/icons/right_arrow.svg" alt="" width={16} height={16} className="h-4 w-4 rotate-180" />
           </span>
           <span className="shrink-0 text-sm leading-5 text-black">
             {rating} <span className="text-[#FEC324]">★</span>

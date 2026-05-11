@@ -100,7 +100,7 @@ export function TenderSupplierProposalCard({
                 {priceNote}
               </span>
               <Image
-                src="/verified.svg"
+                src="/icons/verified.svg"
                 alt=""
                 width={12}
                 height={12}

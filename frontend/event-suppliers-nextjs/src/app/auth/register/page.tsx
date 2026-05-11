@@ -259,7 +259,7 @@ function GenericRegisterForm() {
               >
                 <span>{isRegistering ? "Creating..." : "Logging in to the system"}</span>
                 <Image
-                  src="/go-to.svg"
+                  src="/icons/go-to.svg"
                   alt=""
                   width={20}
                   height={20}

@@ -21,7 +21,7 @@ function FeatureBullet({ children }: { children: string }) {
         {children}
       </span>
       <Image
-        src="/verified.svg"
+        src="/icons/verified.svg"
         alt=""
         width={24}
         height={23}
@@ -141,7 +141,7 @@ export function SupplierJoinCheckoutSummary({ plan, styleFont }: Props) {
           aria-hidden
         >
           <Image
-            src="/customer-help.svg"
+            src="/icons/customer-help.svg"
             alt=""
             width={20}
             height={18}

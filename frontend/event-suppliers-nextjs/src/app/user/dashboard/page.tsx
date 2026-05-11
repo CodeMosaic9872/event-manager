@@ -76,7 +76,7 @@ function QuickActionCard(props: {
             className="inline-flex h-11 min-w-[199px] items-center justify-center gap-2 rounded-[99px] bg-[#201C44] px-5 text-center text-sm font-normal leading-5 text-white!"
           >
             <Image
-              src="/left-arrow.svg"
+              src="/icons/left-arrow.svg"
               alt=""
               width={10}
               height={8}
@@ -169,7 +169,7 @@ export default function UserDashboardPage() {
                   description="Add a tender to find the breaks that suit you best."
                   buttonLabel="To open a tender"
                   href="/jobs/publish"
-                  iconSrc="/hammer.svg"
+                  iconSrc="/icons/hammer.svg"
                 />
               </div>
               <div className="min-w-0 flex-1">
@@ -178,7 +178,7 @@ export default function UserDashboardPage() {
                   description={`You have ${favoritesCount} supplier${favoritesCount !== 1 ? "s" : ""} saved.`}
                   buttonLabel="Choosing suppliers"
                   href={choosingSuppliersHref}
-                  iconSrc="/calender-white.svg"
+                  iconSrc="/icons/calender-white.svg"
                 />
               </div>
             </div>
@@ -239,7 +239,7 @@ export default function UserDashboardPage() {
                         className="inline-flex h-8 min-w-[160px] items-center justify-center gap-2 rounded-[99px] bg-[#201C44] px-4 text-center text-sm font-normal leading-5 text-white!"
                       >
                         <Image
-                          src="/left-arrow.svg"
+                          src="/icons/left-arrow.svg"
                           alt=""
                           width={10}
                           height={8}

@@ -160,7 +160,7 @@ export function SupplierJobOfferCard({ job }: { job: JobSummaryResponse }) {
                 }`}
               >
                 <Image
-                  src="/left-arrow.svg"
+                  src="/icons/left-arrow.svg"
                   alt=""
                   width={10}
                   height={8}
@@ -181,7 +181,7 @@ export function SupplierJobOfferCard({ job }: { job: JobSummaryResponse }) {
                   aria-hidden
                 >
                   <Image
-                    src="/lock.svg"
+                    src="/icons/lock.svg"
                     alt=""
                     width={16}
                     height={21}

@@ -17,10 +17,10 @@ const FEATURE_SMS =
   "Receive SMS about job offers in real time";
 
 const TRUST_STRIP_ITEMS = [
-  { src: "/guarantee.svg", label: "Guarantee", w: 56, h: 46 },
-  { src: "/paypal.svg", label: "PayPal", w: 35, h: 46 },
-  { src: "/visa-mc.svg", label: "Visa / MC", w: 46, h: 46 },
-  { src: "/ssl-secure.svg", label: "SSL Secure", w: 57, h: 46 },
+  { src: "/icons/guarantee.svg", label: "Guarantee", w: 56, h: 46 },
+  { src: "/icons/paypal.svg", label: "PayPal", w: 35, h: 46 },
+  { src: "/icons/visa-mc.svg", label: "Visa / MC", w: 46, h: 46 },
+  { src: "/icons/ssl-secure.svg", label: "SSL Secure", w: 57, h: 46 },
 ] as const;
 
 export default function JoinSupplierStep4Page() {
@@ -126,7 +126,7 @@ export default function JoinSupplierStep4Page() {
                 style={{ fontFamily: marketingPloniFont }}
               >
                 <Image
-                  src="/right_arrow.svg"
+                  src="/icons/right_arrow.svg"
                   alt=""
                   width={16}
                   height={16}
