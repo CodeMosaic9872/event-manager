@@ -12,7 +12,13 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SuppliersService } from './suppliers.service';
 import { verifyAccessToken } from '../../common/utils/jwt.util';
@@ -41,6 +47,12 @@ import {
   SupplierProfileResponseDto,
   SuppliersListResponseDto,
 } from './dto/suppliers-response.dto';
+import {
+  CreateSupplierReviewDto,
+  SupplierReviewListResponseDto,
+  SupplierReviewResponseDto,
+  UpdateSupplierReviewDto,
+} from './dto/supplier-reviews.dto';
 
 @ApiTags('Suppliers')
 @ApiProtectedErrors()
@@ -59,6 +71,60 @@ export class SuppliersController {
   })
   listSuppliers(@Query() query: ListSuppliersQueryDto) {
     return this.suppliersService.list(query);
+  }
+
+  @Get('suppliers/:slugOrId/reviews')
+  @ApiOperation({ summary: 'List reviews for an approved supplier' })
+  @ApiOkResponse({ type: SupplierReviewListResponseDto })
+  listSupplierReviews(@Param('slugOrId') slugOrId: string, @Query() query: PaginationQueryDto) {
+    return this.suppliersService.listSupplierReviews(slugOrId, query.page, query.limit);
+  }
+
+  @Post('suppliers/:slugOrId/reviews')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Submit a review for a supplier (one per account)' })
+  @ApiCreatedResponse({ type: SupplierReviewResponseDto })
+  @UseGuards(AuthGuard)
+  createSupplierReview(
+    @CurrentUser() user: AuthUser | undefined,
+    @Param('slugOrId') slugOrId: string,
+    @Body() body: CreateSupplierReviewDto,
+  ) {
+    const userId = user?.id;
+    if (!userId || userId.startsWith('anonymous:')) {
+      throw new UnauthorizedException('Authenticated user required');
+    }
+    return this.suppliersService.createSupplierReview(slugOrId, userId, body);
+  }
+
+  @Patch('suppliers/:slugOrId/reviews/me')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update your review for this supplier' })
+  @ApiOkResponse({ type: SupplierReviewResponseDto })
+  @UseGuards(AuthGuard)
+  updateMySupplierReview(
+    @CurrentUser() user: AuthUser | undefined,
+    @Param('slugOrId') slugOrId: string,
+    @Body() body: UpdateSupplierReviewDto,
+  ) {
+    const userId = user?.id;
+    if (!userId || userId.startsWith('anonymous:')) {
+      throw new UnauthorizedException('Authenticated user required');
+    }
+    return this.suppliersService.updateMySupplierReview(slugOrId, userId, body);
+  }
+
+  @Delete('suppliers/:slugOrId/reviews/me')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete your review for this supplier' })
+  @ApiOkResponse({ schema: { example: { deleted: true } } })
+  @UseGuards(AuthGuard)
+  deleteMySupplierReview(@CurrentUser() user: AuthUser | undefined, @Param('slugOrId') slugOrId: string) {
+    const userId = user?.id;
+    if (!userId || userId.startsWith('anonymous:')) {
+      throw new UnauthorizedException('Authenticated user required');
+    }
+    return this.suppliersService.deleteMySupplierReview(slugOrId, userId);
   }
 
   @Get('suppliers/:slugOrId')
@@ -83,7 +149,11 @@ export class SuppliersController {
 
   @Post('supplier/profile')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Create supplier profile for authenticated user' })
+  @ApiOperation({
+    summary: 'Create supplier profile for authenticated user',
+    description:
+      'Optional `socialLinks` replaces all existing links when provided; omit to leave links unchanged. Empty array removes all links.',
+  })
   @ApiCreatedResponse({
     description: 'Created or updated supplier profile',
     type: SupplierProfileResponseDto,
@@ -102,7 +172,11 @@ export class SuppliersController {
 
   @Patch('supplier/profile')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update supplier profile for authenticated user' })
+  @ApiOperation({
+    summary: 'Update supplier profile for authenticated user',
+    description:
+      'Optional `socialLinks` replaces all existing links when provided; omit to leave links unchanged. Empty array removes all links.',
+  })
   @UseGuards(AuthGuard)
   patchProfile(
     @CurrentUser() user: AuthUser | undefined,

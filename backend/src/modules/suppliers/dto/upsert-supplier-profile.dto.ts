@@ -1,5 +1,19 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, Length, Matches, MaxLength } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsArray, IsOptional, IsString, IsUrl, Length, Matches, MaxLength, ValidateNested } from 'class-validator';
+
+export class SupplierSocialLinkInputDto {
+  @ApiProperty({ description: 'Platform key', example: 'instagram' })
+  @IsString()
+  @MaxLength(64)
+  platform!: string;
+
+  @ApiProperty({ example: 'https://instagram.com/yourbusiness' })
+  @IsString()
+  @IsUrl({ require_tld: false })
+  @MaxLength(2048)
+  url!: string;
+}
 
 export class UpsertSupplierProfileDto {
   @ApiProperty({
@@ -47,4 +61,15 @@ export class UpsertSupplierProfileDto {
   @IsString()
   @MaxLength(2048)
   coverImageUrl?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'When set, replaces all social links for this supplier (empty array removes every link). Omit to leave links unchanged.',
+    type: [SupplierSocialLinkInputDto],
+  })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SupplierSocialLinkInputDto)
+  socialLinks?: SupplierSocialLinkInputDto[];
 }

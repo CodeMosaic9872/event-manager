@@ -1429,6 +1429,39 @@ async function seedNotificationsAndPush(users: Awaited<ReturnType<typeof seedUse
   });
 }
 
+async function seedDemoSupplierReview(clientUserId: string, supplierId: string) {
+  const existing = await prisma.supplierReview.findFirst({
+    where: { supplierId, authorUserId: clientUserId },
+  });
+  if (existing) {
+    return;
+  }
+  await prisma.supplierReview.create({
+    data: {
+      supplierId,
+      authorUserId: clientUserId,
+      rating: 5,
+      title: 'Seed review',
+      comment: 'Great experience (demo data).',
+    },
+  });
+  const agg = await prisma.supplierReview.aggregate({
+    where: { supplierId },
+    _avg: { rating: true },
+    _count: { id: true },
+  });
+  await prisma.supplier.update({
+    where: { id: supplierId },
+    data: {
+      ratingCount: agg._count.id,
+      ratingAvg:
+        agg._count.id > 0 && agg._avg.rating != null
+          ? new Prisma.Decimal(Number(agg._avg.rating).toFixed(2))
+          : null,
+    },
+  });
+}
+
 async function main() {
   console.log('Seeding taxonomy, filters, templates…');
   await seedTaxonomyAndFilters();
@@ -1464,6 +1497,9 @@ async function main() {
     categoryId: mapping.categoryId,
     subcategoryId: mapping.subcategoryId,
   });
+
+  console.log('Seeding demo supplier review…');
+  await seedDemoSupplierReview(users.client.id, supplier1.id);
 
   console.log('Seeding anonymous session, favorites, AI, referrals, share events…');
   await seedAnonymousFavoritesAiReferrals(users, supplier1.id);

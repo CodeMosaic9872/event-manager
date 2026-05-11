@@ -235,6 +235,30 @@ export class SuppliersService {
     return supplier;
   }
 
+  private normalizeSocialLinkRows(
+    supplierId: string,
+    links: Array<{ platform: string; url: string }>,
+  ): Array<{ supplierId: string; platform: string; url: string }> {
+    return links.map((row) => ({
+      supplierId,
+      platform: row.platform.trim().toLowerCase(),
+      url: row.url.trim(),
+    }));
+  }
+
+  private async syncSupplierSocialLinks(
+    tx: Prisma.TransactionClient,
+    supplierId: string,
+    socialLinks: Array<{ platform: string; url: string }>,
+  ) {
+    await tx.supplierSocialLink.deleteMany({ where: { supplierId } });
+    if (socialLinks.length > 0) {
+      await tx.supplierSocialLink.createMany({
+        data: this.normalizeSocialLinkRows(supplierId, socialLinks),
+      });
+    }
+  }
+
   async upsertProfile(
     userId: string,
     payload: {
@@ -243,6 +267,7 @@ export class SuppliersService {
       description?: string;
       avatarImageUrl?: string;
       coverImageUrl?: string;
+      socialLinks?: Array<{ platform: string; url: string }>;
     },
   ) {
     const imageFields = {
@@ -255,32 +280,210 @@ export class SuppliersService {
     };
     const existing = await this.prisma.supplier.findUnique({ where: { ownerUserId: userId } });
     if (existing) {
-      return this.prisma.supplier.update({
-        where: { ownerUserId: userId },
+      return this.prisma.$transaction(async (tx) => {
+        const updated = await tx.supplier.update({
+          where: { ownerUserId: userId },
+          data: {
+            businessName: payload.businessName,
+            slug: payload.slug,
+            description: payload.description ?? null,
+            approvalStatus: 'PENDING',
+            ...imageFields,
+          },
+        });
+        if (payload.socialLinks !== undefined) {
+          await this.syncSupplierSocialLinks(tx, updated.id, payload.socialLinks);
+        }
+        return tx.supplier.findUniqueOrThrow({
+          where: { id: updated.id },
+          include: { socialLinks: true },
+        });
+      });
+    }
+    return this.prisma.$transaction(async (tx) => {
+      const created = await tx.supplier.create({
         data: {
+          ownerUserId: userId,
           businessName: payload.businessName,
           slug: payload.slug,
           description: payload.description ?? null,
           approvalStatus: 'PENDING',
-          ...imageFields,
+          ...(payload.avatarImageUrl !== undefined && {
+            avatarImageUrl: payload.avatarImageUrl.trim() ? payload.avatarImageUrl.trim() : null,
+          }),
+          ...(payload.coverImageUrl !== undefined && {
+            coverImageUrl: payload.coverImageUrl.trim() ? payload.coverImageUrl.trim() : null,
+          }),
         },
       });
+      if (payload.socialLinks !== undefined && payload.socialLinks.length > 0) {
+        await this.syncSupplierSocialLinks(tx, created.id, payload.socialLinks);
+      }
+      return tx.supplier.findUniqueOrThrow({
+        where: { id: created.id },
+        include: { socialLinks: true },
+      });
+    });
+  }
+
+  /** Public supplier that can receive reviews (same visibility as marketplace profile). */
+  private async resolveReviewableSupplier(slugOrId: string) {
+    const supplier = await this.prisma.supplier.findFirst({
+      where: {
+        OR: [{ id: slugOrId }, { slug: slugOrId }],
+        isActive: true,
+        approvalStatus: 'APPROVED',
+      },
+      select: { id: true, ownerUserId: true },
+    });
+    if (!supplier) {
+      throw new NotFoundException('Supplier not found');
     }
-    return this.prisma.supplier.create({
+    return supplier;
+  }
+
+  private async recalcSupplierRating(supplierId: string) {
+    const agg = await this.prisma.supplierReview.aggregate({
+      where: { supplierId },
+      _avg: { rating: true },
+      _count: { id: true },
+    });
+    const count = agg._count.id;
+    const avg = agg._avg.rating;
+    await this.prisma.supplier.update({
+      where: { id: supplierId },
       data: {
-        ownerUserId: userId,
-        businessName: payload.businessName,
-        slug: payload.slug,
-        description: payload.description ?? null,
-        approvalStatus: 'PENDING',
-        ...(payload.avatarImageUrl !== undefined && {
-          avatarImageUrl: payload.avatarImageUrl.trim() ? payload.avatarImageUrl.trim() : null,
-        }),
-        ...(payload.coverImageUrl !== undefined && {
-          coverImageUrl: payload.coverImageUrl.trim() ? payload.coverImageUrl.trim() : null,
-        }),
+        ratingCount: count,
+        ratingAvg:
+          count > 0 && avg != null ? new Prisma.Decimal(Number(avg).toFixed(2)) : null,
       },
     });
+  }
+
+  async listSupplierReviews(slugOrId: string, page?: number, limit?: number) {
+    const supplier = await this.resolveReviewableSupplier(slugOrId);
+    const pg = this.toPagination(page, limit);
+    const where = { supplierId: supplier.id };
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.supplierReview.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: pg.skip,
+        take: pg.take,
+        include: { author: { select: { id: true } } },
+      }),
+      this.prisma.supplierReview.count({ where }),
+    ]);
+    return {
+      items: items.map((r) => ({
+        id: r.id,
+        supplierId: r.supplierId,
+        authorUserId: r.authorUserId,
+        author: r.author ? { id: r.author.id } : null,
+        rating: r.rating,
+        title: r.title,
+        comment: r.comment,
+        createdAt: r.createdAt,
+        updatedAt: r.updatedAt,
+      })),
+      totalItems,
+    };
+  }
+
+  async createSupplierReview(
+    slugOrId: string,
+    authorUserId: string,
+    body: { rating: number; title?: string; comment?: string },
+  ) {
+    const supplier = await this.resolveReviewableSupplier(slugOrId);
+    if (supplier.ownerUserId === authorUserId) {
+      throw new BadRequestException('You cannot review your own supplier profile');
+    }
+    const dup = await this.prisma.supplierReview.findUnique({
+      where: {
+        supplierId_authorUserId: { supplierId: supplier.id, authorUserId },
+      },
+    });
+    if (dup) {
+      throw new ConflictException('You already submitted a review for this supplier. Use PATCH .../reviews/me to update it.');
+    }
+    const review = await this.prisma.supplierReview.create({
+      data: {
+        supplierId: supplier.id,
+        authorUserId,
+        rating: body.rating,
+        title: body.title?.trim() || null,
+        comment: body.comment?.trim() || null,
+      },
+      include: { author: { select: { id: true } } },
+    });
+    await this.recalcSupplierRating(supplier.id);
+    return {
+      id: review.id,
+      supplierId: review.supplierId,
+      authorUserId: review.authorUserId,
+      author: review.author ? { id: review.author.id } : null,
+      rating: review.rating,
+      title: review.title,
+      comment: review.comment,
+      createdAt: review.createdAt,
+      updatedAt: review.updatedAt,
+    };
+  }
+
+  async updateMySupplierReview(
+    slugOrId: string,
+    authorUserId: string,
+    body: { rating?: number; title?: string; comment?: string },
+  ) {
+    if (body.rating === undefined && body.title === undefined && body.comment === undefined) {
+      throw new BadRequestException('Provide at least one of rating, title, or comment to update');
+    }
+    const supplier = await this.resolveReviewableSupplier(slugOrId);
+    const existing = await this.prisma.supplierReview.findUnique({
+      where: {
+        supplierId_authorUserId: { supplierId: supplier.id, authorUserId },
+      },
+    });
+    if (!existing) {
+      throw new NotFoundException('You have not reviewed this supplier yet');
+    }
+    const review = await this.prisma.supplierReview.update({
+      where: { id: existing.id },
+      data: {
+        ...(body.rating !== undefined && { rating: body.rating }),
+        ...(body.title !== undefined && { title: body.title.trim() ? body.title.trim() : null }),
+        ...(body.comment !== undefined && { comment: body.comment.trim() ? body.comment.trim() : null }),
+      },
+      include: { author: { select: { id: true } } },
+    });
+    await this.recalcSupplierRating(supplier.id);
+    return {
+      id: review.id,
+      supplierId: review.supplierId,
+      authorUserId: review.authorUserId,
+      author: review.author ? { id: review.author.id } : null,
+      rating: review.rating,
+      title: review.title,
+      comment: review.comment,
+      createdAt: review.createdAt,
+      updatedAt: review.updatedAt,
+    };
+  }
+
+  async deleteMySupplierReview(slugOrId: string, authorUserId: string) {
+    const supplier = await this.resolveReviewableSupplier(slugOrId);
+    const existing = await this.prisma.supplierReview.findUnique({
+      where: {
+        supplierId_authorUserId: { supplierId: supplier.id, authorUserId },
+      },
+    });
+    if (!existing) {
+      throw new NotFoundException('You have not reviewed this supplier yet');
+    }
+    await this.prisma.supplierReview.delete({ where: { id: existing.id } });
+    await this.recalcSupplierRating(supplier.id);
+    return { deleted: true as const };
   }
 
   async addMedia(userId: string, payload: { mediaType: string; url: string; sortOrder?: number; metadataJson?: Record<string, unknown> }) {

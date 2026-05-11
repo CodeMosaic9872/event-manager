@@ -103,6 +103,7 @@ model User {
   notificationPreference NotificationPreference?
   referralAttributions ReferralAttribution[] @relation("ReferredUserAttributions")
   supplierShareEvents SupplierShareEvent[]
+  supplierReviews     SupplierReview[]
 }
 
 model UserRole {
@@ -180,6 +181,7 @@ model Supplier {
   referralLinks  ReferralLink[]
   referralRewards ReferralReward[]
   shareEvents    SupplierShareEvent[]
+  reviews        SupplierReview[]
 }
 
 model SupplierDraft {
@@ -333,6 +335,26 @@ model SupplierSocialLink {
   url        String
 
   supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@index([supplierId])
+}
+
+/// Client-written review for an approved supplier (one per author per supplier).
+model SupplierReview {
+  id           String   @id @default(cuid())
+  supplierId String
+  authorUserId String
+  rating       Int
+  title        String?
+  comment      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  supplier     Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  author       User     @relation(fields: [authorUserId], references: [id], onDelete: Cascade)
+
+  @@unique([supplierId, authorUserId])
+  @@index([supplierId, createdAt])
 }
 
 model SupplierAttribute {
