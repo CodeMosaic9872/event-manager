@@ -63,6 +63,24 @@ export class UpsertSupplierProfileDto {
   coverImageUrl?: string;
 
   @ApiPropertyOptional({
+    description: 'Public URL for kosher-related uploaded document',
+    example: 'https://cdn.example.com/suppliers/sup_1/kosher-cert.pdf',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  kosher?: string;
+
+  @ApiPropertyOptional({
+    description: 'Public URL for Israeli tax form 3010 (or set via media upload with attachForm3010)',
+    example: 'https://cdn.example.com/suppliers/sup_1/form-3010.pdf',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  form3010?: string;
+
+  @ApiPropertyOptional({
     description:
       'When set, replaces all social links for this supplier (empty array removes every link). Omit to leave links unchanged.',
     type: [SupplierSocialLinkInputDto],

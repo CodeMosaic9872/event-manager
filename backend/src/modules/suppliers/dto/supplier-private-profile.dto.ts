@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsBoolean, IsObject, IsOptional, IsString, IsUrl, MaxLength, ValidateNested } from 'class-validator';
 
@@ -75,6 +75,14 @@ export class UpdateSupplierServiceAreasDto {
 }
 
 export class UploadSupplierMediaFileDto {
+  @ApiPropertyOptional({
+    description: 'Supplier id — required when the request is not authenticated (onboarding / draft upload)',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  supplierId?: string;
+
   @ApiPropertyOptional({ description: 'Media type', example: 'image', default: 'image' })
   @IsOptional()
   @IsString()
@@ -86,4 +94,20 @@ export class UploadSupplierMediaFileDto {
   @IsString()
   @MaxLength(16)
   sortOrder?: string;
+
+  @ApiPropertyOptional({
+    description: 'If true, also stores the uploaded file URL on supplier.kosher',
+  })
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true' || value === '1')
+  @IsBoolean()
+  attachKosher?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'If true, also stores the uploaded file URL on supplier.form_3010',
+  })
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true' || value === '1')
+  @IsBoolean()
+  attachForm3010?: boolean;
 }

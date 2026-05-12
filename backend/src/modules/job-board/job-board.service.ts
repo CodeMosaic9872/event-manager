@@ -185,6 +185,7 @@ export class JobBoardService {
         type: 'job.material.updated',
         payload: {
           jobId: updated.id,
+          jobTitle: updated.title,
           ownerUserId: updated.ownerUserId,
           supplierIds: applications.map((item) => item.supplierId),
         },
@@ -248,6 +249,7 @@ export class JobBoardService {
         type: 'job.matching.published',
         payload: {
           jobId: updated.id,
+          jobTitle: updated.title,
           ownerUserId: updated.ownerUserId,
           supplierIds: matchingSuppliers.map((s) => s.id),
         },
@@ -387,14 +389,22 @@ export class JobBoardService {
       });
       return created;
     });
-    const job = await this.prisma.jobPost.findUnique({ where: { id: jobId } });
+    const [job, supplier] = await Promise.all([
+      this.prisma.jobPost.findUnique({ where: { id: jobId } }),
+      this.prisma.supplier.findUnique({
+        where: { id: supplierId },
+        select: { businessName: true },
+      }),
+    ]);
     await this.automationService.publish({
       eventId: `job_application_${application.id}`,
       type: 'job.application.submitted',
       payload: {
         applicationId: application.id,
         jobId,
+        jobTitle: job?.title ?? '',
         supplierId,
+        supplierName: supplier?.businessName ?? '',
         ownerUserId: job?.ownerUserId,
       },
     });
@@ -468,8 +478,9 @@ export class JobBoardService {
     if (!application) {
       throw new NotFoundException('Application not found');
     }
-    return this.prisma.$transaction(async (tx) => {
-      const updated = await tx.jobApplication.update({
+    const prevStatus = application.status;
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const next = await tx.jobApplication.update({
         where: { id },
         data: { status },
       });
@@ -482,8 +493,10 @@ export class JobBoardService {
           actorId: null,
         },
       });
-      return updated;
+      return next;
     });
+    await this.maybeEmitLeadForShortlistedApplication(id, application, prevStatus, status);
+    return updated;
   }
 
   async moderateApplicationStatus(
@@ -496,8 +509,9 @@ export class JobBoardService {
     if (!application) {
       throw new NotFoundException('Application not found');
     }
-    return this.prisma.$transaction(async (tx) => {
-      const updated = await tx.jobApplication.update({
+    const prevStatus = application.status;
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const next = await tx.jobApplication.update({
         where: { id },
         data: { status },
       });
@@ -511,7 +525,45 @@ export class JobBoardService {
           actorId: actorAdminId ?? null,
         },
       });
-      return updated;
+      return next;
+    });
+    await this.maybeEmitLeadForShortlistedApplication(id, application, prevStatus, status);
+    return updated;
+  }
+
+  private async maybeEmitLeadForShortlistedApplication(
+    applicationId: string,
+    application: {
+      supplierId: string;
+      jobPostId: string;
+      status: JobApplicationStatus;
+    },
+    previousStatus: JobApplicationStatus,
+    nextStatus: JobApplicationStatus,
+  ) {
+    if (nextStatus !== 'SHORTLISTED' || previousStatus === 'SHORTLISTED') {
+      return;
+    }
+    const [job, supplier] = await Promise.all([
+      this.prisma.jobPost.findUnique({
+        where: { id: application.jobPostId },
+        select: { title: true },
+      }),
+      this.prisma.supplier.findUnique({
+        where: { id: application.supplierId },
+        select: { businessName: true },
+      }),
+    ]);
+    await this.automationService.publish({
+      eventId: `lead_shortlist_${applicationId}`,
+      type: 'supplier.lead.received',
+      payload: {
+        supplierId: application.supplierId,
+        businessName: supplier?.businessName ?? '',
+        leadSource: 'shortlisted',
+        jobTitle: job?.title ?? '',
+        applicationId,
+      },
     });
   }
 

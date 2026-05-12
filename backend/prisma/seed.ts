@@ -2,7 +2,6 @@ import { PrismaClient, Prisma, PlatformRole } from '@prisma/client';
 import { hash } from 'bcryptjs';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-
 const prisma = new PrismaClient();
 
 type TaxonomyRow = {
@@ -195,52 +194,6 @@ async function seedTaxonomyAndFilters() {
     });
   }
 
-  const notificationTemplates = [
-    {
-      key: 'user.welcome',
-      channel: 'EMAIL' as const,
-      subjectTemplate: 'Welcome to Event Marketplace',
-      bodyTemplate:
-        'Hi {{email}}, welcome to Event Marketplace. Start exploring suppliers and build your event plan today.',
-    },
-    {
-      key: 'supplier.onboarding.abandoned',
-      channel: 'EMAIL' as const,
-      subjectTemplate: 'Finish your supplier profile',
-      bodyTemplate:
-        'Your onboarding is {{completionPercent}}% complete at step "{{stepKey}}". Come back to complete your profile and start receiving leads.',
-    },
-    {
-      key: 'seed.sms.reminder',
-      channel: 'SMS' as const,
-      subjectTemplate: null,
-      bodyTemplate: 'Reminder: {{message}}',
-    },
-    {
-      key: 'seed.whatsapp.update',
-      channel: 'WHATSAPP' as const,
-      subjectTemplate: null,
-      bodyTemplate: 'WhatsApp update: {{message}}',
-    },
-    {
-      key: 'seed.push.alert',
-      channel: 'PUSH' as const,
-      subjectTemplate: '{{title}}',
-      bodyTemplate: '{{body}}',
-    },
-  ] as const;
-
-  for (const template of notificationTemplates) {
-    await prisma.notificationTemplate.upsert({
-      where: { key: template.key },
-      update: {
-        channel: template.channel,
-        subjectTemplate: template.subjectTemplate,
-        bodyTemplate: template.bodyTemplate,
-      },
-      create: template,
-    });
-  }
 }
 
 async function ensureUserRole(userId: string, role: PlatformRole) {
@@ -1136,21 +1089,6 @@ async function seedAllNotificationChannels(
         payloadJson: { message: 'fail' },
         status: 'FAILED',
         errorCode: 'SEED_FORCE_FAIL',
-      },
-    });
-  }
-
-  const wa = await prisma.notification.findFirst({
-    where: { recipientUserId: users.client.id, templateKey: 'seed.whatsapp.update' },
-  });
-  if (!wa) {
-    await prisma.notification.create({
-      data: {
-        ...base,
-        channel: 'WHATSAPP',
-        templateKey: 'seed.whatsapp.update',
-        payloadJson: { message: 'Seed WhatsApp' },
-        status: 'PENDING',
       },
     });
   }

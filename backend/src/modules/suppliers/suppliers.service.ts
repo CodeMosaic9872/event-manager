@@ -1,4 +1,11 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException, Optional } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  Optional,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ListSuppliersQueryDto } from './dto/list-suppliers-query.dto';
@@ -232,7 +239,8 @@ export class SuppliersService {
     if (!supplier) {
       throw new NotFoundException('Supplier not found');
     }
-    return supplier;
+    const { kosher: _omitKosher, form3010: _omitForm3010, ...publicSupplier } = supplier;
+    return publicSupplier;
   }
 
   private normalizeSocialLinkRows(
@@ -267,6 +275,8 @@ export class SuppliersService {
       description?: string;
       avatarImageUrl?: string;
       coverImageUrl?: string;
+      kosher?: string;
+      form3010?: string;
       socialLinks?: Array<{ platform: string; url: string }>;
     },
   ) {
@@ -276,6 +286,14 @@ export class SuppliersService {
       }),
       ...(payload.coverImageUrl !== undefined && {
         coverImageUrl: payload.coverImageUrl.trim() ? payload.coverImageUrl.trim() : null,
+      }),
+    };
+    const complianceFields = {
+      ...(payload.kosher !== undefined && {
+        kosher: payload.kosher.trim() ? payload.kosher.trim() : null,
+      }),
+      ...(payload.form3010 !== undefined && {
+        form3010: payload.form3010.trim() ? payload.form3010.trim() : null,
       }),
     };
     const existing = await this.prisma.supplier.findUnique({ where: { ownerUserId: userId } });
@@ -289,6 +307,7 @@ export class SuppliersService {
             description: payload.description ?? null,
             approvalStatus: 'PENDING',
             ...imageFields,
+            ...complianceFields,
           },
         });
         if (payload.socialLinks !== undefined) {
@@ -314,6 +333,7 @@ export class SuppliersService {
           ...(payload.coverImageUrl !== undefined && {
             coverImageUrl: payload.coverImageUrl.trim() ? payload.coverImageUrl.trim() : null,
           }),
+          ...complianceFields,
         },
       });
       if (payload.socialLinks !== undefined && payload.socialLinks.length > 0) {
@@ -502,15 +522,34 @@ export class SuppliersService {
     });
   }
 
-  async uploadMediaFile(
-    userId: string,
-    file: { buffer: Buffer; originalname: string; mimetype: string; size: number },
-    payload?: { mediaType?: string; sortOrder?: number },
-  ) {
-    const supplier = await this.prisma.supplier.findUnique({ where: { ownerUserId: userId } });
-    if (!supplier) {
-      throw new NotFoundException('Supplier profile not found');
+  async uploadMediaFile(params: {
+    ownerUserId?: string;
+    supplierId?: string;
+    file: { buffer: Buffer; originalname: string; mimetype: string; size: number };
+    mediaType?: string;
+    sortOrder?: number;
+    attachKosher?: boolean;
+    attachForm3010?: boolean;
+  }) {
+    let supplier;
+    if (params.ownerUserId) {
+      supplier = await this.prisma.supplier.findUnique({ where: { ownerUserId: params.ownerUserId } });
+      if (!supplier) {
+        throw new NotFoundException('Supplier profile not found');
+      }
+      if (params.supplierId?.trim() && supplier.id !== params.supplierId.trim()) {
+        throw new ForbiddenException('supplierId does not match authenticated supplier');
+      }
+    } else if (params.supplierId?.trim()) {
+      supplier = await this.prisma.supplier.findUnique({ where: { id: params.supplierId.trim() } });
+      if (!supplier) {
+        throw new NotFoundException('Supplier profile not found');
+      }
+    } else {
+      throw new BadRequestException('supplierId is required when uploading without authentication');
     }
+
+    const file = params.file;
     if (!file?.buffer?.length) {
       throw new BadRequestException('Empty file');
     }
@@ -521,15 +560,25 @@ export class SuppliersService {
       fileName: file.originalname || 'upload.bin',
       contentType,
     });
-    return this.prisma.supplierMedia.create({
+    const media = await this.prisma.supplierMedia.create({
       data: {
         supplierId: supplier.id,
-        mediaType: payload?.mediaType?.trim() ? payload.mediaType.trim() : 'image',
+        mediaType: params.mediaType?.trim() ? params.mediaType.trim() : 'image',
         url: uploaded.publicUrl,
-        sortOrder: payload?.sortOrder ?? 0,
+        sortOrder: params.sortOrder ?? 0,
         metadataJson: {} as Prisma.InputJsonValue,
       },
     });
+    if (params.attachKosher || params.attachForm3010) {
+      await this.prisma.supplier.update({
+        where: { id: supplier.id },
+        data: {
+          ...(params.attachKosher ? { kosher: uploaded.publicUrl } : {}),
+          ...(params.attachForm3010 ? { form3010: uploaded.publicUrl } : {}),
+        },
+      });
+    }
+    return media;
   }
 
   async createMediaUploadUrl(userId: string, payload: { fileName: string; contentType: string }) {
@@ -740,13 +789,31 @@ export class SuppliersService {
       throw new BadRequestException('User or anonymous session is required');
     }
 
-    return this.prisma.favoriteSupplier.upsert({
+    const fav = await this.prisma.favoriteSupplier.upsert({
       where: userId
         ? { userId_supplierId: { userId, supplierId } }
         : { anonymousSessionId_supplierId: { anonymousSessionId: anonymousSessionId!, supplierId } },
       create: { userId, anonymousSessionId, supplierId },
       update: {},
     });
+
+    const supplier = await this.prisma.supplier.findUnique({
+      where: { id: supplierId },
+      select: { businessName: true },
+    });
+    const dayKey = new Date().toISOString().slice(0, 10);
+    const actorKey = userId ?? `anon_${anonymousSessionId}`;
+    await this.automationService?.publish({
+      eventId: `lead_favorite_${supplierId}_${actorKey}_${dayKey}`,
+      type: 'supplier.lead.received',
+      payload: {
+        supplierId,
+        businessName: supplier?.businessName ?? '',
+        leadSource: 'favorite',
+      },
+    });
+
+    return fav;
   }
 
   async trackShare(
@@ -757,7 +824,7 @@ export class SuppliersService {
   ) {
     const supplier = await this.prisma.supplier.findUnique({
       where: { id: supplierId },
-      select: { id: true, isActive: true, approvalStatus: true },
+      select: { id: true, businessName: true, isActive: true, approvalStatus: true },
     });
     if (!supplier || !supplier.isActive || supplier.approvalStatus !== 'APPROVED') {
       throw new NotFoundException('Supplier not found');
@@ -770,6 +837,17 @@ export class SuppliersService {
         anonymousSessionId: anonymousSessionId ?? null,
         channel: payload?.channel ?? 'unknown',
         context: payload?.context ?? null,
+      },
+    });
+
+    await this.automationService?.publish({
+      eventId: `lead_share_${event.id}`,
+      type: 'supplier.lead.received',
+      payload: {
+        supplierId,
+        businessName: supplier.businessName,
+        leadSource: 'share',
+        shareChannel: event.channel,
       },
     });
 

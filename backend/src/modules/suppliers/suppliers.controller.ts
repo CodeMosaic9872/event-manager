@@ -30,6 +30,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { SuppliersService } from './suppliers.service';
 import { verifyAccessToken } from '../../common/utils/jwt.util';
 import { AuthGuard } from '../../common/guards/auth.guard';
+import { OptionalAuthGuard } from '../../common/guards/optional-auth.guard';
 import { AuthUser } from '../../common/interfaces/auth-user.interface';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
@@ -210,21 +211,27 @@ export class SuppliersController {
   }
 
   @Post('supplier/media/upload-file')
-  @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
-  @ApiOperation({ summary: 'Upload supplier media file directly and create media record' })
+  @ApiOperation({
+    summary: 'Upload supplier media file directly and create media record',
+    description:
+      'Authentication is optional. With Bearer token, the file is attached to the caller’s supplier. Without auth, pass `supplierId` (from draft/onboarding). Set `attachKosher=true` or `attachForm3010=true` to also save the file URL on supplier `kosher` or `form_3010` (both store URLs as strings).',
+  })
   @ApiBody({
     schema: {
       type: 'object',
       required: ['file'],
       properties: {
         file: { type: 'string', format: 'binary' },
+        supplierId: { type: 'string', description: 'Required when request has no Bearer token' },
         mediaType: { type: 'string', example: 'image' },
         sortOrder: { type: 'string', example: '1' },
+        attachKosher: { type: 'string', example: 'false', description: 'true / false — saves URL to kosher' },
+        attachForm3010: { type: 'string', example: 'false', description: 'true / false — saves URL to form_3010' },
       },
     },
   })
-  @UseGuards(AuthGuard)
+  @UseGuards(OptionalAuthGuard)
   @UseInterceptors(
     FileInterceptor('file', {
       storage: memoryStorage(),
@@ -236,10 +243,6 @@ export class SuppliersController {
     @UploadedFile() file: Express.Multer.File | undefined,
     @Body() body: UploadSupplierMediaFileDto,
   ) {
-    const userId = user?.id;
-    if (!userId || userId.startsWith('anonymous:')) {
-      throw new UnauthorizedException('Authenticated user required');
-    }
     if (!file) {
       throw new BadRequestException('Missing multipart field "file"');
     }
@@ -250,9 +253,16 @@ export class SuppliersController {
     if (parsedSortOrder !== undefined && Number.isNaN(parsedSortOrder)) {
       throw new BadRequestException('sortOrder must be a number');
     }
-    return this.suppliersService.uploadMediaFile(userId, file, {
+    const ownerUserId =
+      user?.id && !user.id.startsWith('anonymous:') ? user.id : undefined;
+    return this.suppliersService.uploadMediaFile({
+      ownerUserId,
+      supplierId: body.supplierId,
+      file,
       mediaType: body.mediaType,
       sortOrder: parsedSortOrder,
+      attachKosher: body.attachKosher,
+      attachForm3010: body.attachForm3010,
     });
   }
 

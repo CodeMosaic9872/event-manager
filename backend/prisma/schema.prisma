@@ -187,6 +187,10 @@ model Supplier {
   isVerified     Boolean                @default(false)
   ratingAvg      Decimal?               @db.Decimal(3, 2)
   ratingCount    Int                    @default(0)
+  /// URL to uploaded kosher-related document (e.g. certificate); richer taxonomy may live in attributes.kosherOptions.
+  kosher         String?
+  /// URL to uploaded Israeli tax form 3010 (or similar compliance document).
+  form3010       String?                @map("form_3010")
   createdAt      DateTime               @default(now())
   updatedAt      DateTime               @updatedAt
   deletedAt      DateTime?
@@ -600,17 +604,6 @@ model SavedEventConcept {
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
-}
-
-model NotificationTemplate {
-  id              String              @id @default(cuid())
-  key             String              @unique
-  channel         NotificationChannel
-  subjectTemplate String?
-  bodyTemplate    String
-  isActive        Boolean             @default(true)
-  version         Int                 @default(1)
-  createdAt       DateTime            @default(now())
 }
 
 model Notification {
