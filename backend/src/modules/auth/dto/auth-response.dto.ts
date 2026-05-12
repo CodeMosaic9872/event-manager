@@ -55,14 +55,6 @@ export class RefreshTokensResponseDto {
   refreshToken!: string;
 }
 
-export class MeResponseDto {
-  @ApiProperty({ type: [AuthMeItemDto] })
-  items!: AuthMeItemDto[];
-
-  @ApiProperty({ example: 1 })
-  totalItems!: number;
-}
-
 export class RequestOtpResponseDto {
   @ApiProperty({ example: true })
   sent!: boolean;

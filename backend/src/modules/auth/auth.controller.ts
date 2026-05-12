@@ -47,8 +47,8 @@ import {
   VerifyUserProfileMediaUploadDto,
 } from './dto/user-profile-media.dto';
 import {
+  AuthMeItemDto,
   AuthTokensResponseDto,
-  MeResponseDto,
   RefreshTokensResponseDto,
   RequestOtpResponseDto,
   VerifyOtpResponseDto,
@@ -170,11 +170,11 @@ export class AuthController {
   @ApiOperation({
     summary: 'Get current authenticated user profile and roles',
     description:
-      'When `roles` includes `SUPPLIER`, `items[0].businessName` mirrors the supplier display name, and `items[0].supplier` contains the full supplier record (profile, media, categories, service areas, attributes, draft, subscription summary without payment token, approval history, counts). Otherwise `businessName` and `supplier` are `null`.',
+      'When `roles` includes `SUPPLIER`, `businessName` mirrors the supplier display name and `supplier` contains the full supplier record (profile, media, categories, service areas, attributes, draft, subscription summary without payment token, approval history, counts). Otherwise `businessName` and `supplier` are `null`. Response body is `{ success, data }` with **no** `pagination` field.',
   })
   @ApiOkResponse({
-    description: 'Current user profile',
-    type: MeResponseDto,
+    description: 'Current user profile (single object in `data`, no pagination)',
+    type: AuthMeItemDto,
   })
   @UseGuards(AuthGuard)
   me(@CurrentUser() user?: AuthUser) {
@@ -190,8 +190,8 @@ export class AuthController {
   @ApiOperation({ summary: 'Update current user profile (avatar and cover image URLs)' })
   @ApiBody({ type: UpdateUserProfileDto })
   @ApiOkResponse({
-    description: 'Updated user profile',
-    type: MeResponseDto,
+    description: 'Updated user profile (same shape as GET /auth/me)',
+    type: AuthMeItemDto,
   })
   @UseGuards(AuthGuard)
   patchMe(@CurrentUser() user: AuthUser | undefined, @Body() body: UpdateUserProfileDto) {
@@ -235,8 +235,8 @@ export class AuthController {
     summary: 'Verify uploaded object and set avatar or cover image URL on the current user',
   })
   @ApiOkResponse({
-    description: 'Updated user profile',
-    type: MeResponseDto,
+    description: 'Updated user profile (same shape as GET /auth/me)',
+    type: AuthMeItemDto,
   })
   @UseGuards(AuthGuard)
   completeProfileImageUpload(
@@ -267,8 +267,8 @@ export class AuthController {
     },
   })
   @ApiOkResponse({
-    description: 'Updated user profile',
-    type: MeResponseDto,
+    description: 'Updated user profile (same shape as GET /auth/me)',
+    type: AuthMeItemDto,
   })
   @UseGuards(AuthGuard)
   @UseInterceptors(

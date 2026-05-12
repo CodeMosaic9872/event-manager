@@ -51,15 +51,10 @@ describe('NotificationsController (contract)', () => {
 
   it('GET /v1/notifications/preferences returns current user preferences', async () => {
     notificationsServiceMock.getNotificationPreferences.mockResolvedValueOnce({
-      items: [
-        {
-          userId: 'usr_123',
-          emailEnabled: true,
-          pushEnabled: false,
-          mutedTemplates: ['job.matching.published'],
-        },
-      ],
-      totalItems: 1,
+      userId: 'usr_123',
+      emailEnabled: true,
+      pushEnabled: false,
+      mutedTemplates: ['job.matching.published'],
     });
 
     await request(app.getHttpServer())
@@ -72,15 +67,10 @@ describe('NotificationsController (contract)', () => {
 
   it('PUT /v1/notifications/preferences updates preferences', async () => {
     notificationsServiceMock.updateNotificationPreferences.mockResolvedValueOnce({
-      items: [
-        {
-          userId: 'usr_123',
-          emailEnabled: false,
-          pushEnabled: true,
-          mutedTemplates: [],
-        },
-      ],
-      totalItems: 1,
+      userId: 'usr_123',
+      emailEnabled: false,
+      pushEnabled: true,
+      mutedTemplates: [],
     });
 
     await request(app.getHttpServer())

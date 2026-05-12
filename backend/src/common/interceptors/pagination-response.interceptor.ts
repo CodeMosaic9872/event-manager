@@ -41,14 +41,21 @@ export class PaginationResponseInterceptor implements NestInterceptor {
   }
 
   /**
-   * Only list-shaped GET bodies get envelope `pagination`. Single resources (one job, one supplier, …)
-   * omit it; list endpoints use `{ items, totalItems? }`, raw arrays, or a full `pagination` object.
+   * Top-level `pagination` only when the collection spans more than one page of `limit`
+   * (client `?limit=` is honored; default 20). Single-page lists and single resources omit it;
+   * `data` still carries `items` / `totalItems` for list UIs. Raw arrays: same rule vs returned length.
+   * Embedded `data.pagination` (fully specified) is still forwarded. AI conversation + messages omits
+   * top-level pagination (`conversation` key).
    */
   private extractPagination(data: unknown, page: number, limit: number): PaginationMeta | null {
+    const safeLimit = Math.max(1, limit);
     if (data === null || data === undefined) {
       return null;
     }
     if (Array.isArray(data)) {
+      if (data.length <= safeLimit) {
+        return null;
+      }
       return this.toMeta(page, limit, data.length);
     }
     if (typeof data === 'object') {
@@ -65,11 +72,13 @@ export class PaginationResponseInterceptor implements NestInterceptor {
         }
       }
       if (Array.isArray(record.items)) {
-        // Single resource + nested paginated list (e.g. AI conversation + messages): keep paging inside `data` only.
         if ('conversation' in record) {
           return null;
         }
         const totalItems = typeof record.totalItems === 'number' ? record.totalItems : record.items.length;
+        if (totalItems <= safeLimit) {
+          return null;
+        }
         return this.toMeta(page, limit, totalItems);
       }
       return null;

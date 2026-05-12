@@ -13,6 +13,17 @@ import type {
 const toRole = (roles: string[]): AuthUser["roles"] =>
   roles.map((role) => role.toLowerCase() as AuthUser["roles"][number]);
 
+function unwrapMePayload(response: unknown): Record<string, unknown> {
+  const r = response as Record<string, unknown> | null | undefined;
+  if (!r || typeof r !== "object") return {};
+  const data = r.data;
+  const payload = data !== undefined && data !== null && typeof data === "object" ? (data as Record<string, unknown>) : r;
+  if (Array.isArray(payload.items) && payload.items.length > 0) {
+    return payload.items[0] as Record<string, unknown>;
+  }
+  return payload;
+}
+
 export function createAuthEndpoints(builder: EndpointBuilder<any, any, any>) {
   return {
     login: builder.mutation<AuthTokensResponse, LoginPayload>({
@@ -34,11 +45,14 @@ export function createAuthEndpoints(builder: EndpointBuilder<any, any, any>) {
     }),
     me: builder.query<AuthUser, void>({
       query: () => ({ url: "/v1/auth/me" }),
-      transformResponse: (response: { id: string; email: string; roles: string[] }) => ({
-        id: response.id,
-        email: response.email,
-        roles: toRole(response.roles),
-      }),
+      transformResponse: (response: unknown) => {
+        const row = unwrapMePayload(response);
+        return {
+          id: String(row.id ?? ""),
+          email: String(row.email ?? ""),
+          roles: toRole(Array.isArray(row.roles) ? (row.roles as string[]) : []),
+        };
+      },
       providesTags: ["Auth"],
     }),
   };

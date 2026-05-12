@@ -291,10 +291,7 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Invalid access token.');
     }
-    return {
-      items: [await this.toMeItem(user)],
-      totalItems: 1,
-    };
+    return this.toMeItem(user);
   }
 
   async updateProfile(userId: string, dto: { avatarImageUrl?: string; coverImageUrl?: string }) {
@@ -313,10 +310,7 @@ export class AuthService {
       data,
       include: { roles: true },
     });
-    return {
-      items: [await this.toMeItem(user)],
-      totalItems: 1,
-    };
+    return this.toMeItem(user);
   }
 
   createProfileMediaUploadUrl(userId: string, payload: { fileName: string; contentType: string }) {
