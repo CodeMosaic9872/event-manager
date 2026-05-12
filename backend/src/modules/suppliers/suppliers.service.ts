@@ -267,10 +267,31 @@ export class SuppliersService {
     }
   }
 
+  private resolveBusinessNameForProfile(payload: {
+    businessName?: string;
+    slug: string;
+    existingBusinessName?: string;
+    isCreate: boolean;
+  }): string {
+    const trimmed = payload.businessName?.trim() ?? '';
+    if (trimmed.length >= 2) {
+      return trimmed;
+    }
+    if (!payload.isCreate && payload.existingBusinessName) {
+      return payload.existingBusinessName;
+    }
+    const fromSlug = payload.slug
+      .split('-')
+      .filter(Boolean)
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join(' ');
+    return fromSlug.length >= 2 ? fromSlug : 'Supplier';
+  }
+
   async upsertProfile(
     userId: string,
     payload: {
-      businessName: string;
+      businessName?: string;
       slug: string;
       description?: string;
       avatarImageUrl?: string;
@@ -299,10 +320,19 @@ export class SuppliersService {
     const existing = await this.prisma.supplier.findUnique({ where: { ownerUserId: userId } });
     if (existing) {
       return this.prisma.$transaction(async (tx) => {
+        const businessName =
+          payload.businessName !== undefined
+            ? this.resolveBusinessNameForProfile({
+                businessName: payload.businessName,
+                slug: payload.slug,
+                existingBusinessName: existing.businessName,
+                isCreate: false,
+              })
+            : existing.businessName;
         const updated = await tx.supplier.update({
           where: { ownerUserId: userId },
           data: {
-            businessName: payload.businessName,
+            businessName,
             slug: payload.slug,
             description: payload.description ?? null,
             approvalStatus: 'PENDING',
@@ -320,10 +350,15 @@ export class SuppliersService {
       });
     }
     return this.prisma.$transaction(async (tx) => {
+      const businessName = this.resolveBusinessNameForProfile({
+        businessName: payload.businessName,
+        slug: payload.slug,
+        isCreate: true,
+      });
       const created = await tx.supplier.create({
         data: {
           ownerUserId: userId,
-          businessName: payload.businessName,
+          businessName,
           slug: payload.slug,
           description: payload.description ?? null,
           approvalStatus: 'PENDING',

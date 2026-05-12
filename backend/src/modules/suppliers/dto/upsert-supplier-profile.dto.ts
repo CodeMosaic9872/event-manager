@@ -16,13 +16,15 @@ export class SupplierSocialLinkInputDto {
 }
 
 export class UpsertSupplierProfileDto {
-  @ApiProperty({
-    description: 'Supplier business display name',
+  @ApiPropertyOptional({
+    description:
+      'Supplier business display name. Omit on create to derive a readable default from `slug`; omit on update to leave unchanged.',
     example: 'Skyline Events DJ',
   })
+  @IsOptional()
   @IsString()
   @Length(2, 120)
-  businessName!: string;
+  businessName?: string;
 
   @ApiProperty({
     description: 'SEO slug for supplier profile',
