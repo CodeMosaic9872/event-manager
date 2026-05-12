@@ -61,10 +61,14 @@ export class AuthService {
     const base = this.toAuthUserSummary(user);
     const isSupplier = user.roles.some((r) => r.role === 'SUPPLIER');
     if (!isSupplier) {
-      return { ...base, supplier: null };
+      return { ...base, businessName: null, supplier: null };
     }
     const supplier = await this.suppliersService.getSupplierFullForOwner(user.id);
-    return { ...base, supplier };
+    return {
+      ...base,
+      businessName: supplier?.businessName ?? null,
+      supplier,
+    };
   }
 
   private async issueTokenPair(user: {

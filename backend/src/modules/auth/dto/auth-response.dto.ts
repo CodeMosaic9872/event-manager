@@ -21,6 +21,14 @@ export class AuthUserSummaryDto {
 export class AuthMeItemDto extends AuthUserSummaryDto {
   @ApiPropertyOptional({
     description:
+      'When `roles` includes `SUPPLIER`, mirrors `supplier.businessName` for convenience. `null` if not a supplier or supplier profile not created yet.',
+    example: 'Skyline Events DJ',
+    nullable: true,
+  })
+  businessName?: string | null;
+
+  @ApiPropertyOptional({
+    description:
       'Present when `roles` includes `SUPPLIER`: supplier profile, media, categories, service areas, attributes, onboarding draft, subscription summary (no CardCom token), recent approval history, and counts. `null` if the supplier row has not been created yet.',
     nullable: true,
     type: Object,
