@@ -5,13 +5,14 @@ import {
   ForbiddenException,
   Get,
   Headers,
+  HttpCode,
   Param,
   Post,
   Put,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiHeader, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiHeader, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../../common/guards/auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthUser } from '../../common/interfaces/auth-user.interface';
@@ -21,6 +22,11 @@ import {
   NotificationPreferencesResponseDto,
   UpdateNotificationPreferencesDto,
 } from './dto/notification-preferences.dto';
+import {
+  PushDeviceTokenResponseDto,
+  PushTokenDeactivateResponseDto,
+  SendTestEmailResponseDto,
+} from './dto/notifications-response.dto';
 import { SendTestEmailDto } from './dto/send-test-email.dto';
 
 const DEFAULT_TEST_EMAIL_TO = 'arora.aashish3988@gmail.com';
@@ -31,12 +37,15 @@ export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
   @Post('test-email')
+  @HttpCode(200)
   @ApiOperation({
     summary: 'Send a test email via configured SMTP',
     description:
       'Requires EMAIL_TEST_SECRET and header X-Email-Test-Secret. Omit body `to` to send to the default test address.',
   })
   @ApiHeader({ name: 'X-Email-Test-Secret', description: 'Must match EMAIL_TEST_SECRET', required: true })
+  @ApiBody({ type: SendTestEmailDto })
+  @ApiOkResponse({ type: SendTestEmailResponseDto })
   sendTestEmail(@Headers('x-email-test-secret') secret: string | undefined, @Body() body: SendTestEmailDto) {
     const expected = process.env.EMAIL_TEST_SECRET;
     if (!expected?.trim()) {
@@ -50,8 +59,10 @@ export class NotificationsController {
   }
 
   @Post('push-tokens')
+  @HttpCode(200)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Register or refresh FCM push token for current user' })
+  @ApiOkResponse({ type: PushDeviceTokenResponseDto })
   @UseGuards(AuthGuard)
   registerPushToken(@CurrentUser() user: AuthUser | undefined, @Body() body: RegisterPushTokenDto) {
     const userId = user?.id;
@@ -62,8 +73,10 @@ export class NotificationsController {
   }
 
   @Delete('push-tokens/:token')
+  @HttpCode(200)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Deactivate push token for current user' })
+  @ApiOkResponse({ type: PushTokenDeactivateResponseDto })
   @UseGuards(AuthGuard)
   removePushToken(@CurrentUser() user: AuthUser | undefined, @Param('token') token: string) {
     const userId = user?.id;

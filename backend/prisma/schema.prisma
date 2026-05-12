@@ -191,6 +191,13 @@ model Supplier {
   kosher         String?
   /// URL to uploaded Israeli tax form 3010 (or similar compliance document).
   form3010       String?                @map("form_3010")
+  /// Public contact email shown on the supplier profile (not necessarily the login email).
+  contactEmail   String?                @map("contact_email")
+  publicPhone    String?                @map("public_phone")
+  whatsappUrl    String?                @map("whatsapp_url")
+  websiteUrl     String?                @map("website_url")
+  address        String?
+  extraLanguage  String?                @map("extra_language")
   createdAt      DateTime               @default(now())
   updatedAt      DateTime               @updatedAt
   deletedAt      DateTime?
@@ -343,6 +350,7 @@ model Subcategory {
   category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   mappings    EventCategorySubcategoryMap[]
   jobPosts    JobPost[]
+  supplierCategories SupplierCategory[]
 
   @@unique([categoryId, key])
 }
@@ -392,6 +400,7 @@ model SupplierCategory {
 
   supplier      Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
   category      Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  subcategory   Subcategory? @relation(fields: [subcategoryId], references: [id], onDelete: SetNull)
 
   @@index([supplierId, categoryId])
 }
@@ -456,6 +465,8 @@ model SupplierAttribute {
   govSupplierFlags Json?
   workingDaysJson  Json?
   certificationsJson Json?
+  labelsRulesJson    Json?    @map("labels_rules_json")
+  labelsNicheJson    Json?    @map("labels_niche_json")
 
   supplier         Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
 }

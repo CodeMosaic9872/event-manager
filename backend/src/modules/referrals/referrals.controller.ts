@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Patch, Post, Query, UnauthorizedException, UseGuards } from '@nestjs/common';
-import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ReferralsService } from './referrals.service';
 import { PatchReferralRewardDto, SupplierIdQueryDto } from './dto/referrals.dto';
 import { ApiProtectedErrors } from '../../common/swagger/api-error-responses.decorator';
@@ -11,13 +11,16 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthUser } from '../../common/interfaces/auth-user.interface';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import {
+  AdminReferralRewardsListResponseDto,
   PatchReferralRewardResponseDto,
-  ReferralAttributionResponseDto,
+  ReferralAttributionsListResponseDto,
+  ReferralRewardsListResponseDto,
   SupplierReferralLinkResponseDto,
 } from './dto/referrals-response.dto';
 
 @ApiTags('Referrals')
 @ApiProtectedErrors()
+@ApiBearerAuth()
 @UseGuards(AuthGuard, SupplierOnlyGuard)
 @Controller('supplier/referrals')
 export class ReferralsController {
@@ -39,6 +42,10 @@ export class ReferralsController {
 
   @Post('link/regenerate')
   @ApiOperation({ summary: 'Regenerate supplier referral link' })
+  @ApiOkResponse({
+    description: 'New active referral link',
+    type: SupplierReferralLinkResponseDto,
+  })
   regenerate(@CurrentUser() user: AuthUser | undefined, @Query() query: SupplierIdQueryDto) {
     const userId = user?.id;
     if (!userId || userId.startsWith('anonymous:')) {
@@ -50,9 +57,8 @@ export class ReferralsController {
   @Get('attributions')
   @ApiOperation({ summary: 'List supplier referral attributions' })
   @ApiOkResponse({
-    description: 'Referral attributions',
-    type: ReferralAttributionResponseDto,
-    isArray: true,
+    description: 'Paginated attributions for the supplier',
+    type: ReferralAttributionsListResponseDto,
   })
   attributions(
     @CurrentUser() user: AuthUser | undefined,
@@ -67,6 +73,10 @@ export class ReferralsController {
 
   @Get('rewards')
   @ApiOperation({ summary: 'List supplier referral rewards' })
+  @ApiOkResponse({
+    description: 'Paginated rewards with attribution rows',
+    type: ReferralRewardsListResponseDto,
+  })
   rewards(@CurrentUser() user: AuthUser | undefined, @Query() query: SupplierIdQueryDto & PaginationQueryDto) {
     const userId = user?.id;
     if (!userId || userId.startsWith('anonymous:')) {
@@ -78,6 +88,7 @@ export class ReferralsController {
 
 @ApiTags('Referrals')
 @ApiProtectedErrors()
+@ApiBearerAuth()
 @UseGuards(AuthGuard, RolesGuard)
 @Roles('ADMIN')
 @Controller('admin/referrals')
@@ -86,13 +97,17 @@ export class AdminReferralsController {
 
   @Get()
   @ApiOperation({ summary: 'List referral records for admin' })
+  @ApiOkResponse({
+    description: 'Paginated referral rewards with supplier and attribution (including referral link)',
+    type: AdminReferralRewardsListResponseDto,
+  })
   list(@Query() query: PaginationQueryDto) {
     return this.referralsService.adminList(query.page, query.limit);
   }
 
   @Patch('rewards/:id')
   @ApiOperation({ summary: 'Patch referral reward state' })
-  @ApiCreatedResponse({
+  @ApiOkResponse({
     description: 'Updated reward state',
     type: PatchReferralRewardResponseDto,
   })

@@ -22,6 +22,7 @@ import {
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -50,9 +51,14 @@ import {
   UpdateSupplierAttributesDto,
   UpdateSupplierServiceAreasDto,
 } from './dto/supplier-private-profile.dto';
+import { SupplierMediaUploadFileMultipartDto } from './dto/supplier-media-upload.swagger.dto';
 import {
   ShareTrackResponseDto,
   SupplierDraftResponseDto,
+  SupplierMediaDeleteResponseDto,
+  SupplierMediaPresignedUploadResponseDto,
+  SupplierMediaResponseDto,
+  SupplierMediaVerifyUploadResponseDto,
   SupplierProfileResponseDto,
   SuppliersListResponseDto,
 } from './dto/suppliers-response.dto';
@@ -161,7 +167,7 @@ export class SuppliersController {
   @ApiOperation({
     summary: 'Create supplier profile for authenticated user',
     description:
-      'Optional `socialLinks` replaces all existing links when provided; omit to leave links unchanged. Empty array removes all links.',
+      'Creates the supplier row and returns the same **public profile** shape as `GET /suppliers/:slugOrId` (aggregated category labels, gallery URLs, similar suppliers, etc.). Optional `socialLinks` replaces all existing links when provided; omit to leave links unchanged unless `instagram` / `facebook` / `whatsapp` are sent (those patch individual platforms). Optional `categories` replaces all `SupplierCategory` rows; `serviceAreas` replaces regions; `gallery` replaces `SupplierMedia` rows with `mediaType` `gallery`; `labelsRules` / `labelsNiche` are stored on `SupplierAttribute`.',
   })
   @ApiCreatedResponse({
     description: 'Created or updated supplier profile',
@@ -184,8 +190,9 @@ export class SuppliersController {
   @ApiOperation({
     summary: 'Update supplier profile for authenticated user',
     description:
-      'Optional `socialLinks` replaces all existing links when provided; omit to leave links unchanged. Empty array removes all links.',
+      'Same payload options as `POST /supplier/profile`. Returns the public profile aggregate. Omit nested arrays/objects to leave those relations unchanged.',
   })
+  @ApiOkResponse({ description: 'Public supplier profile aggregate', type: SupplierProfileResponseDto })
   @UseGuards(AuthGuard)
   patchProfile(
     @CurrentUser() user: AuthUser | undefined,
@@ -200,7 +207,16 @@ export class SuppliersController {
 
   @Post('supplier/media')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Add media item to supplier profile' })
+  @ApiOperation({
+    summary: 'Add supplier media by public URL',
+    description:
+      'Creates a `SupplierMedia` row pointing at an already-hosted URL (e.g. after a client-side upload elsewhere). For direct binary upload to Spaces from this API, use `POST /supplier/media/upload-file` or the presigned flow `upload-url` → `verify-upload` → `complete-upload`.',
+  })
+  @ApiBody({ type: AddSupplierMediaDto })
+  @ApiOkResponse({
+    description: 'Created media row',
+    type: SupplierMediaResponseDto,
+  })
   @UseGuards(AuthGuard)
   addMedia(@CurrentUser() user: AuthUser | undefined, @Body() body: AddSupplierMediaDto) {
     const userId = user?.id;
@@ -211,25 +227,22 @@ export class SuppliersController {
   }
 
   @Post('supplier/media/upload-file')
+  @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
   @ApiOperation({
-    summary: 'Upload supplier media file directly and create media record',
+    summary: 'Upload supplier media file (multipart) and create media record',
     description:
-      'Authentication is optional. With Bearer token, the file is attached to the caller’s supplier. Without auth, pass `supplierId` (from draft/onboarding). Set `attachKosher=true` or `attachForm3010=true` to also save the file URL on supplier `kosher` or `form_3010` (both store URLs as strings).',
+      '**Auth:** Optional Bearer. With Bearer, the file is attached to the caller’s supplier. Without Bearer, form field `supplierId` is **required** (draft/onboarding).\n\n' +
+      '`attachKosher` / `attachForm3010`: when true, also saves the uploaded public URL on the supplier row (`kosher` / `form_3010`).\n\n' +
+      '**Multipart parts:** `file` (required binary), optional `supplierId`, `mediaType`, `sortOrder`, `attachKosher`, `attachForm3010`. Max file size **20 MB**.',
   })
   @ApiBody({
-    schema: {
-      type: 'object',
-      required: ['file'],
-      properties: {
-        file: { type: 'string', format: 'binary' },
-        supplierId: { type: 'string', description: 'Required when request has no Bearer token' },
-        mediaType: { type: 'string', example: 'image' },
-        sortOrder: { type: 'string', example: '1' },
-        attachKosher: { type: 'string', example: 'false', description: 'true / false — saves URL to kosher' },
-        attachForm3010: { type: 'string', example: 'false', description: 'true / false — saves URL to form_3010' },
-      },
-    },
+    description: 'Multipart form-data',
+    type: SupplierMediaUploadFileMultipartDto,
+  })
+  @ApiOkResponse({
+    description: 'Created `SupplierMedia` row with public `url` (and optional supplier compliance fields updated).',
+    type: SupplierMediaResponseDto,
   })
   @UseGuards(OptionalAuthGuard)
   @UseInterceptors(
@@ -268,7 +281,16 @@ export class SuppliersController {
 
   @Post('supplier/media/upload-url')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get presigned upload URL for supplier media (DigitalOcean Spaces)' })
+  @ApiOperation({
+    summary: 'Get presigned PUT URL for supplier media (Spaces)',
+    description:
+      'Returns a time-limited `uploadUrl` for the client to PUT bytes directly to object storage, plus stable `publicUrl` and object `key`. Follow with `verify-upload` then `complete-upload` to create the `SupplierMedia` row.',
+  })
+  @ApiBody({ type: CreateMediaUploadUrlDto })
+  @ApiOkResponse({
+    description: 'Presigned upload target',
+    type: SupplierMediaPresignedUploadResponseDto,
+  })
   @UseGuards(AuthGuard)
   createMediaUploadUrl(@CurrentUser() user: AuthUser | undefined, @Body() body: CreateMediaUploadUrlDto) {
     const userId = user?.id;
@@ -280,7 +302,16 @@ export class SuppliersController {
 
   @Post('supplier/media/verify-upload')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Verify uploaded media object exists in DigitalOcean Spaces' })
+  @ApiOperation({
+    summary: 'Verify uploaded object exists in Spaces (HEAD)',
+    description:
+      'Checks that the object for `key` exists under the caller’s supplier prefix. Use after PUT to the presigned `uploadUrl`. Response includes size and headers from storage.',
+  })
+  @ApiBody({ type: VerifyMediaUploadDto })
+  @ApiOkResponse({
+    description: 'Object exists and metadata from HEAD',
+    type: SupplierMediaVerifyUploadResponseDto,
+  })
   @UseGuards(AuthGuard)
   verifyMediaUpload(@CurrentUser() user: AuthUser | undefined, @Body() body: VerifyMediaUploadDto) {
     const userId = user?.id;
@@ -292,7 +323,16 @@ export class SuppliersController {
 
   @Post('supplier/media/complete-upload')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Atomically verify uploaded object and create supplier media record' })
+  @ApiOperation({
+    summary: 'Complete presigned upload: verify object and create SupplierMedia',
+    description:
+      'Runs the same existence check as `verify-upload`, then inserts a `SupplierMedia` row with the public URL. Prefer this over `verify-upload` + separate add when using the presigned flow.',
+  })
+  @ApiBody({ type: CompleteMediaUploadDto })
+  @ApiOkResponse({
+    description: 'Created media row',
+    type: SupplierMediaResponseDto,
+  })
   @UseGuards(AuthGuard)
   completeMediaUpload(@CurrentUser() user: AuthUser | undefined, @Body() body: CompleteMediaUploadDto) {
     const userId = user?.id;
@@ -304,7 +344,12 @@ export class SuppliersController {
 
   @Delete('supplier/media/:id')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Delete media item from supplier profile' })
+  @ApiOperation({ summary: 'Delete a supplier media item owned by the current user’s supplier' })
+  @ApiParam({ name: 'id', description: '`SupplierMedia` id (cuid)', example: 'smed_2k3j4h5g6f7d8s9' })
+  @ApiOkResponse({
+    description: 'Deletion confirmation',
+    type: SupplierMediaDeleteResponseDto,
+  })
   @UseGuards(AuthGuard)
   deleteMedia(@CurrentUser() user: AuthUser | undefined, @Param('id') id: string) {
     const userId = user?.id;

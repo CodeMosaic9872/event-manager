@@ -16,7 +16,6 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiConsumes,
-  ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -47,10 +46,16 @@ import {
   VerifyUserProfileMediaUploadDto,
 } from './dto/user-profile-media.dto';
 import {
+  AnonymousSessionResponseDto,
   AuthMeItemDto,
   AuthTokensResponseDto,
+  LinkAnonymousResponseDto,
+  LogoutResponseDto,
+  MediaPresignUploadResponseDto,
+  MediaVerifyUploadResponseDto,
   RefreshTokensResponseDto,
   RequestOtpResponseDto,
+  TestMediaUploadObjectResponseDto,
   VerifyOtpResponseDto,
 } from './dto/auth-response.dto';
 
@@ -94,13 +99,14 @@ export class AuthController {
   }
 
   @Post('register')
+  @HttpCode(200)
   @ApiOperation({
     summary: 'Register a new account or extend user role (requires OTP-verified phone)',
     description:
-      'Creates a new user with email and phone, or extends an existing user with the supplied role. The phone number must have been OTP-verified via /auth/request-otp + /auth/verify-otp with purpose=register prior to this call.',
+      'Creates a new user with email and phone, or extends an existing user with the supplied role. The phone number must have been OTP-verified via /auth/request-otp + /auth/verify-otp with purpose=register prior to this call. HTTP status is **200** (not 201): a global interceptor normalizes success responses.',
   })
-  @ApiCreatedResponse({
-    description: 'User registration/login payload',
+  @ApiOkResponse({
+    description: 'Access and refresh tokens plus user summary',
     type: AuthTokensResponseDto,
   })
   register(@Body() body: RegisterDto) {
@@ -133,8 +139,10 @@ export class AuthController {
   }
 
   @Post('logout')
+  @HttpCode(200)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Logout current user by revoking refresh token' })
+  @ApiOkResponse({ type: LogoutResponseDto })
   @UseGuards(AuthGuard)
   logout(@CurrentUser() user?: AuthUser) {
     const userId = user?.id;
@@ -145,14 +153,18 @@ export class AuthController {
   }
 
   @Post('anonymous-session')
+  @HttpCode(200)
   @ApiOperation({ summary: 'Issue anonymous token for unauthenticated flows' })
+  @ApiOkResponse({ type: AnonymousSessionResponseDto })
   anonymousSession(@Body() body: AnonymousSessionDto) {
     return this.authService.createAnonymousSession(body);
   }
 
   @Post('link-anonymous')
+  @HttpCode(200)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Link anonymous session data to authenticated user' })
+  @ApiOkResponse({ type: LinkAnonymousResponseDto })
   @UseGuards(AuthGuard)
   linkAnonymous(
     @CurrentUser() user: AuthUser | undefined,
@@ -170,7 +182,7 @@ export class AuthController {
   @ApiOperation({
     summary: 'Get current authenticated user profile and roles',
     description:
-      'When `roles` includes `SUPPLIER`, `businessName` mirrors the supplier display name and `supplier` contains the full supplier record (profile, media, categories, service areas, attributes, draft, subscription summary without payment token, approval history, counts). Otherwise `businessName` and `supplier` are `null`. Response body is `{ success, data }` with **no** `pagination` field.',
+      'When `roles` includes `SUPPLIER`, `businessName` mirrors the supplier display name and `supplier` contains the full supplier record (profile, media, categories, service areas, attributes, draft, subscription summary without payment token, approval history, counts). **`supplier.marketplaceProfile`** matches the public profile aggregate from `GET /suppliers/:slugOrId` (display categories, gallery, similar suppliers, labels, contact fields). Otherwise `businessName` and `supplier` are `null`. Response body is `{ success, data }` with **no** `pagination` field.',
   })
   @ApiOkResponse({
     description: 'Current user profile (single object in `data`, no pagination)',
@@ -203,8 +215,11 @@ export class AuthController {
   }
 
   @Post('me/media/upload-url')
+  @HttpCode(200)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get presigned upload URL for user profile images (DigitalOcean Spaces)' })
+  @ApiBody({ type: CreateUserProfileMediaUploadUrlDto })
+  @ApiOkResponse({ type: MediaPresignUploadResponseDto })
   @UseGuards(AuthGuard)
   createProfileMediaUploadUrl(
     @CurrentUser() user: AuthUser | undefined,
@@ -218,8 +233,11 @@ export class AuthController {
   }
 
   @Post('me/media/verify-upload')
+  @HttpCode(200)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Verify uploaded user media object exists in DigitalOcean Spaces' })
+  @ApiBody({ type: VerifyUserProfileMediaUploadDto })
+  @ApiOkResponse({ type: MediaVerifyUploadResponseDto })
   @UseGuards(AuthGuard)
   verifyProfileMediaUpload(@CurrentUser() user: AuthUser | undefined, @Body() body: VerifyUserProfileMediaUploadDto) {
     const userId = user?.id;
@@ -293,6 +311,7 @@ export class AuthController {
   }
 
   @Post('test/media/upload')
+  @HttpCode(200)
   @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: '[Testing only] Upload a file directly (Postman form-data field: file)',
@@ -307,6 +326,7 @@ export class AuthController {
       },
     },
   })
+  @ApiOkResponse({ type: TestMediaUploadObjectResponseDto })
   @UseInterceptors(
     FileInterceptor('file', {
       storage: memoryStorage(),
@@ -321,18 +341,24 @@ export class AuthController {
   }
 
   @Post('test/media/upload-url')
+  @HttpCode(200)
   @ApiOperation({
     summary: '[Testing only] Get presigned upload URL without authentication',
     description: 'Use only for manual QA/Postman. Returns upload URL under test-uploads/ prefix.',
   })
+  @ApiBody({ type: CreateTestMediaUploadUrlDto })
+  @ApiOkResponse({ type: MediaPresignUploadResponseDto })
   createTestMediaUploadUrl(@Body() body: CreateTestMediaUploadUrlDto) {
     return this.authService.createTestMediaUploadUrl(body);
   }
 
   @Post('test/media/verify-upload')
+  @HttpCode(200)
   @ApiOperation({
     summary: '[Testing only] Verify uploaded object for unauthenticated test flow',
   })
+  @ApiBody({ type: VerifyTestMediaUploadDto })
+  @ApiOkResponse({ type: MediaVerifyUploadResponseDto })
   verifyTestMediaUpload(@Body() body: VerifyTestMediaUploadDto) {
     return this.authService.verifyTestMediaUpload(body);
   }

@@ -11,6 +11,23 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { ListSuppliersQueryDto } from './dto/list-suppliers-query.dto';
 import { MediaStorageService } from '../storage/media-storage.service';
 import { AutomationService } from '../notifications/automation.service';
+import type { UpsertSupplierProfileDto } from './dto/upsert-supplier-profile.dto';
+
+const SUPPLIER_PUBLIC_INCLUDE = {
+  media: { orderBy: { sortOrder: 'asc' } },
+  socialLinks: true,
+  attributes: true,
+  serviceAreas: true,
+  categories: {
+    include: {
+      category: { select: { id: true, key: true, name: true, nameEn: true } },
+      subcategory: { select: { id: true, key: true, name: true, nameEn: true, categoryId: true } },
+    },
+    orderBy: { createdAt: 'asc' },
+  },
+} satisfies Prisma.SupplierInclude;
+
+type SupplierPublicDetail = Prisma.SupplierGetPayload<{ include: typeof SUPPLIER_PUBLIC_INCLUDE }>;
 
 @Injectable()
 export class SuppliersService {
@@ -234,13 +251,12 @@ export class SuppliersService {
         isActive: true,
         approvalStatus: 'APPROVED',
       },
-      include: { media: true, socialLinks: true, attributes: true, serviceAreas: true, categories: true },
+      include: SUPPLIER_PUBLIC_INCLUDE,
     });
     if (!supplier) {
       throw new NotFoundException('Supplier not found');
     }
-    const { kosher: _omitKosher, form3010: _omitForm3010, ...publicSupplier } = supplier;
-    return publicSupplier;
+    return this.mapSupplierToPublicProfile(supplier);
   }
 
   /**
@@ -265,7 +281,9 @@ export class SuppliersService {
         categories: {
           include: {
             category: { select: { id: true, key: true, name: true, nameEn: true } },
+            subcategory: { select: { id: true, key: true, name: true, nameEn: true, categoryId: true } },
           },
+          orderBy: { createdAt: 'asc' },
         },
         draft: true,
         subscription: {
@@ -305,6 +323,7 @@ export class SuppliersService {
       return null;
     }
     const { subscription, ratingAvg, ...rest } = row;
+    const marketplaceProfile = await this.mapSupplierToPublicProfile(row as unknown as SupplierPublicDetail);
     return {
       ...rest,
       ratingAvg: ratingAvg != null ? Number(ratingAvg) : null,
@@ -314,6 +333,7 @@ export class SuppliersService {
             amount: String(subscription.amount),
           }
         : null,
+      marketplaceProfile,
     };
   }
 
@@ -362,19 +382,268 @@ export class SuppliersService {
     return fromSlug.length >= 2 ? fromSlug : 'Supplier';
   }
 
-  async upsertProfile(
-    userId: string,
-    payload: {
-      businessName?: string;
-      slug: string;
-      description?: string;
-      avatarImageUrl?: string;
-      coverImageUrl?: string;
-      kosher?: string;
-      form3010?: string;
-      socialLinks?: Array<{ platform: string; url: string }>;
-    },
+  private formatCodeLabel(code: string) {
+    return code
+      .split(/[-_]/)
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+      .join(' ');
+  }
+
+  private pickSocialLinkUrl(links: { platform: string; url: string }[], platform: string) {
+    const row = links.find((l) => l.platform.toLowerCase() === platform);
+    return row?.url?.trim() ? row.url.trim() : null;
+  }
+
+  private resolveSocialLinksForUpsert(
+    payload: UpsertSupplierProfileDto,
+    existing: Array<{ platform: string; url: string }>,
+  ): Array<{ platform: string; url: string }> | undefined {
+    if (payload.socialLinks !== undefined) {
+      return payload.socialLinks;
+    }
+    const map = new Map(existing.map((l) => [l.platform.toLowerCase(), l.url]));
+    let touched = false;
+    const patch = (key: string, value?: string) => {
+      if (value === undefined) return;
+      touched = true;
+      const t = value.trim();
+      if (t) map.set(key, t);
+      else map.delete(key);
+    };
+    patch('instagram', payload.instagram);
+    patch('facebook', payload.facebook);
+    patch('whatsapp', payload.whatsapp);
+    if (!touched) return undefined;
+    return Array.from(map.entries()).map(([platform, url]) => ({ platform, url }));
+  }
+
+  private async assertCategoryAssignments(
+    tx: Prisma.TransactionClient,
+    rows: Array<{ categoryId: string; subcategoryId?: string | null }>,
   ) {
+    if (!rows.length) return;
+    const seen = new Set<string>();
+    for (const row of rows) {
+      const dedupeKey = `${row.categoryId}:${row.subcategoryId ?? ''}`;
+      if (seen.has(dedupeKey)) {
+        throw new BadRequestException('Duplicate category assignment in payload');
+      }
+      seen.add(dedupeKey);
+      const category = await tx.category.findUnique({ where: { id: row.categoryId }, select: { id: true } });
+      if (!category) {
+        throw new BadRequestException(`Unknown categoryId ${row.categoryId}`);
+      }
+      if (row.subcategoryId) {
+        const sub = await tx.subcategory.findFirst({
+          where: { id: row.subcategoryId, categoryId: row.categoryId },
+          select: { id: true },
+        });
+        if (!sub) {
+          throw new BadRequestException(
+            `Unknown subcategoryId ${row.subcategoryId} for category ${row.categoryId}`,
+          );
+        }
+      }
+    }
+  }
+
+  private async syncSupplierCategories(
+    tx: Prisma.TransactionClient,
+    supplierId: string,
+    rows: Array<{ categoryId: string; subcategoryId?: string | null }>,
+  ) {
+    await this.assertCategoryAssignments(tx, rows);
+    await tx.supplierCategory.deleteMany({ where: { supplierId } });
+    if (!rows.length) return;
+    await tx.supplierCategory.createMany({
+      data: rows.map((r) => ({
+        supplierId,
+        categoryId: r.categoryId,
+        subcategoryId: r.subcategoryId ?? null,
+      })),
+    });
+  }
+
+  private async syncSupplierGallery(tx: Prisma.TransactionClient, supplierId: string, urls: string[]) {
+    await tx.supplierMedia.deleteMany({ where: { supplierId, mediaType: 'gallery' } });
+    if (!urls.length) return;
+    await tx.supplierMedia.createMany({
+      data: urls.map((url, idx) => ({
+        supplierId,
+        mediaType: 'gallery',
+        url: url.trim(),
+        sortOrder: idx,
+      })),
+    });
+  }
+
+  private async syncSupplierServiceAreasTx(
+    tx: Prisma.TransactionClient,
+    supplierId: string,
+    regions: Array<{ regionCode: string; cityCode?: string }>,
+  ) {
+    await tx.supplierServiceArea.deleteMany({ where: { supplierId } });
+    if (!regions.length) return;
+    await tx.supplierServiceArea.createMany({
+      data: regions.map((r) => ({
+        supplierId,
+        regionCode: r.regionCode.trim().toLowerCase(),
+        cityCode: r.cityCode?.trim() ? r.cityCode.trim().toLowerCase() : null,
+      })),
+    });
+  }
+
+  private async patchAttributeLabels(
+    tx: Prisma.TransactionClient,
+    supplierId: string,
+    rules?: string[],
+    niche?: string[],
+  ) {
+    const rulesJson =
+      rules === undefined ? undefined : (rules as unknown as Prisma.InputJsonValue);
+    const nicheJson =
+      niche === undefined ? undefined : (niche as unknown as Prisma.InputJsonValue);
+    await tx.supplierAttribute.upsert({
+      where: { supplierId },
+      create: {
+        supplierId,
+        labelsRulesJson: rulesJson ?? Prisma.JsonNull,
+        labelsNicheJson: nicheJson ?? Prisma.JsonNull,
+      },
+      update: {
+        ...(rulesJson !== undefined && { labelsRulesJson: rulesJson }),
+        ...(nicheJson !== undefined && { labelsNicheJson: nicheJson }),
+      },
+    });
+  }
+
+  private buildContactUpdateData(payload: UpsertSupplierProfileDto) {
+    return {
+      ...(payload.email !== undefined && {
+        contactEmail: payload.email?.trim() ? payload.email.trim().toLowerCase() : null,
+      }),
+      ...(payload.phone !== undefined && {
+        publicPhone: payload.phone?.trim() ? payload.phone.trim() : null,
+      }),
+      ...(payload.whatsapp !== undefined && {
+        whatsappUrl: payload.whatsapp?.trim() ? payload.whatsapp.trim() : null,
+      }),
+      ...(payload.website !== undefined && {
+        websiteUrl: payload.website?.trim() ? payload.website.trim() : null,
+      }),
+      ...(payload.address !== undefined && {
+        address: payload.address?.trim() ? payload.address.trim() : null,
+      }),
+      ...(payload.extraLanguage !== undefined && {
+        extraLanguage: payload.extraLanguage?.trim() ? payload.extraLanguage.trim() : null,
+      }),
+    };
+  }
+
+  private galleryUrlsFromMedia(media: Array<{ url: string; mediaType: string; sortOrder: number }>) {
+    const gallery = media
+      .filter((m) => m.mediaType === 'gallery')
+      .slice()
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map((m) => m.url);
+    if (gallery.length) return gallery;
+    return media
+      .filter((m) => m.mediaType === 'image')
+      .slice()
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map((m) => m.url);
+  }
+
+  private async mapSupplierToPublicProfile(supplier: SupplierPublicDetail) {
+    const links = supplier.socialLinks ?? [];
+    const primaryRow = supplier.categories[0];
+    const categoryLabel = primaryRow?.category?.name ?? null;
+    const subcategoryLabel = primaryRow?.subcategory?.name ?? null;
+    const subcategoryNames = supplier.categories
+      .map((c) => c.subcategory?.name)
+      .filter((n): n is string => Boolean(n));
+    const serviceAreas = supplier.serviceAreas.map((a) =>
+      a.cityCode ? this.formatCodeLabel(a.cityCode) : this.formatCodeLabel(a.regionCode),
+    );
+    let city: string | null = null;
+    const withCity = supplier.serviceAreas.find((a) => a.cityCode);
+    if (withCity?.cityCode) {
+      city = this.formatCodeLabel(withCity.cityCode);
+    } else if (supplier.serviceAreas[0]) {
+      city = this.formatCodeLabel(supplier.serviceAreas[0].regionCode);
+    }
+
+    const rulesRaw = supplier.attributes?.labelsRulesJson;
+    const nicheRaw = supplier.attributes?.labelsNicheJson;
+    const labelsRules = Array.isArray(rulesRaw) ? (rulesRaw as string[]) : [];
+    const labelsNiche = Array.isArray(nicheRaw) ? (nicheRaw as string[]) : [];
+    const primaryCategoryId = primaryRow?.categoryId ?? null;
+
+    let similar: Array<{
+      id: string;
+      businessName: string;
+      ratingAvg: number | null;
+      avatarImageUrl: string | null;
+    }> = [];
+    if (primaryCategoryId) {
+      const similarRows = await this.prisma.supplier.findMany({
+        where: {
+          id: { not: supplier.id },
+          isActive: true,
+          approvalStatus: 'APPROVED',
+          categories: { some: { categoryId: primaryCategoryId } },
+        },
+        take: 6,
+        orderBy: [{ ratingAvg: 'desc' }, { ratingCount: 'desc' }],
+        select: {
+          id: true,
+          businessName: true,
+          ratingAvg: true,
+          avatarImageUrl: true,
+        },
+      });
+      similar = similarRows.map((s) => ({
+        id: s.id,
+        businessName: s.businessName,
+        avatarImageUrl: s.avatarImageUrl,
+        ratingAvg: s.ratingAvg != null ? Number(s.ratingAvg) : null,
+      }));
+    }
+
+    return {
+      id: supplier.id,
+      slug: supplier.slug,
+      businessName: supplier.businessName,
+      description: supplier.description ?? '',
+      email: supplier.contactEmail,
+      category: categoryLabel,
+      subcategory: subcategoryLabel,
+      city,
+      ratingAvg: supplier.ratingAvg != null ? Number(supplier.ratingAvg) : null,
+      reviewCount: supplier.ratingCount,
+      phone: supplier.publicPhone,
+      whatsapp: supplier.whatsappUrl ?? this.pickSocialLinkUrl(links, 'whatsapp'),
+      website: supplier.websiteUrl,
+      instagram: this.pickSocialLinkUrl(links, 'instagram'),
+      facebook: this.pickSocialLinkUrl(links, 'facebook'),
+      avatarImageUrl: supplier.avatarImageUrl,
+      coverImageUrl: supplier.coverImageUrl,
+      gallery: this.galleryUrlsFromMedia(supplier.media),
+      kosher: supplier.kosher,
+      form3010: supplier.form3010,
+      socialLinks: links.map((l) => ({ platform: l.platform, url: l.url })),
+      subcategories: subcategoryNames,
+      serviceAreas,
+      labelsRules,
+      labelsNiche,
+      address: supplier.address,
+      extraLanguage: supplier.extraLanguage,
+      similar,
+    };
+  }
+
+  async upsertProfile(userId: string, payload: UpsertSupplierProfileDto) {
     const imageFields = {
       ...(payload.avatarImageUrl !== undefined && {
         avatarImageUrl: payload.avatarImageUrl.trim() ? payload.avatarImageUrl.trim() : null,
@@ -391,7 +660,42 @@ export class SuppliersService {
         form3010: payload.form3010.trim() ? payload.form3010.trim() : null,
       }),
     };
-    const existing = await this.prisma.supplier.findUnique({ where: { ownerUserId: userId } });
+    const contactFields = this.buildContactUpdateData(payload);
+    const descriptionField =
+      payload.description !== undefined
+        ? { description: payload.description.trim() ? payload.description.trim() : null }
+        : {};
+
+    const existing = await this.prisma.supplier.findUnique({
+      where: { ownerUserId: userId },
+      include: { socialLinks: true },
+    });
+
+    const finalize = async (tx: Prisma.TransactionClient, supplierId: string) => {
+      const existingSocial = await tx.supplierSocialLink.findMany({ where: { supplierId } });
+      const resolvedSocial = this.resolveSocialLinksForUpsert(payload, existingSocial);
+      if (resolvedSocial !== undefined) {
+        await this.syncSupplierSocialLinks(tx, supplierId, resolvedSocial);
+      }
+      if (payload.categories !== undefined) {
+        await this.syncSupplierCategories(tx, supplierId, payload.categories);
+      }
+      if (payload.serviceAreas !== undefined) {
+        await this.syncSupplierServiceAreasTx(tx, supplierId, payload.serviceAreas);
+      }
+      if (payload.gallery !== undefined) {
+        await this.syncSupplierGallery(tx, supplierId, payload.gallery);
+      }
+      if (payload.labelsRules !== undefined || payload.labelsNiche !== undefined) {
+        await this.patchAttributeLabels(tx, supplierId, payload.labelsRules, payload.labelsNiche);
+      }
+      const row = await tx.supplier.findUniqueOrThrow({
+        where: { id: supplierId },
+        include: SUPPLIER_PUBLIC_INCLUDE,
+      });
+      return this.mapSupplierToPublicProfile(row);
+    };
+
     if (existing) {
       return this.prisma.$transaction(async (tx) => {
         const businessName =
@@ -408,21 +712,17 @@ export class SuppliersService {
           data: {
             businessName,
             slug: payload.slug,
-            description: payload.description ?? null,
             approvalStatus: 'PENDING',
+            ...descriptionField,
             ...imageFields,
             ...complianceFields,
+            ...contactFields,
           },
         });
-        if (payload.socialLinks !== undefined) {
-          await this.syncSupplierSocialLinks(tx, updated.id, payload.socialLinks);
-        }
-        return tx.supplier.findUniqueOrThrow({
-          where: { id: updated.id },
-          include: { socialLinks: true },
-        });
+        return finalize(tx, updated.id);
       });
     }
+
     return this.prisma.$transaction(async (tx) => {
       const businessName = this.resolveBusinessNameForProfile({
         businessName: payload.businessName,
@@ -434,7 +734,7 @@ export class SuppliersService {
           ownerUserId: userId,
           businessName,
           slug: payload.slug,
-          description: payload.description ?? null,
+          description: payload.description?.trim() ? payload.description.trim() : null,
           approvalStatus: 'PENDING',
           ...(payload.avatarImageUrl !== undefined && {
             avatarImageUrl: payload.avatarImageUrl.trim() ? payload.avatarImageUrl.trim() : null,
@@ -443,15 +743,10 @@ export class SuppliersService {
             coverImageUrl: payload.coverImageUrl.trim() ? payload.coverImageUrl.trim() : null,
           }),
           ...complianceFields,
+          ...contactFields,
         },
       });
-      if (payload.socialLinks !== undefined && payload.socialLinks.length > 0) {
-        await this.syncSupplierSocialLinks(tx, created.id, payload.socialLinks);
-      }
-      return tx.supplier.findUniqueOrThrow({
-        where: { id: created.id },
-        include: { socialLinks: true },
-      });
+      return finalize(tx, created.id);
     });
   }
 

@@ -50,7 +50,7 @@ export class UpdateSupplierAttributesDto {
   certificationsJson?: unknown;
 }
 
-class ServiceAreaItemDto {
+export class ServiceAreaItemDto {
   @ApiProperty({ description: 'Region code', example: 'north' })
   @IsString()
   @MaxLength(32)

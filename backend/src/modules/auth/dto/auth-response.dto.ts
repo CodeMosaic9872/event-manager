@@ -29,7 +29,7 @@ export class AuthMeItemDto extends AuthUserSummaryDto {
 
   @ApiPropertyOptional({
     description:
-      'Present when `roles` includes `SUPPLIER`: supplier profile, media, categories, service areas, attributes, onboarding draft, subscription summary (no CardCom token), recent approval history, and counts. `null` if the supplier row has not been created yet.',
+      'Present when `roles` includes `SUPPLIER`: supplier profile, media, categories, service areas, attributes, onboarding draft, subscription summary (no CardCom token), recent approval history, and counts. Includes **`marketplaceProfile`**: the same aggregated object as `GET /suppliers/:slugOrId` (display category/subcategory strings, `gallery` URLs, `similar`, `labelsRules` / `labelsNiche`, contact fields, etc.). `null` if the supplier row has not been created yet.',
     nullable: true,
     type: Object,
   })
@@ -75,4 +75,79 @@ export class VerifyOtpResponseDto {
 
   @ApiProperty({ example: 'OTP verified successfully.' })
   message!: string;
+}
+
+export class LogoutResponseDto {
+  @ApiProperty({ example: true })
+  success!: boolean;
+}
+
+export class AnonymousSessionResponseDto {
+  @ApiProperty({ example: 'anon_a1b2c3d4e5f6...' })
+  token!: string;
+
+  @ApiProperty({ example: 'clxxxxxxxxxxxxxxxxxxxxxxxx' })
+  sessionId!: string;
+}
+
+export class LinkAnonymousResponseDto {
+  @ApiProperty({ example: true })
+  linked!: boolean;
+
+  @ApiProperty()
+  anonymousToken!: string;
+
+  @ApiProperty()
+  userId!: string;
+}
+
+export class MediaPresignUploadResponseDto {
+  @ApiProperty()
+  key!: string;
+
+  @ApiProperty()
+  uploadUrl!: string;
+
+  @ApiProperty()
+  publicUrl!: string;
+
+  @ApiProperty()
+  expiresInSeconds!: number;
+}
+
+export class MediaVerifyUploadResponseDto {
+  @ApiProperty({ example: true })
+  exists!: true;
+
+  @ApiProperty()
+  key!: string;
+
+  @ApiProperty()
+  publicUrl!: string;
+
+  @ApiProperty()
+  contentLength!: number;
+
+  @ApiPropertyOptional({ nullable: true })
+  contentType!: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  etag!: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  lastModified!: Date | null;
+}
+
+export class TestMediaUploadObjectResponseDto {
+  @ApiProperty()
+  key!: string;
+
+  @ApiProperty()
+  publicUrl!: string;
+
+  @ApiProperty()
+  contentType!: string;
+
+  @ApiProperty()
+  size!: number;
 }

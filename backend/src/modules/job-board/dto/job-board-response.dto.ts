@@ -150,6 +150,15 @@ export class JobApplicationResponseDto {
 
   @ApiProperty({ example: 'SUBMITTED' })
   status!: string;
+
+  @ApiPropertyOptional({ nullable: true })
+  message!: string | null;
+
+  @ApiPropertyOptional()
+  submittedAt!: Date;
+
+  @ApiPropertyOptional()
+  updatedAt!: Date;
 }
 
 export class RecommendedJobResponseDto {
@@ -203,6 +212,91 @@ export class JobApplicationsCountResponseDto {
     description: 'Statuses included in the count',
   })
   statuses!: string[];
+}
+
+export class PaginatedRecommendedJobsResponseDto {
+  @ApiProperty({ type: [RecommendedJobResponseDto] })
+  items!: RecommendedJobResponseDto[];
+
+  @ApiProperty()
+  totalItems!: number;
+}
+
+export class JobApplicationListItemDto {
+  @ApiProperty({ example: 'app_1' })
+  id!: string;
+
+  @ApiProperty({ example: 'job_1' })
+  jobPostId!: string;
+
+  @ApiProperty({ example: 'sup_1' })
+  supplierId!: string;
+
+  @ApiProperty({ example: 'SUBMITTED' })
+  status!: string;
+
+  @ApiPropertyOptional({ nullable: true })
+  message!: string | null;
+
+  @ApiProperty()
+  submittedAt!: Date;
+
+  @ApiProperty()
+  updatedAt!: Date;
+
+  @ApiProperty({
+    type: Object,
+    description: 'Full Supplier row from Prisma include',
+  })
+  supplier!: Record<string, unknown>;
+
+  @ApiProperty({
+    type: JobDetailResponseDto,
+    description: 'Job post with taxonomy includes (same shape as GET /jobs/:id)',
+  })
+  jobPost!: JobDetailResponseDto;
+}
+
+export class PaginatedJobApplicationsResponseDto {
+  @ApiProperty({ type: [JobApplicationListItemDto] })
+  items!: JobApplicationListItemDto[];
+
+  @ApiProperty()
+  totalItems!: number;
+}
+
+export class JobApplicationHistoryEntryDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  jobApplicationId!: string;
+
+  @ApiPropertyOptional({ nullable: true })
+  fromStatus!: string | null;
+
+  @ApiProperty()
+  toStatus!: string;
+
+  @ApiPropertyOptional({ nullable: true })
+  reason!: string | null;
+
+  @ApiProperty()
+  actorType!: string;
+
+  @ApiPropertyOptional({ nullable: true })
+  actorId!: string | null;
+
+  @ApiProperty()
+  createdAt!: Date;
+}
+
+export class PaginatedJobApplicationHistoryResponseDto {
+  @ApiProperty({ type: [JobApplicationHistoryEntryDto] })
+  items!: JobApplicationHistoryEntryDto[];
+
+  @ApiProperty()
+  totalItems!: number;
 }
 
 export class UserMeStatsResponseDto {
