@@ -17,6 +17,17 @@ export class AuthUserSummaryDto {
   coverImageUrl!: string | null;
 }
 
+/** `/auth/me` and `/auth/me` PATCH response item: user summary plus supplier bundle when role is SUPPLIER. */
+export class AuthMeItemDto extends AuthUserSummaryDto {
+  @ApiPropertyOptional({
+    description:
+      'Present when `roles` includes `SUPPLIER`: supplier profile, media, categories, service areas, attributes, onboarding draft, subscription summary (no CardCom token), recent approval history, and counts. `null` if the supplier row has not been created yet.',
+    nullable: true,
+    type: Object,
+  })
+  supplier?: Record<string, unknown> | null;
+}
+
 export class AuthTokensResponseDto {
   @ApiProperty({ example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' })
   accessToken!: string;
@@ -37,8 +48,8 @@ export class RefreshTokensResponseDto {
 }
 
 export class MeResponseDto {
-  @ApiProperty({ type: [AuthUserSummaryDto] })
-  items!: AuthUserSummaryDto[];
+  @ApiProperty({ type: [AuthMeItemDto] })
+  items!: AuthMeItemDto[];
 
   @ApiProperty({ example: 1 })
   totalItems!: number;

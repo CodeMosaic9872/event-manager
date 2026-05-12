@@ -14,6 +14,7 @@ import { AutomationService } from '../notifications/automation.service';
 import { OtpService } from './otp.service';
 import { SmsService } from '../sms/sms.service';
 import { MediaStorageService } from '../storage/media-storage.service';
+import { SuppliersService } from '../suppliers/suppliers.service';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +23,7 @@ export class AuthService {
     private readonly otpService: OtpService,
     private readonly smsService: SmsService,
     private readonly mediaStorage: MediaStorageService,
+    private readonly suppliersService: SuppliersService,
     @Optional() private readonly automationService?: AutomationService,
   ) {}
 
@@ -45,6 +47,24 @@ export class AuthService {
       avatarImageUrl: user.avatarImageUrl ?? null,
       coverImageUrl: user.coverImageUrl ?? null,
     };
+  }
+
+  private async toMeItem(
+    user: {
+      id: string;
+      email?: string | null;
+      avatarImageUrl?: string | null;
+      coverImageUrl?: string | null;
+      roles: { role: PlatformRole }[];
+    },
+  ) {
+    const base = this.toAuthUserSummary(user);
+    const isSupplier = user.roles.some((r) => r.role === 'SUPPLIER');
+    if (!isSupplier) {
+      return { ...base, supplier: null };
+    }
+    const supplier = await this.suppliersService.getSupplierFullForOwner(user.id);
+    return { ...base, supplier };
   }
 
   private async issueTokenPair(user: {
@@ -268,7 +288,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid access token.');
     }
     return {
-      items: [this.toAuthUserSummary(user)],
+      items: [await this.toMeItem(user)],
       totalItems: 1,
     };
   }
@@ -290,7 +310,7 @@ export class AuthService {
       include: { roles: true },
     });
     return {
-      items: [this.toAuthUserSummary(user)],
+      items: [await this.toMeItem(user)],
       totalItems: 1,
     };
   }

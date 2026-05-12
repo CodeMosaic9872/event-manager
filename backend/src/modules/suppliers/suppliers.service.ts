@@ -243,6 +243,80 @@ export class SuppliersService {
     return publicSupplier;
   }
 
+  /**
+   * Owner-facing supplier snapshot for /auth/me: full profile, compliance URLs, draft, subscription
+   * (no CardCom token), categories, media, service areas, attributes, recent approval history, counts.
+   */
+  async getSupplierFullForOwner(userId: string) {
+    const row = await this.prisma.supplier.findUnique({
+      where: { ownerUserId: userId },
+      include: {
+        _count: {
+          select: {
+            applications: true,
+            favorites: true,
+            media: true,
+          },
+        },
+        media: { orderBy: { sortOrder: 'asc' } },
+        socialLinks: true,
+        attributes: true,
+        serviceAreas: true,
+        categories: {
+          include: {
+            category: { select: { id: true, key: true, name: true, nameEn: true } },
+          },
+        },
+        draft: true,
+        subscription: {
+          select: {
+            id: true,
+            supplierId: true,
+            status: true,
+            interval: true,
+            planKey: true,
+            amount: true,
+            currency: true,
+            nextBillingAt: true,
+            lastRenewedAt: true,
+            consecutiveFailures: true,
+            canceledAt: true,
+            tokenExpiresAt: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+        approvalHistory: {
+          orderBy: { createdAt: 'desc' },
+          take: 25,
+          select: {
+            id: true,
+            supplierId: true,
+            fromStatus: true,
+            toStatus: true,
+            reason: true,
+            actorAdminId: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+    if (!row) {
+      return null;
+    }
+    const { subscription, ratingAvg, ...rest } = row;
+    return {
+      ...rest,
+      ratingAvg: ratingAvg != null ? Number(ratingAvg) : null,
+      subscription: subscription
+        ? {
+            ...subscription,
+            amount: String(subscription.amount),
+          }
+        : null,
+    };
+  }
+
   private normalizeSocialLinkRows(
     supplierId: string,
     links: Array<{ platform: string; url: string }>,

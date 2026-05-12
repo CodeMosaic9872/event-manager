@@ -167,7 +167,11 @@ export class AuthController {
 
   @Get('me')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get current authenticated user profile and roles' })
+  @ApiOperation({
+    summary: 'Get current authenticated user profile and roles',
+    description:
+      'When `roles` includes `SUPPLIER`, `items[0].supplier` contains the full supplier record (profile, media, categories, service areas, attributes, draft, subscription summary without payment token, approval history, counts). Otherwise `supplier` is `null`.',
+  })
   @ApiOkResponse({
     description: 'Current user profile',
     type: MeResponseDto,
