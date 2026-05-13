@@ -17,7 +17,6 @@ const SUPPLIER_PUBLIC_INCLUDE = {
   media: { orderBy: { sortOrder: 'asc' } },
   socialLinks: true,
   attributes: true,
-  serviceAreas: true,
   categories: {
     include: {
       category: { select: { id: true, key: true, name: true, nameEn: true } },
@@ -142,11 +141,7 @@ export class SuppliersService {
             }
           : undefined,
       serviceAreas: query.locationRegionCode
-        ? {
-            some: {
-              regionCode: query.locationRegionCode,
-            },
-          }
+        ? { has: query.locationRegionCode.trim().toLowerCase() }
         : undefined,
       ratingAvg: query.minRating ? { gte: query.minRating } : undefined,
     };
@@ -156,7 +151,6 @@ export class SuppliersService {
       include: {
         categories: true,
         media: true,
-        serviceAreas: true,
       },
       take: take + 1,
       orderBy: [{ ratingCount: 'desc' }, { id: 'asc' }],
@@ -167,7 +161,7 @@ export class SuppliersService {
     const hasNextPage = items.length > take;
     const sliced = hasNextPage ? items.slice(0, take) : items;
     const nextCursor = hasNextPage ? sliced[sliced.length - 1]?.id ?? null : null;
-    const [categoryFacets, regionFacets] = await Promise.all([
+    const [categoryFacets] = await Promise.all([
       this.prisma.supplierCategory.groupBy({
         by: ['categoryId'],
         where: { supplier: supplierWhere },
@@ -175,14 +169,21 @@ export class SuppliersService {
         orderBy: { _count: { categoryId: 'desc' } },
         take: 5,
       }),
-      this.prisma.supplierServiceArea.groupBy({
-        by: ['regionCode'],
-        where: { supplier: supplierWhere },
-        _count: { regionCode: true },
-        orderBy: { _count: { regionCode: 'desc' } },
-        take: 5,
-      }),
     ]);
+    const regionFacetRows = await this.prisma.supplier.findMany({
+      where: supplierWhere,
+      select: { serviceAreas: true },
+    });
+    const regionFacetMap = new Map<string, number>();
+    for (const r of regionFacetRows) {
+      for (const code of r.serviceAreas) {
+        regionFacetMap.set(code, (regionFacetMap.get(code) ?? 0) + 1);
+      }
+    }
+    const regionFacets = Array.from(regionFacetMap.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([regionCode, count]) => ({ regionCode, _count: { regionCode: count } }));
 
     const categoryRows = categoryFacets.length
       ? await this.prisma.category.findMany({
@@ -277,7 +278,6 @@ export class SuppliersService {
         media: { orderBy: { sortOrder: 'asc' } },
         socialLinks: true,
         attributes: true,
-        serviceAreas: true,
         categories: {
           include: {
             category: { select: { id: true, key: true, name: true, nameEn: true } },
@@ -323,7 +323,6 @@ export class SuppliersService {
       return null;
     }
     const { subscription, ratingAvg, ...rest } = row;
-    const marketplaceProfile = await this.mapSupplierToPublicProfile(row as unknown as SupplierPublicDetail);
     return {
       ...rest,
       ratingAvg: ratingAvg != null ? Number(ratingAvg) : null,
@@ -333,7 +332,6 @@ export class SuppliersService {
             amount: String(subscription.amount),
           }
         : null,
-      marketplaceProfile,
     };
   }
 
@@ -388,6 +386,28 @@ export class SuppliersService {
       .filter(Boolean)
       .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
       .join(' ');
+  }
+
+  /** Display label for a stored service area token or a free-form string. */
+  private formatServiceAreaForDisplay(value: string) {
+    const t = value.trim();
+    if (!t) return t;
+    if (/^[a-z0-9_-]+$/i.test(t)) {
+      return this.formatCodeLabel(t);
+    }
+    return t;
+  }
+
+  private normalizeServiceAreaStrings(values: string[]) {
+    const out: string[] = [];
+    const seen = new Set<string>();
+    for (const v of values) {
+      const s = v.trim().toLowerCase();
+      if (!s || seen.has(s)) continue;
+      seen.add(s);
+      out.push(s);
+    }
+    return out;
   }
 
   private pickSocialLinkUrl(links: { platform: string; url: string }[], platform: string) {
@@ -478,22 +498,6 @@ export class SuppliersService {
     });
   }
 
-  private async syncSupplierServiceAreasTx(
-    tx: Prisma.TransactionClient,
-    supplierId: string,
-    regions: Array<{ regionCode: string; cityCode?: string }>,
-  ) {
-    await tx.supplierServiceArea.deleteMany({ where: { supplierId } });
-    if (!regions.length) return;
-    await tx.supplierServiceArea.createMany({
-      data: regions.map((r) => ({
-        supplierId,
-        regionCode: r.regionCode.trim().toLowerCase(),
-        cityCode: r.cityCode?.trim() ? r.cityCode.trim().toLowerCase() : null,
-      })),
-    });
-  }
-
   private async patchAttributeLabels(
     tx: Prisma.TransactionClient,
     supplierId: string,
@@ -563,15 +567,11 @@ export class SuppliersService {
     const subcategoryNames = supplier.categories
       .map((c) => c.subcategory?.name)
       .filter((n): n is string => Boolean(n));
-    const serviceAreas = supplier.serviceAreas.map((a) =>
-      a.cityCode ? this.formatCodeLabel(a.cityCode) : this.formatCodeLabel(a.regionCode),
-    );
+    const rawAreas = supplier.serviceAreas ?? [];
+    const serviceAreas = rawAreas.map((a) => this.formatServiceAreaForDisplay(a));
     let city: string | null = null;
-    const withCity = supplier.serviceAreas.find((a) => a.cityCode);
-    if (withCity?.cityCode) {
-      city = this.formatCodeLabel(withCity.cityCode);
-    } else if (supplier.serviceAreas[0]) {
-      city = this.formatCodeLabel(supplier.serviceAreas[0].regionCode);
+    if (rawAreas[0]) {
+      city = this.formatServiceAreaForDisplay(rawAreas[0]);
     }
 
     const rulesRaw = supplier.attributes?.labelsRulesJson;
@@ -681,7 +681,10 @@ export class SuppliersService {
         await this.syncSupplierCategories(tx, supplierId, payload.categories);
       }
       if (payload.serviceAreas !== undefined) {
-        await this.syncSupplierServiceAreasTx(tx, supplierId, payload.serviceAreas);
+        await tx.supplier.update({
+          where: { id: supplierId },
+          data: { serviceAreas: this.normalizeServiceAreaStrings(payload.serviceAreas) },
+        });
       }
       if (payload.gallery !== undefined) {
         await this.syncSupplierGallery(tx, supplierId, payload.gallery);
@@ -1046,6 +1049,87 @@ export class SuppliersService {
     return { deleted: true, id: mediaId };
   }
 
+  async uploadMediaFiles(params: {
+    ownerUserId?: string;
+    supplierId?: string;
+    files: Array<{ buffer: Buffer; originalname: string; mimetype: string; size: number }>;
+    mediaType?: string;
+    baseSortOrder?: number;
+  }) {
+    let supplier;
+    if (params.ownerUserId) {
+      supplier = await this.prisma.supplier.findUnique({ where: { ownerUserId: params.ownerUserId } });
+      if (!supplier) {
+        throw new NotFoundException('Supplier profile not found');
+      }
+      if (params.supplierId?.trim() && supplier.id !== params.supplierId.trim()) {
+        throw new ForbiddenException('supplierId does not match authenticated supplier');
+      }
+    } else if (params.supplierId?.trim()) {
+      supplier = await this.prisma.supplier.findUnique({ where: { id: params.supplierId.trim() } });
+      if (!supplier) {
+        throw new NotFoundException('Supplier profile not found');
+      }
+    } else {
+      throw new BadRequestException('supplierId is required when uploading without authentication');
+    }
+
+    const mediaType = params.mediaType?.trim() ? params.mediaType.trim() : 'image';
+    let sortIndex = params.baseSortOrder ?? 0;
+    const created = [];
+    for (const file of params.files) {
+      if (!file?.buffer?.length) {
+        continue;
+      }
+      const contentType = file.mimetype?.trim() ? file.mimetype.trim() : 'application/octet-stream';
+      const uploaded = await this.mediaStorage.putSupplierObject({
+        supplierId: supplier.id,
+        buffer: file.buffer,
+        fileName: file.originalname || 'upload.bin',
+        contentType,
+      });
+      const row = await this.prisma.supplierMedia.create({
+        data: {
+          supplierId: supplier.id,
+          mediaType,
+          url: uploaded.publicUrl,
+          sortOrder: sortIndex,
+          metadataJson: {} as Prisma.InputJsonValue,
+        },
+      });
+      created.push(row);
+      sortIndex += 1;
+    }
+    if (!created.length) {
+      throw new BadRequestException('No valid non-empty files were uploaded');
+    }
+    return { items: created, count: created.length };
+  }
+
+  async deleteMediaBatch(userId: string, mediaIds: string[]) {
+    const supplier = await this.prisma.supplier.findUnique({ where: { ownerUserId: userId } });
+    if (!supplier) {
+      throw new NotFoundException('Supplier profile not found');
+    }
+    const unique = Array.from(new Set(mediaIds.map((id) => id.trim()).filter(Boolean)));
+    if (!unique.length) {
+      throw new BadRequestException('Provide at least one media id');
+    }
+    if (unique.length > 100) {
+      throw new BadRequestException('Too many ids (max 100)');
+    }
+    const existing = await this.prisma.supplierMedia.findMany({
+      where: { supplierId: supplier.id, id: { in: unique } },
+      select: { id: true },
+    });
+    const toDelete = existing.map((r) => r.id);
+    if (!toDelete.length) {
+      return { deleted: 0, ids: [] as string[] };
+    }
+    await this.prisma.supplierMedia.deleteMany({ where: { supplierId: supplier.id, id: { in: toDelete } } });
+    return { deleted: toDelete.length, ids: toDelete };
+  }
+
   async updateAttributes(
     userId: string,
     payload: {
@@ -1115,24 +1199,17 @@ export class SuppliersService {
     });
   }
 
-  async updateServiceAreas(userId: string, regions: Array<{ regionCode: string; cityCode?: string }>) {
+  async updateServiceAreas(userId: string, serviceAreas: string[]) {
     const supplier = await this.prisma.supplier.findUnique({ where: { ownerUserId: userId } });
     if (!supplier) {
       throw new NotFoundException('Supplier profile not found');
     }
-    await this.prisma.supplierServiceArea.deleteMany({ where: { supplierId: supplier.id } });
-    if (regions.length === 0) {
-      return { supplierId: supplier.id, serviceAreas: [] };
-    }
-    await this.prisma.supplierServiceArea.createMany({
-      data: regions.map((row) => ({
-        supplierId: supplier.id,
-        regionCode: row.regionCode,
-        cityCode: row.cityCode ?? null,
-      })),
+    const normalized = this.normalizeServiceAreaStrings(serviceAreas);
+    await this.prisma.supplier.update({
+      where: { id: supplier.id },
+      data: { serviceAreas: normalized },
     });
-    const serviceAreas = await this.prisma.supplierServiceArea.findMany({ where: { supplierId: supplier.id } });
-    return { supplierId: supplier.id, serviceAreas };
+    return { supplierId: supplier.id, serviceAreas: normalized };
   }
 
   async suggestions(q: string, take = 10) {

@@ -163,7 +163,7 @@ export class SupplierDraftResponseDto {
   @ApiProperty({ example: 45 })
   completionPercent!: number;
 
-  @ApiProperty({ example: { serviceAreas: [{ regionCode: 'north' }] } })
+  @ApiProperty({ example: { serviceAreas: ['north', 'jerusalem'] } })
   payloadJson!: Record<string, unknown>;
 
   @ApiProperty({ example: 2 })
@@ -257,4 +257,25 @@ export class SupplierMediaDeleteResponseDto {
 
   @ApiProperty({ example: 'smed_2k3j4h5g6f7d8s9' })
   id!: string;
+}
+
+/** Response from `POST /supplier/media/upload-files` (multipart, multiple `files`). */
+export class SupplierMediaBatchUploadResponseDto {
+  @ApiProperty({ type: [SupplierMediaResponseDto] })
+  items!: SupplierMediaResponseDto[];
+
+  @ApiProperty({ example: 3, description: 'Number of `SupplierMedia` rows created' })
+  count!: number;
+}
+
+/** Response from `POST /supplier/media/delete-batch`. */
+export class SupplierMediaBatchDeleteResponseDto {
+  @ApiProperty({ example: 2, description: 'Number of rows deleted' })
+  deleted!: number;
+
+  @ApiProperty({
+    type: [String],
+    description: 'Ids that existed and were deleted (subset of the request when some ids were invalid or not owned)',
+  })
+  ids!: string[];
 }

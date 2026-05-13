@@ -173,18 +173,6 @@ export class AiPlanningService {
             },
           }
         : {}),
-      ...(normalizedLocation
-        ? {
-            serviceAreas: {
-              some: {
-                OR: [
-                  { regionCode: { contains: normalizedLocation, mode: 'insensitive' } },
-                  { cityCode: { contains: normalizedLocation, mode: 'insensitive' } },
-                ],
-              },
-            },
-          }
-        : {}),
     };
 
     let assistantMessageText: string;
@@ -210,15 +198,19 @@ export class AiPlanningService {
       isVerified: boolean;
       ratingAvg: Prisma.Decimal | null;
       ratingCount: number;
-      serviceAreas: Array<{ regionCode: string; cityCode: string | null }>;
+      serviceAreas: string[];
       categories: Array<{ categoryId: string }>;
     }> = [];
     try {
       candidates = await this.prisma.supplier.findMany({
         where: baseWhere,
         take: 50,
-        include: {
-          serviceAreas: { select: { regionCode: true, cityCode: true } },
+        select: {
+          id: true,
+          isVerified: true,
+          ratingAvg: true,
+          ratingCount: true,
+          serviceAreas: true,
           categories: { select: { categoryId: true } },
         },
       });
@@ -231,11 +223,7 @@ export class AiPlanningService {
       const ranked = candidates
         .map((candidate) => {
           const locationMatch = normalizedLocation
-            ? candidate.serviceAreas.some(
-                (area) =>
-                  area.regionCode.toLowerCase().includes(normalizedLocation) ||
-                  (area.cityCode ? area.cityCode.toLowerCase().includes(normalizedLocation) : false),
-              )
+            ? candidate.serviceAreas.some((token) => token.toLowerCase().includes(normalizedLocation))
             : false;
           const categoryFit = mappedCategoryIds.length
             ? candidate.categories.some((category) => mappedCategoryIds.includes(category.categoryId))

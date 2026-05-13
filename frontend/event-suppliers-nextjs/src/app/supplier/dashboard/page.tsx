@@ -273,7 +273,7 @@ export default function SupplierDashboardPage() {
     try {
       await updateProfile({ businessName, slug, description }).unwrap();
       await updateServiceAreas({
-        serviceAreas: [...selectedAreas].map((a) => ({ regionCode: a.toLowerCase().replace(/\s+/g, "_") })),
+        serviceAreas: [...selectedAreas].map((a) => a.toLowerCase().replace(/\s+/g, "_")),
       }).unwrap();
     } catch {
       /* silently fail */

@@ -402,14 +402,10 @@ async function seedSuppliersAndRelated(users: Awaited<ReturnType<typeof seedUser
   await ensureSupplierCategory(supplier1.id);
   await ensureSupplierCategory(supplier2.id);
 
-  const serviceArea = await prisma.supplierServiceArea.findFirst({
-    where: { supplierId: supplier1.id, regionCode: 'IL-NORTH' },
+  await prisma.supplier.update({
+    where: { id: supplier1.id },
+    data: { serviceAreas: ['il-north', 'haifa'] },
   });
-  if (!serviceArea) {
-    await prisma.supplierServiceArea.create({
-      data: { supplierId: supplier1.id, regionCode: 'IL-NORTH', cityCode: 'HAIFA' },
-    });
-  }
 
   const heroMedia = await prisma.supplierMedia.findFirst({
     where: { supplierId: supplier1.id, url: 'https://example.com/seed/catering-hero.jpg' },
@@ -537,14 +533,10 @@ async function seedSuppliersAndRelated(users: Awaited<ReturnType<typeof seedUser
     },
   });
 
-  const s2area = await prisma.supplierServiceArea.findFirst({
-    where: { supplierId: supplier2.id, regionCode: 'IL-CENTER' },
+  await prisma.supplier.update({
+    where: { id: supplier2.id },
+    data: { serviceAreas: ['il-center', 'tlv'] },
   });
-  if (!s2area) {
-    await prisma.supplierServiceArea.create({
-      data: { supplierId: supplier2.id, regionCode: 'IL-CENTER', cityCode: 'TLV' },
-    });
-  }
 
   const rejectedOwner = await prisma.user.upsert({
     where: { email: 'seed.rejected@example.com' },

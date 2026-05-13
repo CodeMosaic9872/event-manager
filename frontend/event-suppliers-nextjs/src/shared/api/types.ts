@@ -57,8 +57,7 @@ export type UpsertSupplierProfilePayload = {
   slug?: string;
   description?: string;
 };
-export type ServiceAreaItem = { regionCode: string; cityCode?: string };
-export type UpdateSupplierServiceAreasPayload = { serviceAreas: ServiceAreaItem[] };
+export type UpdateSupplierServiceAreasPayload = { serviceAreas: string[] };
 export type CreateConversationResponse = { id: string };
 export type SendMessagePayload = { id: string; message: string };
 export type NotificationPreferences = {

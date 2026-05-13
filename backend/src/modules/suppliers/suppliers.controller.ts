@@ -6,11 +6,13 @@ import {
   ForbiddenException,
   Get,
   Headers,
+  HttpCode,
   Param,
   Patch,
   Post,
   Query,
   UploadedFile,
+  UploadedFiles,
   UnauthorizedException,
   UseGuards,
   UseInterceptors,
@@ -25,7 +27,7 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SuppliersService } from './suppliers.service';
@@ -48,13 +50,18 @@ import { CompleteMediaUploadDto } from './dto/complete-media-upload.dto';
 import {
   AddSupplierMediaDto,
   UploadSupplierMediaFileDto,
+  UploadSupplierMediaFilesFormDto,
   UpdateSupplierAttributesDto,
   UpdateSupplierServiceAreasDto,
 } from './dto/supplier-private-profile.dto';
+import { DeleteSupplierMediaBatchDto } from './dto/supplier-media-batch.dto';
 import { SupplierMediaUploadFileMultipartDto } from './dto/supplier-media-upload.swagger.dto';
+import { SupplierMediaUploadFilesMultipartDto } from './dto/supplier-media-upload-files.swagger.dto';
 import {
   ShareTrackResponseDto,
   SupplierDraftResponseDto,
+  SupplierMediaBatchDeleteResponseDto,
+  SupplierMediaBatchUploadResponseDto,
   SupplierMediaDeleteResponseDto,
   SupplierMediaPresignedUploadResponseDto,
   SupplierMediaResponseDto,
@@ -167,7 +174,7 @@ export class SuppliersController {
   @ApiOperation({
     summary: 'Create supplier profile for authenticated user',
     description:
-      'Creates the supplier row and returns the same **public profile** shape as `GET /suppliers/:slugOrId` (aggregated category labels, gallery URLs, similar suppliers, etc.). Optional `socialLinks` replaces all existing links when provided; omit to leave links unchanged unless `instagram` / `facebook` / `whatsapp` are sent (those patch individual platforms). Optional `categories` replaces all `SupplierCategory` rows; `serviceAreas` replaces regions; `gallery` replaces `SupplierMedia` rows with `mediaType` `gallery`; `labelsRules` / `labelsNiche` are stored on `SupplierAttribute`.',
+      'Creates the supplier row and returns the same **public profile** shape as `GET /suppliers/:slugOrId` (aggregated category labels, gallery URLs, similar suppliers, etc.). Optional `socialLinks` replaces all existing links when provided; omit to leave links unchanged unless `instagram` / `facebook` / `whatsapp` are sent (those patch individual platforms). Optional `categories` replaces all `SupplierCategory` rows; `serviceAreas` replaces the string array on the supplier; `gallery` replaces `SupplierMedia` rows with `mediaType` `gallery`; `labelsRules` / `labelsNiche` are stored on `SupplierAttribute`.',
   })
   @ApiCreatedResponse({
     description: 'Created or updated supplier profile',
@@ -279,6 +286,53 @@ export class SuppliersController {
     });
   }
 
+  @Post('supplier/media/upload-files')
+  @ApiBearerAuth()
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({
+    summary: 'Upload multiple supplier media files in one request',
+    description:
+      'Multipart form part **`files`** (repeat the field or use an array) — up to **24** files, **20 MB** each. Same auth rules as `POST /supplier/media/upload-file`: Bearer attaches to your supplier; without Bearer, `supplierId` is required. Shared `mediaType` (default `image`) and optional starting `sortOrder` apply to every created `SupplierMedia` row (`sortOrder` increments per file). Does not set `kosher` / `form_3010`; use single-file upload for that.',
+  })
+  @ApiBody({ type: SupplierMediaUploadFilesMultipartDto })
+  @ApiOkResponse({
+    description: 'Created `SupplierMedia` rows',
+    type: SupplierMediaBatchUploadResponseDto,
+  })
+  @UseGuards(OptionalAuthGuard)
+  @UseInterceptors(
+    FilesInterceptor('files', 24, {
+      storage: memoryStorage(),
+      limits: { fileSize: 200 * 1024 * 1024 },
+    }),
+  )
+  uploadMediaFiles(
+    @CurrentUser() user: AuthUser | undefined,
+    @UploadedFiles() files: Express.Multer.File[] | undefined,
+    @Body() body: UploadSupplierMediaFilesFormDto,
+  ) {
+    const list = files?.length ? files : [];
+    if (!list.length) {
+      throw new BadRequestException('Missing multipart field "files" (one or more files required)');
+    }
+    const parsedSortOrder =
+      body.sortOrder !== undefined && body.sortOrder !== ''
+        ? Number.parseInt(body.sortOrder, 10)
+        : undefined;
+    if (parsedSortOrder !== undefined && Number.isNaN(parsedSortOrder)) {
+      throw new BadRequestException('sortOrder must be a number');
+    }
+    const ownerUserId =
+      user?.id && !user.id.startsWith('anonymous:') ? user.id : undefined;
+    return this.suppliersService.uploadMediaFiles({
+      ownerUserId,
+      supplierId: body.supplierId,
+      files: list,
+      mediaType: body.mediaType,
+      baseSortOrder: parsedSortOrder,
+    });
+  }
+
   @Post('supplier/media/upload-url')
   @ApiBearerAuth()
   @ApiOperation({
@@ -344,7 +398,10 @@ export class SuppliersController {
 
   @Delete('supplier/media/:id')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Delete a supplier media item owned by the current user’s supplier' })
+  @ApiOperation({
+    summary: 'Delete one supplier media item',
+    description: 'Deletes a single `SupplierMedia` row by id. For multiple ids in one call, use `POST /supplier/media/delete-batch`.',
+  })
   @ApiParam({ name: 'id', description: '`SupplierMedia` id (cuid)', example: 'smed_2k3j4h5g6f7d8s9' })
   @ApiOkResponse({
     description: 'Deletion confirmation',
@@ -357,6 +414,28 @@ export class SuppliersController {
       throw new UnauthorizedException('Authenticated user required');
     }
     return this.suppliersService.deleteMedia(userId, id);
+  }
+
+  @Post('supplier/media/delete-batch')
+  @HttpCode(200)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Delete multiple supplier media items',
+    description:
+      'Deletes every `SupplierMedia` row whose id is in `ids`, belongs to the authenticated user’s supplier, and exists. Unknown or other suppliers’ ids are skipped (not an error).',
+  })
+  @ApiBody({ type: DeleteSupplierMediaBatchDto })
+  @ApiOkResponse({
+    description: 'How many rows were deleted and which ids were removed',
+    type: SupplierMediaBatchDeleteResponseDto,
+  })
+  @UseGuards(AuthGuard)
+  deleteMediaBatch(@CurrentUser() user: AuthUser | undefined, @Body() body: DeleteSupplierMediaBatchDto) {
+    const userId = user?.id;
+    if (!userId || userId.startsWith('anonymous:')) {
+      throw new UnauthorizedException('Authenticated user required');
+    }
+    return this.suppliersService.deleteMediaBatch(userId, body.ids);
   }
 
   @Patch('supplier/attributes')

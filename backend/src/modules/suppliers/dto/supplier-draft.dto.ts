@@ -21,7 +21,7 @@ export class UpsertSupplierDraftDto {
 
   @ApiProperty({
     description: 'Draft payload for step',
-    example: { serviceAreas: [{ regionCode: 'north' }] },
+    example: { serviceAreas: ['north', 'jerusalem'] },
   })
   @IsObject()
   payloadJson!: Record<string, unknown>;

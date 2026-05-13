@@ -182,7 +182,7 @@ export class AuthController {
   @ApiOperation({
     summary: 'Get current authenticated user profile and roles',
     description:
-      'When `roles` includes `SUPPLIER`, `businessName` mirrors the supplier display name and `supplier` contains the full supplier record (profile, media, categories, service areas, attributes, draft, subscription summary without payment token, approval history, counts). **`supplier.marketplaceProfile`** matches the public profile aggregate from `GET /suppliers/:slugOrId` (display categories, gallery, similar suppliers, labels, contact fields). Otherwise `businessName` and `supplier` are `null`. Response body is `{ success, data }` with **no** `pagination` field.',
+      'When `roles` includes `SUPPLIER`, `businessName` mirrors the supplier display name and `supplier` contains the full supplier record (profile, media, categories, service areas, attributes, draft, subscription summary without payment token, approval history, counts). Otherwise `businessName` and `supplier` are `null`. Response body is `{ success, data }` with **no** `pagination` field.',
   })
   @ApiOkResponse({
     description: 'Current user profile (single object in `data`, no pagination)',
@@ -280,7 +280,7 @@ export class AuthController {
       required: ['file', 'imageKind'],
       properties: {
         file: { type: 'string', format: 'binary' },
-        imageKind: { type: 'string', enum: ['avatar', 'cover'] },
+        imageKind: { type: 'string', enum: ['avatar', 'cover','kosher','form3010','gallery'] },
       },
     },
   })

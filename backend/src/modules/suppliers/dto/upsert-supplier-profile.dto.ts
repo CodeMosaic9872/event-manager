@@ -11,7 +11,6 @@ import {
   MaxLength,
   ValidateNested,
 } from 'class-validator';
-import { ServiceAreaItemDto } from './supplier-private-profile.dto';
 
 export class SupplierSocialLinkInputDto {
   @ApiProperty({ description: 'Platform key', example: 'instagram' })
@@ -188,14 +187,15 @@ export class UpsertSupplierProfileDto {
 
   @ApiPropertyOptional({
     description:
-      'When set, replaces all service areas (same shape as `PATCH /supplier/service-areas`). Omit to leave unchanged.',
-    type: [ServiceAreaItemDto],
+      'When set, replaces all service area strings on the supplier (same as `PATCH /supplier/service-areas`). Values are trimmed and stored lowercase. Omit to leave unchanged.',
+    example: ['north', 'jerusalem'],
+    isArray: true,
   })
   @IsOptional()
   @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ServiceAreaItemDto)
-  serviceAreas?: ServiceAreaItemDto[];
+  @IsString({ each: true })
+  @MaxLength(120, { each: true })
+  serviceAreas?: string[];
 
   @ApiPropertyOptional({
     description:

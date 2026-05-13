@@ -585,9 +585,9 @@ export class JobBoardService {
   async listRecommendedJobsForSupplier(supplierId: string, page?: number, limit?: number) {
     const supplier = await this.prisma.supplier.findUnique({
       where: { id: supplierId },
-      include: {
+      select: {
         categories: { select: { categoryId: true, subcategoryId: true } },
-        serviceAreas: { select: { regionCode: true, cityCode: true } },
+        serviceAreas: true,
         attributes: { select: { workingDaysJson: true } },
       },
     });
@@ -618,7 +618,9 @@ export class JobBoardService {
       eventTypeSubcategoryMap.get(mapping.eventTypeId)?.add(mapping.subcategoryId);
     }
 
-    const locationTerms = supplier.serviceAreas.flatMap((a) => [a.regionCode, a.cityCode].filter(Boolean) as string[]);
+    const locationTerms = supplier.serviceAreas.flatMap((a) =>
+      a.toLowerCase().split(/[\s,_-]+/).filter(Boolean),
+    );
     const workingDays = this.extractWorkingDays(supplier.attributes?.workingDaysJson);
     const taxonomyOr: Prisma.JobPostWhereInput[] = [];
     if (eventTypeIds.length) {

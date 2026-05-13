@@ -1,6 +1,6 @@
-import { Transform, Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsBoolean, IsObject, IsOptional, IsString, IsUrl, MaxLength, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsObject, IsOptional, IsString, IsUrl, MaxLength } from 'class-validator';
 
 export class AddSupplierMediaDto {
   @ApiProperty({ description: 'Media type', example: 'image' })
@@ -50,28 +50,16 @@ export class UpdateSupplierAttributesDto {
   certificationsJson?: unknown;
 }
 
-export class ServiceAreaItemDto {
-  @ApiProperty({ description: 'Region code', example: 'north' })
-  @IsString()
-  @MaxLength(32)
-  regionCode!: string;
-
-  @ApiPropertyOptional({ description: 'Optional city code', example: 'haifa' })
-  @IsOptional()
-  @IsString()
-  @MaxLength(32)
-  cityCode?: string;
-}
-
 export class UpdateSupplierServiceAreasDto {
   @ApiProperty({
-    description: 'Complete replacement of supplier service areas',
-    type: [ServiceAreaItemDto],
+    description: 'Complete replacement of supplier service area tokens (stored lowercase, e.g. `north`, `jerusalem`).',
+    example: ['north', 'jerusalem'],
+    type: [String],
   })
   @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ServiceAreaItemDto)
-  serviceAreas!: ServiceAreaItemDto[];
+  @IsString({ each: true })
+  @MaxLength(120, { each: true })
+  serviceAreas!: string[];
 }
 
 export class UploadSupplierMediaFileDto {
@@ -110,4 +98,27 @@ export class UploadSupplierMediaFileDto {
   @Transform(({ value }) => value === true || value === 'true' || value === '1')
   @IsBoolean()
   attachForm3010?: boolean;
+}
+
+/** Multipart text fields for `POST /supplier/media/upload-files` (field `files` is binary). */
+export class UploadSupplierMediaFilesFormDto {
+  @ApiPropertyOptional({
+    description: 'Supplier id — required when the request is not authenticated (onboarding / draft upload)',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  supplierId?: string;
+
+  @ApiPropertyOptional({ description: 'Media type applied to every file', example: 'image', default: 'image' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  mediaType?: string;
+
+  @ApiPropertyOptional({ description: 'Starting sort order for the first file; each next file +1', example: '0' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(16)
+  sortOrder?: string;
 }

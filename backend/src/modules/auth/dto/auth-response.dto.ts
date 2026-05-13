@@ -29,7 +29,7 @@ export class AuthMeItemDto extends AuthUserSummaryDto {
 
   @ApiPropertyOptional({
     description:
-      'Present when `roles` includes `SUPPLIER`: supplier profile, media, categories, service areas, attributes, onboarding draft, subscription summary (no CardCom token), recent approval history, and counts. Includes **`marketplaceProfile`**: the same aggregated object as `GET /suppliers/:slugOrId` (display category/subcategory strings, `gallery` URLs, `similar`, `labelsRules` / `labelsNiche`, contact fields, etc.). `null` if the supplier row has not been created yet.',
+      'Present when `roles` includes `SUPPLIER`: supplier profile, media, categories, service areas, attributes, onboarding draft, subscription summary (no CardCom token), recent approval history, and counts. `null` if the supplier row has not been created yet.',
     nullable: true,
     type: Object,
   })
