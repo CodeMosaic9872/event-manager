@@ -100,7 +100,7 @@ export class UploadSupplierMediaFileDto {
   attachForm3010?: boolean;
 }
 
-/** Multipart text fields for `POST /supplier/media/upload-files` (field `files` is binary). */
+/** Multipart text fields for `POST /supplier/media/upload/gallery` (field `files` is binary). */
 export class UploadSupplierMediaFilesFormDto {
   @ApiPropertyOptional({
     description: 'Supplier id — required when the request is not authenticated (onboarding / draft upload)',

@@ -259,7 +259,7 @@ export class SupplierMediaDeleteResponseDto {
   id!: string;
 }
 
-/** Response from `POST /supplier/media/upload-files` (multipart, multiple `files`). */
+/** Response from `POST /supplier/media/upload/gallery` (multipart, multiple `files`). */
 export class SupplierMediaBatchUploadResponseDto {
   @ApiProperty({ type: [SupplierMediaResponseDto] })
   items!: SupplierMediaResponseDto[];

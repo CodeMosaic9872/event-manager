@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 /**
- * OpenAPI schema for `POST /supplier/media/upload-files` (multipart, field `files` repeated or array).
+ * OpenAPI schema for `POST /supplier/media/upload/gallery` (multipart, field `files` repeated or array).
  * Runtime fields besides `files` are parsed with {@link UploadSupplierMediaFilesFormDto}.
  */
 export class SupplierMediaUploadFilesMultipartDto {

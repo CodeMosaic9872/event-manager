@@ -286,11 +286,11 @@ export class SuppliersController {
     });
   }
 
-  @Post('supplier/media/upload-files')
+  @Post('supplier/media/upload/gallery')
   @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
   @ApiOperation({
-    summary: 'Upload multiple supplier media files in one request',
+    summary: 'Upload multiple files to the supplier gallery in one request',
     description:
       'Multipart form part **`files`** (repeat the field or use an array) — up to **24** files, **20 MB** each. Same auth rules as `POST /supplier/media/upload-file`: Bearer attaches to your supplier; without Bearer, `supplierId` is required. Shared `mediaType` (default `image`) and optional starting `sortOrder` apply to every created `SupplierMedia` row (`sortOrder` increments per file). Does not set `kosher` / `form_3010`; use single-file upload for that.',
   })
