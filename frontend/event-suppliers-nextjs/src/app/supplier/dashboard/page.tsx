@@ -1,4 +1,5 @@
 "use client";
+import { toSlug } from "@/shared/lib/to-slug";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -8,7 +9,7 @@ import {
   useGetSupplierReferralLinkQuery,
   useGetMySupplierProfileQuery,
   useUpdateSupplierProfileMutation,
-  useUpdateSupplierServiceAreasMutation,
+  useUpdateSupplierServiceAreasMutation, useMeQuery,
 } from "@/shared/api/api";
 import { ProtectedRoute } from "@/shared/components/protected-route";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
@@ -123,7 +124,7 @@ function ReferFriendBlock({
 }) {
   return (
     <section className={`${PANEL_CLASS} p-6 sm:p-10`}>
-      <SectionHeaderIcon title={title} iconSrc="/refer.svg" />
+      <SectionHeaderIcon title={title} iconSrc="/icons/refer.svg" />
       <div className={`relative z-2 ${INNER_WELL_CLASS}`}>
         <div
           dir="ltr"
@@ -200,7 +201,8 @@ export default function SupplierDashboardPage() {
   const sessionUser = useAppSelector((state) => state.auth.user);
   const isAuthHydrated = useAppSelector((state) => state.auth.isHydrated);
   const shouldSkipProtectedQueries = !isAuthHydrated || !sessionUser;
-  const { data: referralData } = useGetSupplierReferralLinkQuery(undefined, {
+  const { data: me } = useMeQuery(undefined, { skip: shouldSkipProtectedQueries });
+  const { data: referralData } = useGetSupplierReferralLinkQuery(me?.id ?? "", {
     skip: shouldSkipProtectedQueries,
   });
   const { data: profileData } = useGetMySupplierProfileQuery(undefined, {
@@ -318,7 +320,7 @@ export default function SupplierDashboardPage() {
         <div
           className="pointer-events-none absolute inset-0"
           style={{
-            backgroundImage: "url('/background-1.png'), url('/background-2.png')",
+            backgroundImage: "url('/images/background-1.png'), url('/images/background-2.png')",
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
@@ -346,6 +348,20 @@ export default function SupplierDashboardPage() {
             </p>
           </header>
 
+          {me?.marketplaceProfile && (me.marketplaceProfile.extraLanguage == null || me.marketplaceProfile.kosher == null) && (
+            <div className="w-full rounded-2xl border border-[#6AB7FF] bg-[#EEF5FF] p-5 text-right" dir="rtl">
+              <h3 className="text-lg text-[#201C44]">Complete your profile</h3>
+              <p className="mt-1 text-sm text-[#444650]">Complete these steps to get more job offers.</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {me.marketplaceProfile.extraLanguage == null ? (
+                  <Link href="/join-supplier/step-2" className="rounded-full border border-[#201C44] px-4 py-1.5 text-sm text-[#201C44] hover:bg-[#201C44] hover:text-white!">Description & social links</Link>
+                ) : me.marketplaceProfile.kosher == null && (
+                  <Link href="/join-supplier/step-3" className="rounded-full border border-[#201C44] px-4 py-1.5 text-sm text-[#201C44] hover:bg-[#201C44] hover:text-white!">Media upload</Link>
+                )}
+              </div>
+            </div>
+          )}
+
           <ReferFriendBlock
             title="Friend brings friend"
             shareTitle="Share your link"
@@ -371,7 +387,7 @@ export default function SupplierDashboardPage() {
                   New job offers in your niche
                 </h3>
                 <Image
-                  src="/job-offer.svg"
+                  src="/icons/job-offer.svg"
                   alt=""
                   width={24}
                   height={24}
@@ -416,7 +432,7 @@ export default function SupplierDashboardPage() {
           <form className={`${PANEL_CLASS} p-6 sm:p-10`} onSubmit={onSave} dir="rtl">
             <SectionHeaderIcon
               title="Business details"
-              iconSrc="/business-detail.svg"
+              iconSrc="/icons/business-detail.svg"
               iconSizeClass="h-[22px] w-5"
             />
 
@@ -528,7 +544,7 @@ export default function SupplierDashboardPage() {
               >
                 {isSaving ? "Saving..." : "Save changes"}
                 <Image
-                  src="/save.svg"
+                  src="/icons/save.svg"
                   alt=""
                   width={18}
                   height={13}
@@ -541,7 +557,7 @@ export default function SupplierDashboardPage() {
           </form>
 
           <section className={`${PANEL_CLASS} p-6 sm:p-10`} dir="rtl">
-            <SectionHeaderIcon title="Links" iconSrc="/linking.svg" iconSizeClass="h-6 w-[30px]" />
+            <SectionHeaderIcon title="Links" iconSrc="/icons/linking.svg" iconSizeClass="h-6 w-[30px]" />
 
             <div className="relative z-[2] flex flex-col gap-8">
               {(
@@ -587,7 +603,7 @@ export default function SupplierDashboardPage() {
               >
                 Update links
                 <Image
-                  src="/upload.svg"
+                  src="/icons/upload.svg"
                   alt=""
                   width={18}
                   height={13}
@@ -600,7 +616,7 @@ export default function SupplierDashboardPage() {
           </section>
 
           <section className={`${PANEL_CLASS} p-6 sm:p-10`} dir="rtl">
-            <SectionHeaderIcon title="Gallery management" iconSrc="/gallery.svg" iconSizeClass="h-7 w-7" />
+            <SectionHeaderIcon title="Gallery management" iconSrc="/icons/gallery.svg" iconSizeClass="h-7 w-7" />
             <input
               ref={galleryInputRef}
               type="file"
@@ -793,7 +809,7 @@ export default function SupplierDashboardPage() {
               >
                 Back to main page
                 <Image
-                  src="/left-arrow.svg"
+                  src="/icons/left-arrow.svg"
                   alt=""
                   width={16}
                   height={16}

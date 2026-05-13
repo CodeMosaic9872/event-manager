@@ -67,13 +67,21 @@ export function MarketingHeader() {
 
           <div className="relative z-10 ms-auto flex h-[39px] items-center gap-3 md:gap-4">
             {user ? (
-              <button
+              <>
+                <Link
+                  href="/profile"
+                  className="flex h-[39px] items-center justify-center rounded-[99px] border border-[#201C44] px-4 text-center text-sm leading-tight text-[#1e1b4b] transition hover:bg-[#201C44] hover:text-white!"
+                >
+                  My Profile
+                </Link>
+                <button
                 type="button"
                 className="flex h-[39px] items-center justify-center rounded-[99px] border border-[#6ab7ff] bg-[#e0edff] px-4 text-center text-sm leading-tight text-[#1e1b4b] transition hover:bg-[#d2e4fc]"
                 onClick={() => dispatch(logout())}
               >
                 Log out
               </button>
+              </>
             ) : (
               <>
                 <Link
@@ -124,13 +132,21 @@ export function MarketingHeader() {
               </Link>
             </>
           ) : (
-            <button
-              type="button"
-              className="rounded-full border border-[#4721DF] px-2 py-1 text-[#4721DF]"
-              onClick={() => dispatch(logout())}
-            >
-              Log out
-            </button>
+            <>
+              <Link
+                href="/profile"
+                className="rounded-full border border-[#201C44] px-2 py-1 text-[#201C44]"
+              >
+                Profile
+              </Link>
+              <button
+                type="button"
+                className="rounded-full border border-[#4721DF] px-2 py-1 text-[#4721DF]"
+                onClick={() => dispatch(logout())}
+              >
+                Log out
+              </button>
+            </>
           )}
         </div>
       </nav>

@@ -10,10 +10,10 @@ import { marketingPloniFont } from "@/shared/lib/marketing-typography";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const SOCIAL = [
-  { label: "Facebook", href: "https://www.facebook.com", icon: "/facebook.svg" },
-  { label: "Instagram", href: "https://www.instagram.com", icon: "/instagram.svg" },
-  { label: "Email", href: "mailto:support@example.com", icon: "/mail.svg" },
-  { label: "WhatsApp", href: "https://wa.me/", icon: "/whatsapp.svg" },
+  { label: "Facebook", href: "https://www.facebook.com", icon: "/icons/facebook.svg" },
+  { label: "Instagram", href: "https://www.instagram.com", icon: "/icons/instagram.svg" },
+  { label: "Email", href: "mailto:support@example.com", icon: "/icons/mail.svg" },
+  { label: "WhatsApp", href: "https://wa.me/", icon: "/icons/whatsapp.svg" },
 ] as const;
 
 function SuccessBadgeCheckIcon() {
@@ -209,7 +209,7 @@ export default function ContactUsPage() {
               href="/"
               className="relative isolate flex h-14 w-full flex-row items-center justify-center gap-2 rounded-[99px] bg-[#201C44] px-8 py-4 text-base font-normal leading-6 text-white! transition hover:opacity-95"
             >
-              <Image src="/left-arrow.svg" alt="" width={13} height={13} className="size-[13px] shrink-0 brightness-0 invert" unoptimized aria-hidden />
+              <Image src="/icons/left-arrow.svg" alt="" width={13} height={13} className="size-[13px] shrink-0 brightness-0 invert" unoptimized aria-hidden />
               Back to main page
             </Link>
           </div>

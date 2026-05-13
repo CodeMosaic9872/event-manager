@@ -54,7 +54,7 @@ export function AdditionalSuppliersSection({
           dir="ltr"
           className="inline-flex h-[40px] shrink-0 items-center justify-end gap-2 text-[18px] leading-[14px] text-[#201C44] hover:underline sm:min-w-[152px]"
         >
-          <Image src="/left-arrow.svg" alt="" width={18} height={12} className="opacity-80" unoptimized />
+          <Image src="/icons/left-arrow.svg" alt="" width={18} height={12} className="opacity-80" unoptimized />
           <span>{linkLabel}</span>
         </Link>
       </div>

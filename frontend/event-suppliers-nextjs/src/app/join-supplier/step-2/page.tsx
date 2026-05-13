@@ -1,7 +1,8 @@
 "use client";
-
-import { FormEvent, useCallback, useState } from "react";
+import { toSlug } from "@/shared/lib/to-slug";
+import { FormEvent, useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useUpdateSupplierProfileMutation } from "@/shared/api/api";
 import { SelectableChip } from "@/shared/components/supplier-join/selectable-chip";
 import { SupplierJoinGlassCard } from "@/shared/components/supplier-join/supplier-join-glass-card";
 import { MarketingPageShell } from "@/shared/components/marketing-page-shell";
@@ -20,6 +21,9 @@ import {
 } from "@/shared/components/supplier-join/join-supplier-step-2-glyphs";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
 
+const URL_PATTERN = /^(https?:\/\/)?[\w.-]+\.[a-z]{2,}(\/\S*)?$/i;
+const MIN_DESC = 10;
+
 export default function JoinSupplierStep2Page() {
   const router = useRouter();
   const [description, setDescription] = useState("");
@@ -32,6 +36,26 @@ export default function JoinSupplierStep2Page() {
   );
   const [address, setAddress] = useState("");
   const [extraLanguage, setExtraLanguage] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [updateProfile] = useUpdateSupplierProfileMutation();
+  const [isSaving, setIsSaving] = useState(false);
+
+  const urlError = useMemo(() => {
+    const socialErrors: Record<string, string> = {};
+    for (const [key, value] of Object.entries(social)) {
+      const trimmed = value.trim();
+      if (trimmed && !URL_PATTERN.test(trimmed)) {
+        socialErrors[key] = "Enter a valid URL";
+      }
+    }
+    return socialErrors;
+  }, [social]);
+
+  const descError = useMemo(() => {
+    if (!description.trim()) return "Description is required.";
+    if (description.trim().length < MIN_DESC) return `Minimum ${MIN_DESC} characters required.`;
+    return null;
+  }, [description]);
 
   const toggle = useCallback(
     (list: string[], setList: (v: string[]) => void, id: string) => {
@@ -40,26 +64,67 @@ export default function JoinSupplierStep2Page() {
     [],
   );
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    try {
-      sessionStorage.setItem(
-        "supplierJoinStep2",
-        JSON.stringify({
-          description,
-          subcategories,
-          serviceAreas,
-          labelsRules,
-          labelsNiche,
-          social,
-          address,
-          extraLanguage,
-        }),
-      );
-    } catch {
-      /* ignore */
+    const nextErrors: Record<string, string> = { ...urlError };
+
+    if (!description.trim()) nextErrors.description = "Description is required.";
+    else if (description.trim().length < MIN_DESC) {
+      nextErrors.description = `Minimum ${MIN_DESC} characters required.`;
     }
-    router.push("/join-supplier/step-3");
+    if (subcategories.length === 0) {
+      nextErrors.subcategories = "Please select at least one subcategory.";
+    }
+    if (serviceAreas.length === 0) {
+      nextErrors.serviceAreas = "Please select at least one service area.";
+    }
+    if (labelsRules.length === 0) {
+      nextErrors.labelsRules = "Please select at least one label rule.";
+    }
+    if (labelsNiche.length === 0) {
+      nextErrors.labelsNiche = "Please select at least one niche label.";
+    }
+    if (!extraLanguage.trim()) {
+      nextErrors.extraLanguage = "Please select a language.";
+    }
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      return;
+    }
+    setErrors({});
+    setIsSaving(true);
+
+    const socialLinks = Object.entries(social)
+      .filter(([_, url]) => url.trim())
+      .map(([platform, url]) => ({ platform, url: url.trim() }));
+
+    let businessName = "";
+    try {
+      const step1Data = JSON.parse(sessionStorage.getItem("supplierJoinStep1") ?? "{}");
+      businessName = step1Data.businessName ?? "";
+    } catch { /* ignore */ }
+
+    try {
+            await updateProfile({
+        businessName: businessName || "New Supplier",
+        slug: toSlug(businessName || "New Supplier"),
+        description: description.trim(),
+        website: social.website?.trim() || undefined,
+        socialLinks: socialLinks.length > 0 ? socialLinks : undefined,
+        subcategories: subcategories.length > 0 ? subcategories : undefined,
+        serviceAreas: serviceAreas.length > 0 ? serviceAreas : undefined,
+        labelsRules: labelsRules.length > 0 ? labelsRules : undefined,
+        labelsNiche: labelsNiche.length > 0 ? labelsNiche : undefined,
+        address: address.trim() || undefined,
+        extraLanguage: extraLanguage || undefined,
+      }).unwrap()
+      router.push("/join-supplier/step-3");
+    } catch {
+      setErrors({ form: "Failed to save. Please try again." });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const descLen = description.length;
@@ -105,23 +170,18 @@ export default function JoinSupplierStep2Page() {
                   onChange={(e) => setDescription(e.target.value.slice(0, JOIN_SUPPLIER_STEP2_MAX_DESCRIPTION))}
                   placeholder="Describe your service, what makes you unique and what customers will receive..."
                   rows={5}
-                  className="box-border min-h-[140px] w-full resize-y rounded-2xl border border-black/10 bg-white px-4 pb-8 pt-4 text-right text-[16px] leading-6 text-black outline-none placeholder:text-black/50 focus:border-[#4721DF]/35 focus:ring-2 focus:ring-[#6AB7FF]/40"
+                  className={`box-border min-h-[140px] w-full resize-y rounded-2xl border bg-white px-4 pb-8 pt-4 text-right text-[16px] leading-6 text-black outline-none placeholder:text-black/50 focus:border-[#4721DF]/35 focus:ring-2 focus:ring-[#6AB7FF]/40 ${descError ? "border-red-400" : "border-black/10"}`}
                 />
-                <span
-                  className="pointer-events-none absolute bottom-3 end-3 text-[10px] leading-[15px] text-black"
-                  dir="ltr"
-                >
+                <span className="pointer-events-none absolute bottom-3 end-3 text-[10px] leading-[15px] text-black" dir="ltr">
                   {descLen} / {JOIN_SUPPLIER_STEP2_MAX_DESCRIPTION}
                 </span>
               </div>
+              {descError && <p className="text-xs text-red-600">{descError}</p>}
             </div>
 
             <div className="flex w-full min-w-0 flex-col gap-3">
               <span className="text-right text-[16px] leading-5 text-black">Subcategory</span>
-              <div
-                dir="rtl"
-                className="flex w-full min-w-0 flex-wrap content-start items-center justify-start gap-3 sm:gap-[15px]"
-              >
+              <div dir="rtl" className="flex w-full min-w-0 flex-wrap content-start items-center justify-start gap-3 sm:gap-[15px]">
                 {JOIN_SUPPLIER_STEP2_SUBCATEGORIES.map((item) => (
                   <SelectableChip
                     key={item}
@@ -132,14 +192,12 @@ export default function JoinSupplierStep2Page() {
                   </SelectableChip>
                 ))}
               </div>
+              {errors.subcategories && <p className="text-xs text-red-600">{errors.subcategories}</p>}
             </div>
 
             <div className="flex w-full min-w-0 flex-col gap-3">
               <span className="text-right text-[16px] leading-5 text-black">Service area</span>
-              <div
-                dir="rtl"
-                className="flex w-full min-w-0 flex-wrap content-start items-center justify-start gap-3 sm:gap-[15px]"
-              >
+              <div dir="rtl" className="flex w-full min-w-0 flex-wrap content-start items-center justify-start gap-3 sm:gap-[15px]">
                 {JOIN_SUPPLIER_STEP2_SERVICE_AREAS.map((item) => (
                   <SelectableChip
                     key={item}
@@ -150,6 +208,7 @@ export default function JoinSupplierStep2Page() {
                   </SelectableChip>
                 ))}
               </div>
+              {errors.serviceAreas && <p className="text-xs text-red-600">{errors.serviceAreas}</p>}
             </div>
 
             <div className="flex flex-col gap-4">
@@ -158,26 +217,26 @@ export default function JoinSupplierStep2Page() {
               </h2>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2" dir="rtl">
                 {JOIN_SUPPLIER_STEP2_SOCIAL_FIELDS.map((field) => (
-                  <label key={field.key} className="relative block">
-                    <span className="sr-only">{field.label}</span>
-                    <input
-                      type="url"
-                      dir="ltr"
-                      inputMode="url"
-                      placeholder={field.placeholder}
-                      value={social[field.key] ?? ""}
-                      onChange={(e) =>
-                        setSocial((prev) => ({
-                          ...prev,
-                          [field.key]: e.target.value,
-                        }))
-                      }
-                      className="box-border h-[50px] w-full rounded-2xl border border-black/10 bg-white py-3 ps-4 pe-11 text-right text-[16px] leading-[19px] text-black outline-none placeholder:text-black/45 focus:border-[#4721DF]/35 focus:ring-2 focus:ring-[#6AB7FF]/40"
-                    />
-                    <span className="pointer-events-none absolute top-1/2 inset-s-3 -translate-y-1/2 text-[#0f172a]">
-                      <JoinSupplierStep2LinkGlyph className="size-5" />
-                    </span>
-                  </label>
+                  <div key={field.key} className="flex flex-col gap-1">
+                    <label className="relative block">
+                      <span className="sr-only">{field.label}</span>
+                      <input
+                        type="url"
+                        dir="ltr"
+                        inputMode="url"
+                        placeholder={field.placeholder}
+                        value={social[field.key] ?? ""}
+                        onChange={(e) =>
+                          setSocial((prev) => ({ ...prev, [field.key]: e.target.value }))
+                        }
+                        className={`box-border h-[50px] w-full rounded-2xl border bg-white py-3 ps-4 pe-11 text-right text-[16px] leading-[19px] text-black outline-none placeholder:text-black/45 focus:border-[#4721DF]/35 focus:ring-2 focus:ring-[#6AB7FF]/40 ${urlError[field.key] ? "border-red-400" : "border-black/10"}`}
+                      />
+                      <span className="pointer-events-none absolute top-1/2 inset-s-3 -translate-y-1/2 text-[#0f172a]">
+                        <JoinSupplierStep2LinkGlyph className="size-5" />
+                      </span>
+                    </label>
+                    {urlError[field.key] && <p className="px-1 text-xs text-red-600">{urlError[field.key]}</p>}
+                  </div>
                 ))}
               </div>
             </div>
@@ -199,20 +258,15 @@ export default function JoinSupplierStep2Page() {
                   <JoinSupplierStep2PinGlyph />
                 </span>
               </label>
-              <div
-                className="flex h-[128px] w-full items-center justify-end rounded-2xl border border-black/10 bg-white/60 px-4 text-sm text-slate-500"
-                aria-hidden
-              >
+              {errors.address && <p className="text-xs text-red-600">{errors.address}</p>}
+              <div className="flex h-[128px] w-full items-center justify-end rounded-2xl border border-black/10 bg-white/60 px-4 text-sm text-slate-500" aria-hidden>
                 Map preview
               </div>
             </div>
 
             <div className="flex w-full min-w-0 flex-col gap-3">
               <span className="text-right text-[16px] leading-5 text-black">Labels rules</span>
-              <div
-                dir="rtl"
-                className="flex w-full min-w-0 flex-wrap content-start items-center justify-start gap-3 sm:gap-[14px]"
-              >
+              <div dir="rtl" className="flex w-full min-w-0 flex-wrap content-start items-center justify-start gap-3 sm:gap-[14px]">
                 {JOIN_SUPPLIER_STEP2_LABELS_RULES.map((item) => (
                   <SelectableChip
                     key={item}
@@ -223,14 +277,12 @@ export default function JoinSupplierStep2Page() {
                   </SelectableChip>
                 ))}
               </div>
+              {errors.labelsRules && <p className="text-xs text-red-600">{errors.labelsRules}</p>}
             </div>
 
             <div className="flex w-full min-w-0 flex-col gap-3">
               <span className="text-right text-[16px] leading-5 text-black">Labels per niche</span>
-              <div
-                dir="rtl"
-                className="flex w-full min-w-0 flex-wrap content-start items-center justify-start gap-3 sm:gap-[14px]"
-              >
+              <div dir="rtl" className="flex w-full min-w-0 flex-wrap content-start items-center justify-start gap-3 sm:gap-[14px]">
                 {JOIN_SUPPLIER_STEP2_LABELS_NICHE.map((item) => (
                   <SelectableChip
                     key={item}
@@ -241,6 +293,7 @@ export default function JoinSupplierStep2Page() {
                   </SelectableChip>
                 ))}
               </div>
+              {errors.labelsNiche && <p className="text-xs text-red-600">{errors.labelsNiche}</p>}
             </div>
 
             <div className="flex w-full max-w-[367px] flex-col gap-2 self-start">
@@ -249,13 +302,11 @@ export default function JoinSupplierStep2Page() {
                 <select
                   value={extraLanguage}
                   onChange={(e) => setExtraLanguage(e.target.value)}
-                  className="box-border h-[50px] w-full appearance-none rounded-xl border border-[#E2E8F0] bg-white px-4 py-3 text-right text-[16px] leading-6 text-[#1E293B] outline-none focus:border-[#4721DF]/35 focus:ring-2 focus:ring-[#6AB7FF]/40"
+                  className={`box-border h-[50px] w-full appearance-none rounded-xl border bg-white px-4 py-3 text-right text-[16px] leading-6 text-[#1E293B] outline-none focus:border-[#4721DF]/35 focus:ring-2 focus:ring-[#6AB7FF]/40 ${errors.extraLanguage ? "border-red-400" : "border-[#E2E8F0]"}`}
                 >
                   <option value="">Choose a language</option>
                   {JOIN_SUPPLIER_STEP2_LANGUAGES.map((lang) => (
-                    <option key={lang} value={lang}>
-                      {lang}
-                    </option>
+                    <option key={lang} value={lang}>{lang}</option>
                   ))}
                 </select>
                 <span className="pointer-events-none absolute top-1/2 inset-e-3 -translate-y-1/2 text-[#6B7280]" aria-hidden>
@@ -264,6 +315,7 @@ export default function JoinSupplierStep2Page() {
                   </svg>
                 </span>
               </div>
+              {errors.extraLanguage && <p className="text-xs text-red-600">{errors.extraLanguage}</p>}
             </div>
 
             <div className="flex flex-col-reverse gap-4 border-t border-black/5 pt-6 sm:flex-row sm:items-center sm:justify-between">
@@ -272,23 +324,21 @@ export default function JoinSupplierStep2Page() {
                 onClick={() => router.push("/join-supplier")}
                 className="inline-flex items-center justify-center gap-2 text-[16px] leading-6 text-black"
               >
-                <span
-                  className="block size-4 shrink-0 bg-black mask-[url(/right_arrow.svg)] mask-contain mask-center mask-no-repeat"
-                  aria-hidden
-                />
+                <span className="block size-4 shrink-0 bg-black mask-[url(/icons/right_arrow.svg)] mask-contain mask-center mask-no-repeat" aria-hidden />
                 Return
               </button>
-              <button
-                type="submit"
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-[99px] bg-[#201C44] px-10 text-[16px] font-bold leading-6 text-white shadow-[0_8px_24px_rgba(32,28,68,0.25)] transition hover:bg-[#151238]"
-                style={{ fontFamily: "var(--font-assistant), sans-serif" }}
-              >
-                Continuation
-                <span
-                  className="block size-4 shrink-0 rotate-180 bg-white mask-[url(/right_arrow.svg)] mask-contain mask-center mask-no-repeat"
-                  aria-hidden
-                />
-              </button>
+              <div className="flex flex-col items-end gap-2 sm:items-center sm:flex-row">
+                {errors.form && <p className="text-xs text-red-600">{errors.form}</p>}
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-[99px] bg-[#201C44] px-10 text-[16px] font-bold leading-6 text-white shadow-[0_8px_24px_rgba(32,28,68,0.25)] transition hover:bg-[#151238] disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ fontFamily: "var(--font-assistant), sans-serif" }}
+                >
+                  {isSaving ? "Saving..." : "Continuation"}
+                  <span className="block size-4 shrink-0 rotate-180 bg-white mask-[url(/icons/right_arrow.svg)] mask-contain mask-center mask-no-repeat" aria-hidden />
+                </button>
+              </div>
             </div>
           </form>
         </SupplierJoinGlassCard>

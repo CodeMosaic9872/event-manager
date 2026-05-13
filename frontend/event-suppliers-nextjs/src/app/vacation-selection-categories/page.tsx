@@ -61,7 +61,7 @@ export default function VacationSelectionCategoriesPage() {
             variant="outline"
             className="w-[165px] border-[rgba(98,98,98,0.46)] bg-white! text-[rgba(0,0,0,0.66)]! visited:bg-white! visited:text-[rgba(0,0,0,0.66)]! hover:bg-white! hover:text-[rgba(0,0,0,0.66)]!"
           >
-            <Image src="/right_arrow.svg" alt="" width={16} height={16} className="h-4 w-4" /> חזרה
+            <Image src="/icons/right_arrow.svg" alt="" width={16} height={16} className="h-4 w-4" /> חזרה
           </PillAction>
         </div>
       </div>

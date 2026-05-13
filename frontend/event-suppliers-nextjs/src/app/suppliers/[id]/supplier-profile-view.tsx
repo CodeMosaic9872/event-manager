@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 import type { SupplierProfileResponse } from "@/shared/types";
+import { useGetSupplierReviewsQuery } from "@/shared/api/api";
+import { useAppSelector } from "@/store/hooks";
 import { SupplierContactIconsRow } from "@/shared/components/supplier-profile/supplier-contact-icons-row";
 import { SupplierGalleryCarousel } from "@/shared/components/supplier-profile/supplier-gallery-carousel";
 import { SupplierProfileBackground } from "@/shared/components/supplier-profile/supplier-profile-background";
@@ -20,14 +22,14 @@ type SupplierProfileViewProps = {
 
 export function SupplierProfileView({ profile }: SupplierProfileViewProps) {
   const [showRating, setShowRating] = useState(false);
+  const sessionUser = useAppSelector((s) => s.auth.user);
 
   const headline = profile.businessName;
   const sub = profile.category ?? "";
   const loc = profile.city ?? "";
-  const banner = profile.heroBannerUrl || profile.avatarUrl || undefined;
-  const avatar = profile.avatarUrl || undefined;
+  const banner = profile.coverImageUrl || profile.avatarImageUrl || undefined;
+  const avatar = profile.avatarImageUrl || undefined;
   const gallery = profile.gallery ?? [];
-  const reviews = profile.reviews ?? [];
   const score = Number(profile.ratingAvg) || 0;
   const count = profile.reviewCount ?? 0;
   const similar =
@@ -38,6 +40,10 @@ export function SupplierProfileView({ profile }: SupplierProfileViewProps) {
       rating: String(s.ratingAvg),
       imageUrl: s.avatarUrl ?? "",
     })) ?? [];
+
+  const { data: reviewData } = useGetSupplierReviewsQuery({ supplierId: profile.slug || profile.id }, { skip: !profile.id });
+  const reviews = reviewData?.items ?? [];
+  const userHasReviewed = sessionUser ? reviews.some((r) => r.authorUserId === sessionUser.id) : false;
 
   return (
     <section className="relative mx-auto w-full overflow-x-hidden bg-white pb-24">
@@ -76,17 +82,17 @@ export function SupplierProfileView({ profile }: SupplierProfileViewProps) {
               reviews.map((r) => (
                 <SupplierReviewCard
                   key={r.id}
-                  author={r.author}
-                  dateLabel={r.dateLabel}
-                  body={r.body}
-                  badgeLabel={r.badgeLabel}
+                  author={r.author?.id?.slice(0, 8) ?? "Anonymous"}
+                  dateLabel={r.createdAt ? new Date(r.createdAt).toLocaleDateString() : ""}
+                  body={r.comment ?? ""}
+                  badgeLabel={r.title ?? undefined}
                 />
               ))
             ) : (
               <p className="text-center text-sm text-[#94A3B8]">אין עדיין ביקורות.</p>
             )}
 
-            <SupplierProfileCtaRow onRate={() => setShowRating(true)} />
+            <SupplierProfileCtaRow onRate={() => setShowRating(true)} hasReviewed={userHasReviewed} />
           </div>
         </div>
       </div>
@@ -98,7 +104,7 @@ export function SupplierProfileView({ profile }: SupplierProfileViewProps) {
           href="/marketplace"
           className="inline-flex h-12 w-full max-w-[260px] items-center justify-center gap-2 rounded-[99px] border-2 border-[rgba(98,98,98,0.46)] bg-white px-4 text-base leading-6 text-[rgba(0,0,0,0.66)]"
         >
-          <Image src="/right_arrow.svg" alt="" width={16} height={16} className="h-4 w-4" /> חזרה לזירת הספקים
+          <Image src="/icons/right_arrow.svg" alt="" width={16} height={16} className="h-4 w-4" /> חזרה לזירת הספקים
         </Link>
       </div>
 
@@ -106,7 +112,7 @@ export function SupplierProfileView({ profile }: SupplierProfileViewProps) {
         key={showRating ? "supplier-rating-open" : "supplier-rating-closed"}
         open={showRating}
         onClose={() => setShowRating(false)}
-        supplierId={profile.id}
+        supplierId={profile.slug || profile.id}
         avatarUrl={avatar ?? ""}
         supplierName={profile.businessName}
         supplierSubtitle={sub}

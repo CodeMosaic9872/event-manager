@@ -9,7 +9,7 @@ export type SupplierSummary = {
   rating: string;
   imageUrl?: string;
   /** Wide hero strip behind avatar */
-  heroBannerUrl?: string;
+  coverImageUrl?: string;
   /** Main headline on profile (may differ from card name — design reference) */
   profileHeadline?: string;
   profileSubtitle?: string;
@@ -42,7 +42,7 @@ export const SUPPLIER_LIST: SupplierSummary[] = [
     location: "כל הארץ",
     rating: "4.6",
     imageUrl: "/avatars/1.jpg",
-    heroBannerUrl: u("https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1600&h=600&fit=crop"),
+    coverImageUrl: u("https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1600&h=600&fit=crop"),
   },
   {
     id: "2",
@@ -53,7 +53,7 @@ export const SUPPLIER_LIST: SupplierSummary[] = [
     location: "מרכז | הרצליה",
     rating: "4.1",
     imageUrl: "/avatars/2.jpg",
-    heroBannerUrl: u("https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=1600&h=600&fit=crop"),
+    coverImageUrl: u("https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=1600&h=600&fit=crop"),
   },
   {
     id: "3",
@@ -63,7 +63,7 @@ export const SUPPLIER_LIST: SupplierSummary[] = [
     location: "כל הארץ | דרום | צפון",
     rating: "4.3",
     imageUrl: "/avatars/3.jpg",
-    heroBannerUrl: u("https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1600&h=600&fit=crop"),
+    coverImageUrl: u("https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1600&h=600&fit=crop"),
     profileHeadline: "DJ Galaxy — חוויה קסומה",
     profileSubtitle: "שירותי דיג'יי ובידור",
     locationLine: "תל אביב, ישראל",
@@ -76,7 +76,7 @@ export const SUPPLIER_LIST: SupplierSummary[] = [
     location: "תל אביב | מרכז",
     rating: "4.8",
     imageUrl: "/avatars/4.jpg",
-    heroBannerUrl: u("https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=1600&h=600&fit=crop"),
+    coverImageUrl: u("https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=1600&h=600&fit=crop"),
   },
   {
     id: "5",
@@ -86,7 +86,7 @@ export const SUPPLIER_LIST: SupplierSummary[] = [
     location: "צפון | השרון",
     rating: "4.4",
     imageUrl: "/avatars/5.jpg",
-    heroBannerUrl: u("https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1600&h=600&fit=crop"),
+    coverImageUrl: u("https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1600&h=600&fit=crop"),
   },
 ];
 

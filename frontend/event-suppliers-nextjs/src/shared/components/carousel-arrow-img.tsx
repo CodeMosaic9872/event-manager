@@ -10,7 +10,7 @@ export function CarouselArrowImg({
   className?: string;
   invertOnDarkBg?: boolean;
 }) {
-  const src = direction === "left" ? "/left-arrow.svg" : "/right-arrow.svg";
+  const src = direction === "left" ? "/icons/left-arrow.svg" : "/icons/right-arrow.svg";
   return (
     <img
       src={src}

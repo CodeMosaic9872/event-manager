@@ -237,7 +237,7 @@ export function SupplierAuthPaymentResultView({
                 >
                   <span>View invoice</span>
                   <Image
-                    src="/upload.svg"
+                    src="/icons/upload.svg"
                     alt=""
                     width={16}
                     height={16}
@@ -250,7 +250,7 @@ export function SupplierAuthPaymentResultView({
                   className="flex h-14 min-w-[200px] flex-1 items-center justify-center gap-2 rounded-[99px] bg-[#201C44] px-8 text-[18px] leading-7 text-white! transition hover:bg-[#151238]"
                 >
                   <Image
-                    src="/right_arrow.svg"
+                    src="/icons/right_arrow.svg"
                     alt=""
                     width={16}
                     height={16}
@@ -291,7 +291,7 @@ export function SupplierAuthPaymentResultView({
                 className="mb-12 flex h-14 w-full max-w-[311px] items-center justify-center gap-2 rounded-[99px] bg-[#201C44] px-8 text-[18px] leading-7 text-white transition hover:bg-[#151238]"
               >
                 <Image
-                  src="/right_arrow.svg"
+                  src="/icons/right_arrow.svg"
                   alt=""
                   width={16}
                   height={16}

@@ -11,7 +11,7 @@ export function SupplierPlanVerifiedFeatureRow({ children }: { children: ReactNo
         {children}
       </span>
       <Image
-        src="/verified.svg"
+        src="/icons/verified.svg"
         alt=""
         width={24}
         height={23}

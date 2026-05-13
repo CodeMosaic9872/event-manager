@@ -1,18 +1,20 @@
 import type { EndpointBuilder } from "@reduxjs/toolkit/query";
-import { suppliers } from "@/shared/data/mock-data";
-import type { Supplier, SupplierProfileResponse, SuppliersListResponse } from "@/shared/types";
+import type { SupplierProfileResponse, SuppliersListResponse } from "@/shared/types";
 import type {
   SuppliersQuery,
   UpsertSupplierProfilePayload,
   UpdateSupplierServiceAreasPayload,
+  CreateReviewPayload,
+  UpdateReviewPayload,
+  ReviewListResponse,
+  ReviewResponse,
+  CreateMediaUploadUrlPayload,
+  CreateMediaUploadUrlResponse,
+  CompleteMediaUploadPayload,
+  CompleteMediaUploadResponse,
 } from "@/shared/api/types";
 
-export function createSuppliersEndpoints(
-  builder: EndpointBuilder<any, any, any>,
-  options: { isProduction: boolean },
-) {
-  const { isProduction } = options;
-
+export function createSuppliersEndpoints(builder: EndpointBuilder<any, any, any>) {
   return {
     getSuppliers: builder.query<SuppliersListResponse, SuppliersQuery>({
       query: (params) => ({ url: "/v1/suppliers", params }),
@@ -24,18 +26,7 @@ export function createSuppliersEndpoints(
         }
         return { items: [], nextCursor: null, facets: {} };
       },
-      transformErrorResponse: () =>
-        isProduction
-          ? { items: [], nextCursor: null, facets: {} }
-          : {
-              items: suppliers.map((supplier) => ({
-                id: supplier.id,
-                businessName: supplier.businessName,
-                ratingAvg: supplier.rating || 0,
-              })),
-              nextCursor: null,
-              facets: {},
-            },
+      transformErrorResponse: () => ({ items: [], nextCursor: null, facets: {} }),
       providesTags: ["Suppliers"],
     }),
     getSupplierById: builder.query<SupplierProfileResponse, string>({
@@ -57,17 +48,6 @@ export function createSuppliersEndpoints(
           ? response.map((item) => (typeof item === "string" ? item : item.label || item.name || ""))
           : [],
     }),
-    getSuppliersLegacyMock: builder.query<Supplier[], string>({
-      queryFn: async (searchTerm) => {
-        const filtered = suppliers.filter((supplier) =>
-          `${supplier.businessName} ${supplier.category || ""} ${supplier.subcategory || ""} ${(supplier.tags || []).join(" ")}`
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()),
-        );
-        return { data: filtered };
-      },
-      providesTags: ["Suppliers"],
-    }),
     getMySupplierProfile: builder.query<SupplierProfileResponse, void>({
       query: () => ({ url: "/v1/supplier/profile" }),
     }),
@@ -85,9 +65,44 @@ export function createSuppliersEndpoints(
       transformErrorResponse: () => ({ items: [], nextCursor: null, facets: {} }),
       providesTags: ["Suppliers"],
     }),
-    createSupplierReview: builder.mutation<{ status: string }, { supplierId: string; rating: number; body: string; authorName: string }>({
+    createSupplierReview: builder.mutation<ReviewResponse, { supplierId: string } & CreateReviewPayload>({
       query: ({ supplierId, ...body }) => ({ url: `/v1/suppliers/${supplierId}/reviews`, method: "POST", body }),
       invalidatesTags: ["Suppliers"],
+    }),
+    getSupplierReviews: builder.query<ReviewListResponse, { supplierId: string; page?: number; limit?: number }>({
+      query: ({ supplierId, page = 1, limit = 20 }) => ({ url: `/v1/suppliers/${supplierId}/reviews`, params: { page, limit } }),
+      transformResponse: (response: unknown) => {
+        if (response && typeof response === "object") {
+          const r = response as any;
+          if (r.data) return r.data as ReviewListResponse;
+          if (r.items) return response as ReviewListResponse;
+        }
+        return { items: [], totalItems: 0 };
+      },
+    }),
+    updateMySupplierReview: builder.mutation<ReviewResponse, { supplierId: string } & UpdateReviewPayload>({
+      query: ({ supplierId, ...body }) => ({ url: `/v1/suppliers/${supplierId}/reviews/me`, method: "PATCH", body }),
+      invalidatesTags: ["Suppliers"],
+    }),
+    deleteMySupplierReview: builder.mutation<void, { supplierId: string }>({
+      query: ({ supplierId }) => ({ url: `/v1/suppliers/${supplierId}/reviews/me`, method: "DELETE" }),
+      invalidatesTags: ["Suppliers"],
+    }),
+    createMediaUploadUrl: builder.mutation<CreateMediaUploadUrlResponse, CreateMediaUploadUrlPayload>({
+      query: (body) => ({ url: "/v1/supplier/media/upload-url", method: "POST", body }),
+      transformResponse: (response: unknown) => {
+        const r = response as any;
+        if (r?.data) return r.data as CreateMediaUploadUrlResponse;
+        return response as CreateMediaUploadUrlResponse;
+      },
+    }),
+    completeMediaUpload: builder.mutation<CompleteMediaUploadResponse, CompleteMediaUploadPayload>({
+      query: (body) => ({ url: "/v1/supplier/media/complete-upload", method: "POST", body }),
+      transformResponse: (response: unknown) => {
+        const r = response as any;
+        if (r?.data) return r.data as CompleteMediaUploadResponse;
+        return response as CompleteMediaUploadResponse;
+      },
     }),
   };
 }

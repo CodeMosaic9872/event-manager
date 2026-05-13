@@ -199,7 +199,7 @@ export default function TenderSuppliersPage() {
                 disabled={isClosing}
                 className="inline-flex h-9 items-center justify-center gap-2 rounded-[99px] bg-[#201C44] px-6 text-xs text-[#D7EBFA] disabled:opacity-60"
               >
-                <Image src="/lock.svg" alt="" width={10} height={13} className="opacity-90 invert" aria-hidden />
+                <Image src="/icons/lock.svg" alt="" width={10} height={13} className="opacity-90 invert" aria-hidden />
                 {isClosing ? "Closing..." : "Tender closing"}
               </button>
               <button

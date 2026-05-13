@@ -32,7 +32,7 @@ const SUPPLIERS = [
     id: "sharon",
     name: "Sharon Photography",
     category: "DOCUMENTATION",
-    image: "/camera-blue.svg",
+    image: "/icons/camera-blue.svg",
   },
   {
     id: "taimim",
@@ -290,7 +290,7 @@ export default function AdminAddStoreProductPage() {
                   onClick={() => galleryInputRef.current?.click()}
                   className="inline-flex shrink-0 flex-row-reverse items-center gap-2 self-start rounded-[99px] border border-[#C5C6D2] bg-white px-4 py-2 text-sm text-[#00113A] sm:self-auto"
                 >
-                  <Image src="/upload.svg" alt="" width={18} height={18} unoptimized />
+                  <Image src="/icons/upload.svg" alt="" width={18} height={18} unoptimized />
                   Upload files
                 </button>
               </div>
@@ -311,7 +311,7 @@ export default function AdminAddStoreProductPage() {
                   onClick={() => galleryInputRef.current?.click()}
                   className="flex aspect-square min-h-30 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[#CBD5E1] bg-[rgba(255,255,255,0.6)] text-[#94A3B8] transition hover:bg-white/90 sm:min-h-36 lg:min-h-0"
                 >
-                  <Image src="/upload.svg" alt="" width={28} height={28} className="opacity-70" unoptimized />
+                  <Image src="/icons/upload.svg" alt="" width={28} height={28} className="opacity-70" unoptimized />
                   <span className="text-sm font-medium">ADD NEW</span>
                 </button>
                 {["/avatars/1.jpg", "/avatars/4.jpg"].map((src) => (
@@ -465,7 +465,7 @@ export default function AdminAddStoreProductPage() {
               >
                 <span className="flex w-10 shrink-0 justify-start sm:w-12">
                   <Image
-                    src="/left-arrow.svg"
+                    src="/icons/left-arrow.svg"
                     alt=""
                     width={13}
                     height={13}

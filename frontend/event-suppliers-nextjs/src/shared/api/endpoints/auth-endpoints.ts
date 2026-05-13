@@ -8,21 +8,11 @@ import type {
   RequestOtpResponse,
   VerifyOtpPayload,
   VerifyOtpResponse,
+  CreateMediaUploadUrlPayload,
+  CreateMediaUploadUrlResponse,
+  CompleteMediaUploadPayload,
+  CompleteMediaUploadResponse,
 } from "@/shared/api/types";
-
-const toRole = (roles: string[]): AuthUser["roles"] =>
-  roles.map((role) => role.toLowerCase() as AuthUser["roles"][number]);
-
-function unwrapMePayload(response: unknown): Record<string, unknown> {
-  const r = response as Record<string, unknown> | null | undefined;
-  if (!r || typeof r !== "object") return {};
-  const data = r.data;
-  const payload = data !== undefined && data !== null && typeof data === "object" ? (data as Record<string, unknown>) : r;
-  if (Array.isArray(payload.items) && payload.items.length > 0) {
-    return payload.items[0] as Record<string, unknown>;
-  }
-  return payload;
-}
 
 export function createAuthEndpoints(builder: EndpointBuilder<any, any, any>) {
   return {
@@ -46,14 +36,50 @@ export function createAuthEndpoints(builder: EndpointBuilder<any, any, any>) {
     me: builder.query<AuthUser, void>({
       query: () => ({ url: "/v1/auth/me" }),
       transformResponse: (response: unknown) => {
-        const row = unwrapMePayload(response);
+        const r = response as any;
+        const data = r?.data;
+        const item = data?.items?.[0] || data;
         return {
-          id: String(row.id ?? ""),
-          email: String(row.email ?? ""),
-          roles: toRole(Array.isArray(row.roles) ? (row.roles as string[]) : []),
-        };
+          id: item?.id ?? "",
+          email: item?.email ?? "",
+          roles: Array.isArray(item?.roles) ? item.roles.map((role: string) => role.toLowerCase() as AuthUser["roles"][number]) : [],
+          avatarImageUrl: item?.avatarImageUrl ?? null,
+          coverImageUrl: item?.coverImageUrl ?? null,
+          supplier: item?.supplier ?? null,
+          marketplaceProfile: item?.supplier?.marketplaceProfile ?? null,
+        } as AuthUser;
       },
       providesTags: ["Auth"],
+    }),
+    updateMe: builder.mutation<{ status: string }, { email?: string; avatarImageUrl?: string; coverImageUrl?: string }>({
+      query: (body) => ({ url: "/v1/auth/me", method: "PATCH", body }),
+      invalidatesTags: ["Auth"],
+    }),
+    createUserMediaUploadUrl: builder.mutation<CreateMediaUploadUrlResponse, CreateMediaUploadUrlPayload>({
+      query: (body) => ({ url: "/v1/auth/me/media/upload-url", method: "POST", body }),
+      transformResponse: (response: unknown) => {
+        const r = response as any;
+        return (r?.data ?? r) as CreateMediaUploadUrlResponse;
+      },
+    }),
+    completeUserMediaUpload: builder.mutation<CompleteMediaUploadResponse, CompleteMediaUploadPayload>({
+      query: (body) => ({ url: "/v1/auth/me/media/complete-upload", method: "POST", body }),
+      transformResponse: (response: unknown) => {
+        const r = response as any;
+        return (r?.data ?? r) as CompleteMediaUploadResponse;
+      },
+    }),
+    uploadUserProfileFile: builder.mutation<{ avatarImageUrl?: string; coverImageUrl?: string; url?: string }, { file: File; imageKind: "avatar" | "cover" | "kosher" | "form3010" | "gallery" }>({
+      query: ({ file, imageKind }) => {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("imageKind", imageKind);
+        return { url: "/v1/auth/me/media/upload-file", method: "POST", body: formData };
+      },
+      transformResponse: (response: unknown) => {
+        const r = response as any;
+        return (r?.data ?? r) as { avatarImageUrl?: string; coverImageUrl?: string; url?: string };
+      },
     }),
   };
 }

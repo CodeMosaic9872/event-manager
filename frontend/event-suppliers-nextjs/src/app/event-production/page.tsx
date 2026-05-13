@@ -58,7 +58,7 @@ export default function EventProductionPage() {
             variant="outline"
             className="w-full max-w-[224px] bg-white! text-black! visited:bg-white! visited:text-black! hover:bg-white! hover:text-black!"
           >
-            <Image src="/right_arrow.svg" alt="" width={16} height={16} className="h-4 w-4 shrink-0" />
+            <Image src="/icons/right_arrow.svg" alt="" width={16} height={16} className="h-4 w-4 shrink-0" />
             חזרה לתפריט הראשי
           </PillAction>
         </div>

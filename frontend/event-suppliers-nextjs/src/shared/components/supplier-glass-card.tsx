@@ -32,9 +32,9 @@ export function SupplierGlassCard({
         </div>
 
         <div className="mt-3 flex items-center gap-3 text-black">
-          <img src="/camera.svg" alt="camera" className="size-[15px]" />
-          <img src="/message.svg" alt="message" className="h-3 w-[15px]" />
-          <img src="/share.svg" alt="share" className="size-[15px]" />
+          <img src="/icons/camera.svg" alt="camera" className="size-[15px]" />
+          <img src="/icons/message.svg" alt="message" className="h-3 w-[15px]" />
+          <img src="/icons/share.svg" alt="share" className="size-[15px]" />
         </div>
 
         <div className="mt-3 flex gap-2 pb-2">

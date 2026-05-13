@@ -111,7 +111,7 @@ export function SupplierSelectionSuccessModal({
               className="relative isolate flex h-14 w-full flex-row items-center justify-center gap-2 rounded-[99px] bg-[#201C44] px-8 py-4 text-base font-normal leading-6 text-white transition hover:opacity-95"
             >
               <Image
-                src="/left-arrow.svg"
+                src="/icons/left-arrow.svg"
                 alt=""
                 width={13}
                 height={13}

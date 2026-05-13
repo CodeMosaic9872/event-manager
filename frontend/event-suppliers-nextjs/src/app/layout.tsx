@@ -24,7 +24,7 @@ export default function RootLayout({
       <body
         className="min-h-full flex flex-col text-slate-900"
         style={{
-          backgroundImage: "url('/background-1.png'), url('/background-2.png')",
+          backgroundImage: "url('/images/background-1.png'), url('/images/background-2.png')",
           backgroundSize: "cover",
           backgroundPosition: "top center",
           backgroundRepeat: "no-repeat",

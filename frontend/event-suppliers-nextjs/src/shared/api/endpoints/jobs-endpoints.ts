@@ -27,8 +27,8 @@ export function createJobsEndpoints(builder: EndpointBuilder<any, any, any>) {
         invalidatesTags: ["Jobs"],
       },
     ),
-    getSupplierReferralLink: builder.query<{ link: string }, void>({
-      query: () => ({ url: "/v1/supplier/referrals/link" }),
+    getSupplierReferralLink: builder.query<{ link: string }, string>({
+      query: (supplierId) => ({ url: `/v1/supplier/referrals/link`, params: { supplierId } }),
       transformResponse: (res: { link?: string; referralLink?: string }) => ({
         link: res.link || res.referralLink || "",
       }),
