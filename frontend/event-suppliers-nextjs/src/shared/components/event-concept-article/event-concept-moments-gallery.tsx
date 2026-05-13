@@ -36,7 +36,7 @@ export function EventConceptMomentsGallery({
       >
         <button
           type="button"
-          aria-label="Previous photos"
+          aria-label="תמונות קודמות"
           onClick={() => setSlideIndex((prev) => Math.max(prev - 1, 0))}
           disabled={slideIndex === 0}
           className="flex size-11 shrink-0 items-center justify-center rounded-full border border-[#E2E8F0] bg-white shadow-[0px_1px_2px_rgba(0,0,0,0.06)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-35 sm:size-[52px] md:size-[58px]"
@@ -62,7 +62,7 @@ export function EventConceptMomentsGallery({
 
         <button
           type="button"
-          aria-label="Next photos"
+          aria-label="תמונות הבאות"
           onClick={() => setSlideIndex((prev) => Math.min(prev + 1, maxSlideIndex))}
           disabled={slideIndex === maxSlideIndex}
           className="flex size-11 shrink-0 items-center justify-center rounded-full border border-[#E2E8F0] bg-white shadow-[0px_1px_2px_rgba(0,0,0,0.06)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-35 sm:size-[52px] md:size-[58px]"

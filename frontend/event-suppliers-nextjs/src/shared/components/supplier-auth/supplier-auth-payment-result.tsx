@@ -12,7 +12,6 @@ import {
   SUPPLIER_PLAN_CHECKOUT,
   computeVatLineShekels,
   parseStoredSupplierPlanId,
-  type SupplierPlanId,
 } from "@/shared/lib/supplier-join-plan";
 
 export type SupplierPaymentOutcome = "success" | "failure";
@@ -82,7 +81,7 @@ function FailureGlyph() {
         aria-hidden
       />
       <div className="relative flex size-24 items-center justify-center rounded-full bg-[#FF7467]">
-        <span className="text-[4rem] font-normal leading-none tracking-tight text-black">
+        <span className="text-[2.75rem] font-normal leading-none tracking-tight text-black">
           ×
         </span>
       </div>
@@ -92,9 +91,13 @@ function FailureGlyph() {
 
 function usePurchaseSummaryLines(): SummaryLine[] {
   const [lines, setLines] = useState<SummaryLine[]>([
-    { value: "Annual (Premium)", label: "Subscription type", icon: "plan" },
-    { value: "₪1,200.00", label: "Amount paid", icon: "amount" },
-    { value: "#GXY-98765-V2", label: "Approval number", icon: "approval" },
+    { value: "Premium Plus", label: "סוג מנוי", icon: "plan" },
+    {
+      value: `₪ ${(1300).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      label: "סכום לתשלום",
+      icon: "amount",
+    },
+    { value: "XXXX-XXXX-XXXX", label: "מספר אישור", icon: "approval" },
   ]);
 
   useEffect(() => {
@@ -102,23 +105,18 @@ function usePurchaseSummaryLines(): SummaryLine[] {
     if (!planId) return;
     const def = SUPPLIER_PLAN_CHECKOUT[planId];
     const { total } = computeVatLineShekels(def.pretaxSubtotal);
-    const labelPremium = (id: SupplierPlanId) => {
-      if (id === "annual") return "Annual (Premium)";
-      if (id === "two_year") return "Two-year (Premium)";
-      return "Six-month (Premium)";
-    };
-    const amountStr = `₪${total.toLocaleString("en-US", {
+    const amountStr = `₪ ${total.toLocaleString("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;
     setLines([
-      { value: labelPremium(planId), label: "Subscription type", icon: "plan" },
+      { value: "Premium Plus", label: "סוג מנוי", icon: "plan" },
       {
         value: amountStr,
-        label: "Amount paid",
+        label: "סכום לתשלום",
         icon: "amount",
       },
-      { value: "#GXY-98765-V2", label: "Approval number", icon: "approval" },
+      { value: "XXXX-XXXX-XXXX", label: "מספר אישור", icon: "approval" },
     ]);
   }, []);
 
@@ -161,10 +159,10 @@ export function SupplierAuthPaymentResultView({
           <div
             className="relative z-20 mb-6 flex w-full flex-col items-center gap-2"
             role="region"
-            aria-label="Payment preview (development)"
+            aria-label="תצוגה מקדימה לתוצאת תשלום (פיתוח)"
           >
             <span className="text-center text-[12px] font-medium uppercase tracking-wide text-[#64748B]">
-              Preview payment result
+              תצוגה מקדימה — תוצאת תשלום
             </span>
             <div className="inline-flex rounded-full border border-black/10 bg-white/95 p-1 shadow-md backdrop-blur-sm">
               <button
@@ -176,7 +174,7 @@ export function SupplierAuthPaymentResultView({
                     : "text-black hover:bg-black/5"
                 }`}
               >
-                Success
+                הצלחה
               </button>
               <button
                 type="button"
@@ -187,24 +185,24 @@ export function SupplierAuthPaymentResultView({
                     : "text-black hover:bg-black/5"
                 }`}
               >
-                Failed
+                כישלון
               </button>
             </div>
           </div>
         ) : null}
 
         <SupplierJoinGlassCard className="flex w-full min-h-[min(839px,calc(100vh-200px))] flex-col items-center px-6 py-10 sm:px-12 sm:py-14">
-          <div dir="ltr" lang="en" className="flex w-full max-w-[640px] flex-col items-center">
+          <div dir="rtl" lang="he" className="flex w-full max-w-[640px] flex-col items-center">
           {outcome === "success" ? (
             <>
               <div className="mb-8 flex flex-col items-center">
                 <SuccessGlyph />
               </div>
-              <h1 className="mb-4 max-w-[461px] text-center text-[clamp(28px,5vw,48px)] font-normal leading-none tracking-[-0.075em] text-black">
-                Payment was made successfully!
+              <h1 className="mb-4 max-w-[461px] text-center text-[clamp(28px,5vw,48px)] font-bold leading-tight tracking-tight text-black">
+                התשלום בוצע בהצלחה!
               </h1>
-              <p className="mb-10 max-w-[512px] px-2 text-center text-[20px] leading-7 text-black">
-                Your account is now active and it&apos;s time to get warm leads
+              <p className="mb-10 max-w-[512px] px-2 text-center text-[20px] font-normal leading-7 text-black">
+                החשבון שלך פעיל כעת והנך מוזמן לקבל לידים חדשים
               </p>
 
               <div className="mb-10 w-full max-w-[640px] rounded-2xl border border-black/10 bg-[rgba(0,0,0,0.03)] p-8 shadow-[0px_25px_50px_-12px_rgba(0,0,0,0.25)] backdrop-blur-[10px]">
@@ -218,10 +216,10 @@ export function SupplierAuthPaymentResultView({
                           : ""
                       }`}
                     >
-                      <span className="text-left text-[18px] leading-7 text-black">
+                      <span className="text-left text-[18px] font-semibold leading-7 text-black tabular-nums" dir="ltr">
                         {row.value}
                       </span>
-                      <span className="flex shrink-0 flex-row items-center gap-3 text-right text-[16px] leading-6 text-black">
+                      <span className="flex shrink-0 flex-row items-center gap-3 text-right text-[16px] font-normal leading-6 text-black">
                         <span>{row.label}</span>
                         <RowIcon kind={row.icon} />
                       </span>
@@ -231,23 +229,9 @@ export function SupplierAuthPaymentResultView({
               </div>
 
               <div className="mb-10 flex w-full max-w-[640px] flex-col items-stretch justify-center gap-4 sm:flex-row sm:gap-4">
-                <button
-                  type="button"
-                  className="flex h-14 min-w-[200px] flex-1 items-center justify-center gap-2 rounded-3xl border border-white/10 bg-[rgba(255,255,255,0.05)] px-8 text-[18px] leading-7 text-black transition hover:bg-black/5"
-                >
-                  <span>View invoice</span>
-                  <Image
-                    src="/icons/upload.svg"
-                    alt=""
-                    width={16}
-                    height={16}
-                    className="opacity-80"
-                    unoptimized
-                  />
-                </button>
                 <Link
                   href={dashboardHref}
-                  className="flex h-14 min-w-[200px] flex-1 items-center justify-center gap-2 rounded-[99px] bg-[#201C44] px-8 text-[18px] leading-7 text-white! transition hover:bg-[#151238]"
+                  className="flex h-14 min-w-[200px] flex-1 items-center justify-center gap-2 rounded-[99px] bg-[#201C44] px-8 text-[18px] font-bold leading-7 text-white transition hover:bg-[#151238]"
                 >
                   <Image
                     src="/icons/right_arrow.svg"
@@ -257,38 +241,47 @@ export function SupplierAuthPaymentResultView({
                     className="rotate-180 opacity-95 brightness-0 invert"
                     unoptimized
                   />
-                  <span>Go to personal dashboard</span>
+                  <span>מעבר לדשבורד הראשי</span>
                 </Link>
+                <button
+                  type="button"
+                  className="flex h-14 min-w-[200px] flex-1 items-center justify-center gap-2 rounded-3xl border border-black/10 bg-white px-8 text-[18px] font-normal leading-7 text-black transition hover:bg-black/5"
+                >
+                  <span>צפייה בחשבונית</span>
+                  <Image
+                    src="/icons/file.svg"
+                    alt=""
+                    width={16}
+                    height={16}
+                    className="opacity-80"
+                    unoptimized
+                  />
+                </button>
               </div>
 
-              <div className="flex flex-row flex-wrap items-center justify-center gap-2 text-center text-[14px] leading-5 sm:gap-3">
-                <span className="text-[#64748B]">
-                  Did you encounter a problem?
-                </span>
-                <Link
-                  href="/contact-us"
-                  className="text-[#201C44] transition hover:underline"
-                >
-                  Contact Technical Support
+              <p className="text-center text-[14px] font-normal leading-5 text-[#64748B]">
+                נתקלת בבעיה?{" "}
+                <Link href="/contact-us" className="font-normal text-[#201C44] underline underline-offset-2 transition hover:text-[#151238]">
+                  צור קשר עם התמיכה הטכנית
                 </Link>
-              </div>
+              </p>
             </>
           ) : (
             <>
               <div className="mb-8 flex flex-col items-center">
                 <FailureGlyph />
               </div>
-              <h1 className="mb-4 max-w-[461px] text-center text-[clamp(28px,5vw,48px)] font-normal leading-none tracking-[-0.075em] text-black">
-                Payment rejected
+              <h1 className="mb-4 max-w-[461px] text-center text-[clamp(28px,5vw,48px)] font-bold leading-tight tracking-tight text-black">
+                התשלום נדחה
               </h1>
-              <p className="mb-12 max-w-[512px] px-2 text-center text-[20px] leading-7 text-black">
-                Please try again.
+              <p className="mb-12 max-w-[512px] px-2 text-center text-[20px] font-normal leading-7 text-black">
+                אנא נסה שנית
               </p>
 
               <button
                 type="button"
                 onClick={() => router.push(backToCheckoutHref)}
-                className="mb-12 flex h-14 w-full max-w-[311px] items-center justify-center gap-2 rounded-[99px] bg-[#201C44] px-8 text-[18px] leading-7 text-white transition hover:bg-[#151238]"
+                className="mb-12 flex h-14 w-full max-w-[311px] items-center justify-center gap-2 rounded-[99px] bg-[#201C44] px-8 text-[18px] font-bold leading-7 text-white transition hover:bg-[#151238]"
               >
                 <Image
                   src="/icons/right_arrow.svg"
@@ -298,20 +291,15 @@ export function SupplierAuthPaymentResultView({
                   className="rotate-180 brightness-0 invert"
                   unoptimized
                 />
-                <span>Back to complete registration</span>
+                <span>חזרה לתשלום מחדש</span>
               </button>
 
-              <div className="flex flex-row flex-wrap items-center justify-center gap-2 text-center text-[20px] leading-5 sm:gap-4">
-                <Link
-                  href="/contact-us"
-                  className="text-[#201C44] transition hover:underline"
-                >
-                  Contact Technical Support
+              <p className="text-center text-[14px] font-normal leading-5 text-[#64748B]">
+                נתקלת בבעיה?{" "}
+                <Link href="/contact-us" className="font-normal text-[#201C44] underline underline-offset-2 transition hover:text-[#151238]">
+                  צור קשר עם התמיכה הטכנית
                 </Link>
-                <span className="text-[#64748B]">
-                  Did you encounter a problem?
-                </span>
-              </div>
+              </p>
             </>
           )}
           </div>

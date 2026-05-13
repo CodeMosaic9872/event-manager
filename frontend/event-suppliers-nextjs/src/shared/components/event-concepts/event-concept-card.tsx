@@ -27,8 +27,8 @@ function HeartIcon({ filled }: { filled: boolean }) {
 
 export function EventConceptCard({
   concept,
-  continueReadingLabel = "Continue reading",
-  favoriteLabels = { add: "Save concept", remove: "Remove from saved" },
+  continueReadingLabel = "המשך קריאה",
+  favoriteLabels = { add: "שמירת קונספט", remove: "הסרה מהשמורים" },
 }: EventConceptCardProps) {
   const [favorited, setFavorited] = useState(false);
 
@@ -54,7 +54,7 @@ export function EventConceptCard({
               concept.badge === "new" ? "bg-[#2563EB]" : "bg-[#201C44]"
             }`}
           >
-            {concept.badge === "new" ? "New" : "Popular"}
+            {concept.badge === "new" ? "חדש" : "פופולרי"}
           </div>
         ) : null}
       </div>

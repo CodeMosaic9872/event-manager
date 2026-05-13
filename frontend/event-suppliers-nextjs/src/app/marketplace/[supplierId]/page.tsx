@@ -80,7 +80,7 @@ export default function SupplierProfilePage() {
           {userHasReviewed ? (
             <span className="rounded-full border border-green-400 bg-green-50 px-6 py-2 text-green-700">Already reviewed</span>
           ) : (
-            <button type="button" onClick={() => setShowRating(true)} className="rounded-full border border-[#201c44] px-6 py-2 text-[#201c44] cursor-pointer">Rate the supplier</button>
+            <button type="button" onClick={() => setShowRating(true)} className="rounded-full border border-[#201c44] px-6 py-2 text-[#201c44] cursor-pointer">דרג את הספק</button>
           )}
           <button className="rounded-full bg-[#201c44] px-8 py-2 text-white! visited:text-white hover:text-white! focus:text-white!">Contact us</button>
         </div>

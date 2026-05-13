@@ -13,14 +13,13 @@ import { MarketingPageShell } from "@/shared/components/marketing-page-shell";
 import type { SupplierPlanId } from "@/shared/lib/supplier-join-plan";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
 
-const FEATURE_SMS =
-  "Receive SMS about job offers in real time";
+const FEATURE_SMS = "קבלת סמס לגבי הצעות עבודה בזמן אמת";
 
 const TRUST_STRIP_ITEMS = [
-  { src: "/icons/guarantee.svg", label: "Guarantee", w: 56, h: 46 },
-  { src: "/icons/paypal.svg", label: "PayPal", w: 35, h: 46 },
-  { src: "/icons/visa-mc.svg", label: "Visa / MC", w: 46, h: 46 },
-  { src: "/icons/ssl-secure.svg", label: "SSL Secure", w: 57, h: 46 },
+  { src: "/icons/guarantee.svg", label: "GUARANTEE", w: 56, h: 46 },
+  { src: "/icons/paypal.svg", label: "PAYPAL", w: 35, h: 46 },
+  { src: "/icons/visa-mc.svg", label: "VISA / MC", w: 46, h: 46 },
+  { src: "/icons/ssl-secure.svg", label: "SSL SECURE", w: 57, h: 46 },
 ] as const;
 
 export default function JoinSupplierStep4Page() {
@@ -48,42 +47,42 @@ export default function JoinSupplierStep4Page() {
     {
       id: "two_year",
       props: {
-        title: "Two years — partners in fire and water",
-        badges: ["The most affordable"],
+        title: "שנתיים - שותפים באש ובמים",
+        badges: ["המשתלם ביותר"],
         periodAmount: "₪1,990",
-        periodCaption: "/ Two years",
+        periodCaption: "/ שנתיים",
         monthlyAmount: "₪82",
-        monthlyCaption: "/ per month",
+        monthlyCaption: "/ פר חודש",
         features: [FEATURE_SMS],
-        ctaLabel: "Choosing this route",
+        ctaLabel: "בחירה במסלול זה",
         ctaVariant: "outline",
       },
     },
     {
       id: "annual",
       props: {
-        title: "A year — partners on the journey",
-        badges: ["The most chosen"],
+        title: "שנה - שותפים לדרך",
+        badges: ["הנבחר ביותר"],
         recommended: true,
         periodAmount: "₪1,390",
-        periodCaption: "/ year",
+        periodCaption: "/ שנה",
         monthlyAmount: "₪115",
-        monthlyCaption: "/ per month",
+        monthlyCaption: "/ פר חודש",
         features: [FEATURE_SMS],
-        ctaLabel: "Choosing an annual track",
+        ctaLabel: "בחירה במסלול זה",
         ctaVariant: "filled",
       },
     },
     {
       id: "six_month",
       props: {
-        title: "Six months — no obligation relationship",
+        title: "חצי שנה - קשר לא מחייב",
         periodAmount: "₪790",
-        periodCaption: "/ Half a year",
+        periodCaption: "/ חצי שנה",
         monthlyAmount: "₪131",
-        monthlyCaption: "/ per month",
+        monthlyCaption: "/ פר חודש",
         features: [FEATURE_SMS],
-        ctaLabel: "Choosing this route",
+        ctaLabel: "בחירה במסלול זה",
         ctaVariant: "outline",
       },
     },
@@ -99,16 +98,19 @@ export default function JoinSupplierStep4Page() {
       <div className="mx-auto flex w-full max-w-[1120px] flex-col items-stretch px-2 sm:px-0">
         <SupplierJoinProgress
           percent={100}
-          stepLabel="Step 4 of 4"
-          title="Choose your route"
+          stepLabel="שלב 4 מתוך 4"
+          title="בחירת המסלול שלכם"
         />
 
         <SupplierJoinGlassCard
           className="w-full px-4 py-8 sm:px-8 sm:py-10"
           style={{ fontFamily: marketingPloniFont }}
         >
-          <div className="flex flex-col gap-10" dir="ltr" lang="en">
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:items-stretch lg:gap-5">
+          <div className="flex flex-col gap-10" dir="rtl" lang="he">
+            <div
+              className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:items-stretch lg:gap-5"
+              dir="ltr"
+            >
               {plans.map(({ id, props }) => (
                 <SupplierPricingPlanCard
                   key={id}
@@ -122,7 +124,7 @@ export default function JoinSupplierStep4Page() {
               <button
                 type="button"
                 onClick={handleCompletionAndPayment}
-                className="flex h-[68px] w-full max-w-[448px] flex-row items-center justify-center gap-3 rounded-[99px] bg-[#201C44] px-6 text-[20px] font-normal leading-7 text-white shadow-[0_8px_24px_rgba(32,28,68,0.25)] transition hover:bg-[#151238]"
+                className="flex h-[68px] w-full max-w-[448px] flex-row items-center justify-center gap-3 rounded-[99px] bg-[#201C44] px-6 text-[20px] font-bold leading-7 text-white shadow-[0_8px_24px_rgba(32,28,68,0.25)] transition hover:bg-[#151238]"
                 style={{ fontFamily: marketingPloniFont }}
               >
                 <Image
@@ -134,7 +136,7 @@ export default function JoinSupplierStep4Page() {
                   unoptimized
                   aria-hidden
                 />
-                <span>Completion and payment</span>
+                <span>סיום ותשלום</span>
               </button>
 
               <div

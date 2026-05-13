@@ -29,6 +29,12 @@ export type SuppliersQuery = {
   minRating?: number;
   take?: number;
   cursor?: string;
+  /** Comma-separated keys: mod,reservist,insurance,shabbat */
+  general?: string;
+  /** Comma-separated keys: mehadrin,accessible,parking,disability,outdoor */
+  niche?: string;
+  /** Extra spoken language code, e.g. en */
+  lang?: string;
 };
 export type CreateJobPayload = {
   title: string;

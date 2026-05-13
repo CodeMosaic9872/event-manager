@@ -1,5 +1,5 @@
-import { toSlug } from "@/shared/lib/to-slug";
 "use client";
+import { toSlug } from "@/shared/lib/to-slug";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";

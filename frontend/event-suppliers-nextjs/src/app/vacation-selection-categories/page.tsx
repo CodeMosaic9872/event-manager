@@ -2,42 +2,60 @@ import Image from "next/image";
 import { EventOptionCard } from "@/shared/components/event-option-card";
 import { MarketingPageShell } from "@/shared/components/marketing-page-shell";
 import { PillAction } from "@/shared/components/pill-action";
+import { mergeSearchParamsToHref } from "@/shared/lib/search-params-merge";
 
 const categories = [
-  "מוזיקה",
-  "משקאות",
   "אוכל",
-  "אטרקציות ותוכן אקטיבי",
+  "שתיה",
+  "מוזיקה",
+  "מקומות",
   "צילום ותיעוד",
-  "מתחמי אירוע",
+  "אטרקציות ותוכן פעיל",
+  "לוגיסטיקה והכשרות",
+  "תמונות ממותגות",
   "עיצוב ומיתוג",
-  "מתנות ממותגות",
-  "לוגיסטיקה והכשרה",
-  "דת",
-  "ניהול הפקה",
   "הרצאות, סדנאות ותוכן",
-  "הסעות",
-  "ציוד טכני",
-  "ביטחון ובטיחות",
+  "ניהול הפקה",
+  "אנשי דת"
 ];
 
-export default function VacationSelectionCategoriesPage() {
+const FEATURED_SUPPLIER_CATEGORY = "שתיה";
+
+type VacationSelectionCategoriesPageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function VacationSelectionCategoriesPage({ searchParams }: VacationSelectionCategoriesPageProps) {
+  const sp = searchParams ? await searchParams : {};
+
+  const rawSupplierCat = sp.supplierCategory;
+  const selectedSupplierCategory =
+    typeof rawSupplierCat === "string"
+      ? rawSupplierCat
+      : Array.isArray(rawSupplierCat)
+        ? rawSupplierCat[0]
+        : undefined;
+
+  const backHref = (() => {
+    return mergeSearchParamsToHref("/event-production", sp, {
+      eventType: null,
+    });
+  })();
+
   return (
     <MarketingPageShell contentClassName="items-stretch">
       <div className="mx-auto w-full max-w-[1210px]">
         <header className="mx-auto flex max-w-[634px] flex-col items-center gap-4 text-center">
-          <h1 className="bg-[linear-gradient(180deg,#201C44_0%,#0657A2_100%)] bg-clip-text text-[42px] leading-[1.05] text-transparent sm:text-[52px] lg:text-[60px] lg:leading-[60px] lg:tracking-[-1.5px]">
-            קטגוריות ספקים לחופשה
-          </h1>
+          <h1 className="font-bold bg-[linear-gradient(180deg,#201C44_0%,#0657A2_100%)] bg-clip-text text-[42px] leading-[1.05] text-transparent sm:text-[52px] lg:text-[60px] lg:leading-[60px] lg:tracking-[-1.5px]">
+          קטגוריות ספקים לנופש          </h1>
           <p className="text-[16px] leading-7 text-black lg:text-[18px]">
-            תכננו חופשת חברה חלומית, מותאמת לכל העובדים ולצרכים שונים.
-          </p>
+          תכנן נופש חברה מהחלומות, מותאם לכל העובדים ולצרכים השונים          </p>
         </header>
 
         <div className="mx-auto mt-6 w-full max-w-[576px] px-2">
           <div className="mb-3 flex items-end justify-between">
-            <h2 className="text-right text-[22px] leading-7 text-black lg:text-[30px]">בחירת קטגוריית ספק</h2>
-            <p className="text-[20px] leading-6 text-[#201C44]">75%</p>
+            <h2 className="font-bold text-right text-[22px] leading-7 text-black lg:text-[30px]">בחירת קטגוריית ספקים</h2>
+            <p className="font-bold text-[20px] leading-6 text-[#201C44]">75%</p>
           </div>
           <div className="relative h-[6px] w-full rounded-full bg-[#BDDCE9]">
             <span className="absolute right-0 top-0 h-full w-[66.61%] rounded-full bg-[#201C44] shadow-[0px_0px_20px_rgba(134,85,246,0.4)]" />
@@ -49,15 +67,19 @@ export default function VacationSelectionCategoriesPage() {
             <EventOptionCard
               key={item}
               label={item}
-              href="/vacation-selection-suppliers"
-              featured={item === "משקאות"}
+              href={mergeSearchParamsToHref("/vacation-selection-suppliers", sp, {
+                supplierCategory: item,
+              })}
+              featured={
+                item === FEATURED_SUPPLIER_CATEGORY || selectedSupplierCategory === item
+              }
             />
           ))}
         </div>
 
         <div className="mt-20 mb-10 flex">
           <PillAction
-            href="/event-production"
+            href={backHref}
             variant="outline"
             className="w-[165px] border-[rgba(98,98,98,0.46)] bg-white! text-[rgba(0,0,0,0.66)]! visited:bg-white! visited:text-[rgba(0,0,0,0.66)]! hover:bg-white! hover:text-[rgba(0,0,0,0.66)]!"
           >

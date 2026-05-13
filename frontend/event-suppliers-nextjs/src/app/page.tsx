@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getPostLoginFallbackPath } from "@/shared/lib/safe-redirect-path";
-import { SUPPLIER_LIST } from "@/shared/data/supplier-catalog";
+import { useGetSuppliersQuery } from "@/shared/api/api";
 import { CtaPill } from "@/shared/components/cta-pill";
 import { CarouselArrowImg } from "@/shared/components/carousel-arrow-img";
 import { SupplierGlassCard } from "@/shared/components/supplier-glass-card";
@@ -14,6 +14,8 @@ export default function Home() {
   const router = useRouter();
   const sessionUser = useAppSelector((state) => state.auth.user);
   const [slideIndex, setSlideIndex] = useState(0);
+  const { data: suppliersData, isLoading: suppliersLoading } = useGetSuppliersQuery({ take: 12 });
+  const suppliers = suppliersData?.items ?? [];
 
   useEffect(() => {
     if (!sessionUser) return;
@@ -23,46 +25,46 @@ export default function Home() {
   if (sessionUser) return null;
 
   const stats = [
-    { value: "0", label: "ללא פשרות על איכות", dot: "#10B981" },
-    { value: "1.2k+", label: "אירועים הופקו", dot: "#10B981" },
-    { value: "100%", label: "שביעות רצון לקוחות", dot: "#10B981" },
+    { value: "142", label: "משתמשים שנעזרים ב-AI כרגע", dot: "#10B981" },
+    { value: "38", label: "מפיקות ו-HR מחוברות כרגע", dot: "#10B981" },
     { value: "2,450", label: "ספקים רשומים", dot: "#10B981" },
-    { value: "38", label: "מפיקים ומשא״ן במערכת", dot: "#10B981" },
-    { value: "142", label: "משתמשים ב-AI כעת", dot: "#10B981" },
+    { value: "100%", label: "שביעות רצון לקוחות", dot: "#10B981" },
+    { value: "1.2k+", label: "אירועים שהופקו", dot: "#10B981" },
+    { value: "0", label: "פשרות על איכות", dot: "#10B981" },
   ];
-  const maxSlideIndex = Math.max(SUPPLIER_LIST.length - 3, 0);
-  const visibleSlides = SUPPLIER_LIST.slice(slideIndex, slideIndex + 3);
+  const maxSlideIndex = Math.max(suppliers.length - 3, 0);
+  const visibleSlides = suppliers.slice(slideIndex, slideIndex + 3);
 
   return (
     <section className="relative mx-auto w-full overflow-hidden bg-white">
       <div
         className="absolute left-0 top-0 min-h-[1163px] w-full lg:h-[1163px]"
         style={{
-          backgroundImage: "url('/images/background-1.png'), url('/images/background-2.png')",
+          backgroundImage: "url('/images/background-1.png')",
           backgroundSize: "cover",
           backgroundPosition: "top center",
           backgroundRepeat: "no-repeat",
         }}
       />
       <div className="relative z-10 mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8 pt-10 sm:pt-44">
-        <div className="mx-auto flex w-full max-w-[892px] flex-col items-center gap-5 text-center lg:gap-7">
+        <div className="mx-auto flex w-full flex-col items-center gap-5 text-center lg:gap-7">
           <div className="flex w-full flex-col items-center">
-            <h1 className="w-full text-center text-[52px] leading-[0.92] text-[#201C44] sm:text-[64px] lg:text-[74px]">
-              הפקת אירוע בלחיצת כפתו
+            <h1 className="w-full font-bold text-center text-[52px] leading-[0.92] text-[#201C44] sm:text-[64px] lg:text-[74px]">
+              הפקת אירוע בלחיצת כפתור
             </h1>
             <p className="mt-2 w-full text-center text-[20px] leading-[1.1] text-[#201C44] sm:text-[25px] lg:text-[41px] lg:leading-[1.04]">
               גלו את הספקים הטובים ביותר והפיקו את האירוע שלכם בקלות ובמהירות
             </p>
           </div>
 
-          <div className="flex w-full max-w-full flex-wrap items-center justify-center gap-2 lg:w-[455px] lg:max-w-[455px] lg:gap-[7px]">
+          <div className="flex w-full font-bold max-w-full flex-wrap items-center justify-center gap-2 lg:w-[455px] lg:max-w-[455px] lg:gap-[7px]">
             <CtaPill
               href="/ai-planner"
               variant="primary"
               size="responsive"
               className="w-auto shrink-0"
             >
-              תכנון אירוע עם AI
+             תכנון אירוע עם AI
             </CtaPill>
             <CtaPill
               href="/event-production"
@@ -76,14 +78,14 @@ export default function Home() {
 
           <CtaPill href="/marketplace" variant="field" className="mx-auto w-full">
             <span className="flex min-h-[14px] min-w-0 max-w-full flex-1 items-center justify-end text-right text-[14px] leading-[14px] text-[#201C44] sm:max-w-[171px]">
-              מצאו ספקים לאירוע שלכם
+            חפשו ספקים לאירוע שלכם...
             </span>
           </CtaPill>
         </div>
 
         <div className="mt-16 lg:mt-14">
           <div className="mb-6 flex min-h-[68px] w-full items-center gap-2 sm:gap-3">
-            <h2 className="max-w-[58%] shrink text-right text-[24px] leading-none text-[#201C44] sm:max-w-none sm:shrink-0 sm:whitespace-nowrap sm:text-[30px]">
+            <h2 className="max-w-[58%] font-bold shrink text-right text-[24px] leading-none text-[#201C44] sm:max-w-none sm:shrink-0 sm:whitespace-nowrap sm:text-[30px]">
               ספקים נבחרים
             </h2>
             <span className="h-px min-w-6 flex-1 border-t border-[rgba(32,28,68,0.5)]" />
@@ -107,18 +109,24 @@ export default function Home() {
             </button>
 
             <div className="grid min-w-0 flex-1 grid-cols-1 gap-6 md:grid-cols-3 md:gap-6">
-              {visibleSlides.map((supplier) => (
-                <SupplierGlassCard
-                  key={supplier.id}
-                  href={`/suppliers/${supplier.id}`}
-                  name={supplier.name}
-                  subtitle={supplier.subtitle}
-                  description={supplier.description}
-                  location={supplier.location}
-                  rating={supplier.rating}
-                  imageUrl={supplier.imageUrl}
-                />
-              ))}
+              {suppliersLoading ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="h-[362px] animate-pulse rounded-2xl bg-gray-100" />
+                ))
+              ) : (
+                visibleSlides.map((supplier: any) => (
+                  <SupplierGlassCard
+                    key={supplier.id}
+                    href={`/suppliers/${supplier.id}`}
+                    name={supplier.businessName ?? supplier.name ?? ""}
+                    subtitle={supplier.category ?? ""}
+                    description={supplier.description ?? ""}
+                    location={supplier.city ?? ""}
+                    rating={supplier.ratingAvg ?? supplier.rating ?? 0}
+                    imageUrl={supplier.imageUrl ?? undefined}
+                  />
+                ))
+              )}
             </div>
 
             <button
@@ -142,7 +150,7 @@ export default function Home() {
                 <img src="/icons/hammer.svg" alt="" className="h-[19px] w-[18px] invert-15 sepia-16 saturate-2100 hue-rotate-220 brightness-40 contrast-95" />
               </div>
               <div className="flex flex-col gap-1">
-                <p className="text-[24px] leading-7 tracking-[-0.5px] text-white lg:text-[32px]">
+                <p className="text-[24px] leading-7 tracking-[-0.5px] text-white lg:text-[32px] font-bold">
                   הצטרפו ללוח ההצעות שלנו
                 </p>
                 <p className="max-w-xl text-[12px] leading-5 text-white lg:text-[20px] lg:leading-6">
@@ -150,7 +158,7 @@ export default function Home() {
                 </p>
               </div>
             </div>
-            <CtaPill href="/jobs/publish" variant="soft" size="lg" className="w-auto shrink-0">
+            <CtaPill href="/jobs/publish" variant="soft" size="lg" className="w-auto shrink-0 font-bold">
               פרסום הצעת עבודה
             </CtaPill>
           </div>
@@ -158,8 +166,8 @@ export default function Home() {
 
         <div className="mx-auto mt-14 flex w-full max-w-[892px] flex-col items-center gap-8 text-center">
           <div className="w-full">
-            <h2 className="w-full text-center text-[34px] leading-[1.05] text-[#201C44] sm:text-[42px] lg:text-[50px]">
-              סקרנים איך מתחילים?
+            <h2 className="w-full text-center text-[34px] leading-[1.05] text-[#201C44] sm:text-[42px] lg:text-[50px] font-semibold">
+              סקרנים לדעת איך להתחיל?
             </h2>
             <p className="mx-auto mt-3 w-full max-w-[892px] text-center text-[19px] leading-6 text-[#201C44] sm:mt-4 sm:text-[24px] lg:text-[30px] lg:leading-7">
               גלו איך הפלטפורמה שלנו משנה את כללי המשחק בהפקת אירועים, חוסכת לכם זמן ומחברת אתכם לספקים המובילים בישראל.
@@ -178,11 +186,11 @@ export default function Home() {
         </div>
 
         <div className="mx-auto mt-16 flex w-full max-w-[1096px] flex-col items-center text-center">
-          <h3 className="w-full text-center text-[34px] leading-[1.05] text-[#201C44] sm:text-[42px] lg:text-[50px]">
+          <h3 className="w-full font-semibold text-center text-[34px] leading-[1.05] text-[#201C44] sm:text-[42px] lg:text-[50px]">
             אודות
           </h3>
           <p className="mt-3 w-full text-center text-[18px] leading-7 text-[#201C44] sm:mt-4 sm:text-[24px] sm:leading-8 lg:text-[30px] lg:leading-[34px]">
-            הפלטפורמה נולדה מהבנה עמוקה של עולם האירועים והצורך לייעל את התקשורת בין ספקים ללקוחות. שילבנו ניסיון מקצועי מהשטח עם טכנולוגיית AI מתקדמת כדי שכל אירוע יתחיל בחיבור המדויק, המהיר והאיכותי ביותר.
+          הפלטפורמה שלנו נולדה מתוך הבנה עמוקה של עולם האירועים והצורך בייעול התקשורת בין ספקים ללקוחות. שילבנו את הניסיון המקצועי מהשטח עם טכנולוגיית AI מתקדמת כדי להבטיח שכל אירוע יתחיל בחיבור המדויק, המהיר והאיכותי ביותר.
           </p>
         </div>
 
@@ -191,7 +199,7 @@ export default function Home() {
             {stats.map((item) => (
               <div
                 key={item.label}
-                className="flex min-h-[121px] flex-col justify-between rounded-2xl bg-[rgba(242,239,253,0.37)] px-4 py-4 shadow-[0px_8px_32px_rgba(0,0,0,0.37)] backdrop-blur-[6px] lg:h-[123px] lg:px-6 lg:py-6"
+                className="font-bold flex min-h-[121px] flex-col justify-between rounded-2xl bg-[rgba(242,239,253,0.37)] px-4 py-4 shadow-[0px_8px_32px_rgba(0,0,0,0.37)] backdrop-blur-[6px] lg:h-[123px] lg:px-6 lg:py-6"
               >
                 <div className="flex items-center gap-2">
                   <p className="text-[30px] leading-[36px] text-[#00113A] lg:text-[40px]">{item.value}</p>
@@ -210,18 +218,18 @@ export default function Home() {
             variant="primary"
             size="xl"
             endIcon="arrowCircle"
-            className="min-w-[min(100%,260px)] flex-1 basis-[min(100%,380px)]"
+            className="min-w-[min(100%,260px)] flex-1 basis-[min(100%,380px)] font-bold!"
           >
-            פתיחת משתמש
+            לפתיחת משתמש
           </CtaPill>
           <CtaPill
             href="/auth/register"
             variant="outlineAccent"
             size="xl"
-            className="min-w-[min(100%,260px)] flex-1 basis-[min(100%,320px)]"
+            className="min-w-[min(100%,260px)] flex-1 basis-[min(100%,320px)] font-bold!"
           >
-            הצטרף כספק
-          </CtaPill>
+הצטרפות כספק          
+</CtaPill>
         </div>
       </div>
 
@@ -229,9 +237,9 @@ export default function Home() {
         <div className="mx-auto w-full max-w-[1280px] pt-10 sm:pt-[69px]">
           <div className="mx-4 grid min-h-0 auto-rows-auto grid-cols-1 gap-8 sm:mx-8 md:min-h-[212px] md:grid-cols-4 md:gap-12">
           <div className="w-full max-w-[268px] justify-self-center text-right md:justify-self-end">
-              <h4 className="text-[24px] leading-8 tracking-[-0.6px] text-black">עולם הספקים</h4>
+              <h4 className="text-[24px] leading-8 tracking-[-0.6px] text-black font-bold">עולם הספקים</h4>
               <p className="mt-6 text-[14px] leading-[23px] text-black">
-                הבית שלכם לפלטפורמת אירועים בלתי נשכחים. אנו מחברים ספקים מובילים עם חולמים בעזרת טכנולוגיה מתקדמת וליווי אישי.
+                פלטפורמת הבית שלכם להפקת אירועים בלתי נשכחים. אנחנו מחברים בין ספקים מובילים לבין חולמים, בעזרת טכנולוגיה מתקדמת וליווי אישי.
               </p>
               <div className="mt-6 flex items-center gap-4">
                 <span className="flex size-10 items-center justify-center rounded-full border border-black/10 bg-[rgba(230,239,244,0.42)]">
@@ -246,7 +254,7 @@ export default function Home() {
               </div>
             </div>
             <div className="w-full max-w-[268px] justify-self-center">
-              <h4 className="flex items-center gap-2 text-[16px] leading-6 text-black">
+              <h4 className="flex items-center gap-2 text-[16px] leading-6 text-black font-bold">
                 <span className="size-[6px] rounded-full bg-[#895AF6]" /> קישורים מהירים
               </h4>
               <ul className="mt-6 space-y-4 text-[14px] leading-5 text-black">
@@ -254,12 +262,12 @@ export default function Home() {
                 <li>קונספטים</li>
                 <li>ספקים</li>
                 <li>הצעות עבודה</li>
-                <li>אודות</li>
+                <li>אודותינו</li>
               </ul>
             </div>
 
             <div className="w-full max-w-[268px] justify-self-center">
-              <h4 className="flex items-center gap-2 text-[16px] leading-6 text-black">
+              <h4 className="flex items-center gap-2 text-[16px] leading-6 text-black font-bold">
                 <span className="size-[6px] rounded-full bg-[#22D3EE]" /> מידע משפטי
               </h4>
               <ul className="mt-6 space-y-4 text-[14px] leading-5 text-black">
@@ -271,7 +279,7 @@ export default function Home() {
 
            
             <div className="w-full max-w-[268px] justify-self-center">
-              <h4 className="flex items-center gap-2 text-[16px] leading-6 text-black">
+              <h4 className="flex items-center gap-2 text-[16px] leading-6 text-black font-bold">
                 <span className="size-[6px] rounded-full bg-[#FBBF24]" /> צור קשר
               </h4>
               <ul className="mt-6 space-y-4 text-[14px] leading-5 text-black">
@@ -285,7 +293,7 @@ export default function Home() {
                 </li>
                 <li className="flex items-center gap-2">
                   <img src="/icons/globe.svg" alt="" className="size-[15px]" />
-                  <span>תל אביב, מגדל ToHa</span>
+                  <span>מגדל תוה״א, תל אביב</span>
                 </li>
               </ul>
             </div>
@@ -294,15 +302,15 @@ export default function Home() {
           </div>
 
           <div className="mx-4 mt-7 flex flex-col items-stretch gap-4 sm:mx-8 sm:items-end md:mt-[26px]">
-            <p className="text-center text-[18px] leading-7 text-[#444650] sm:text-right">הירשמו לניוזלטר שלנו</p>
+            <p className="text-center text-[18px] leading-7 text-[#444650] sm:text-right font-bold">הרשמה לניוזלטר שלנו</p>
             <div className="flex w-full max-w-[448px] flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
               <input
                 className="h-[41px] min-h-[41px] w-full min-w-0 rounded-[99px] border border-black px-6 text-right text-[16px] leading-[19px] text-black sm:max-w-[300px] sm:flex-1"
-                placeholder="כתובת האימייל שלך"
+                placeholder="הכתובת המייל שלך"
               />
               <button
                 type="button"
-                className="h-[41px] w-full shrink-0 rounded-[99px] bg-[#00113A] text-[16px] leading-6 text-white sm:w-[136px]"
+                className="h-[41px] w-full shrink-0 rounded-[99px] bg-[#00113A] text-[16px] leading-6 text-white sm:w-[136px] font-bold"
               >
                 הרשמה
               </button>
@@ -310,7 +318,7 @@ export default function Home() {
           </div>
 
           <div className="mx-4 mt-6 flex flex-col gap-4 border-t border-black/5 pt-8 text-[12px] leading-4 text-black sm:mx-8 sm:flex-row sm:items-center sm:justify-between">
-            <p>כל הזכויות שמורות © עיצוב</p>
+            <p>כל הזכויות שמורות @ עיצוב - Galkuper.com</p>
             <p dir="ltr">עברית | EN</p>
           </div>
         </div>

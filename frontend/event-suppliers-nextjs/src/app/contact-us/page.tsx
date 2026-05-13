@@ -6,14 +6,15 @@ import { FormEvent, useMemo, useState } from "react";
 import { MarketingModal, MARKETING_SOFT_SURFACE_CLASS } from "@/shared/components/marketing-modal";
 import { MarketingPageShell } from "@/shared/components/marketing-page-shell";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
+import { HeAuth } from "@/shared/lib/he-ui";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const SOCIAL = [
-  { label: "Facebook", href: "https://www.facebook.com", icon: "/icons/facebook.svg" },
-  { label: "Instagram", href: "https://www.instagram.com", icon: "/icons/instagram.svg" },
-  { label: "Email", href: "mailto:support@example.com", icon: "/icons/mail.svg" },
-  { label: "WhatsApp", href: "https://wa.me/", icon: "/icons/whatsapp.svg" },
+  { label: "פייסבוק", href: "https://www.facebook.com", icon: "/icons/facebook.svg" },
+  { label: "אינסטגרם", href: "https://www.instagram.com", icon: "/icons/instagram.svg" },
+  { label: "דוא״ל", href: "mailto:support@example.com", icon: "/icons/mail.svg" },
+  { label: "ווטסאפ", href: "https://wa.me/", icon: "/icons/whatsapp.svg" },
 ] as const;
 
 function SuccessBadgeCheckIcon() {
@@ -36,7 +37,7 @@ export default function ContactUsPage() {
 
   const emailError = useMemo(() => {
     if (!email.trim()) return null;
-    if (!EMAIL_RE.test(email.trim())) return "Please enter a valid email address.";
+    if (!EMAIL_RE.test(email.trim())) return HeAuth.validEmail;
     return null;
   }, [email]);
 
@@ -50,7 +51,7 @@ export default function ContactUsPage() {
     setError("");
 
     if (!canSubmit) {
-      setError("Please fill in all fields correctly.");
+      setError(HeAuth.fillRequired);
       return;
     }
 
@@ -62,16 +63,16 @@ export default function ContactUsPage() {
       showBackgroundImage={false}
       className="min-h-screen"
       contentClassName="!max-w-[1440px] !items-stretch !px-4 !pb-20 !pt-20 sm:!px-6 sm:!pt-24 lg:!pt-[123px]"
-      dir="ltr"
-      lang="en"
+      dir="rtl"
+      lang="he"
     >
       <div className="mx-auto w-full max-w-[800px]" style={{ fontFamily: marketingPloniFont }}>
         <header className="mb-10 text-center">
           <h1 className="text-[clamp(2.5rem,6vw,3.75rem)] font-normal leading-[0.95] tracking-tight text-[#00113A]">
-            <span className="block">Contact Us</span>
+            <span className="block">צור קשר</span>
           </h1>
           <p className="mx-auto mt-5 max-w-[540px] text-base leading-6 text-[#444650] sm:text-lg sm:leading-7">
-            We are here for any questions or consultations, our team is always available to you.
+            אנחנו כאן לכל שאלה או התייעצות — הצוות שלנו זמין עבורכם.
           </p>
         </header>
 
@@ -81,13 +82,13 @@ export default function ContactUsPage() {
         >
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-6">
             <label className="flex flex-col items-end gap-2 text-right">
-              <span className="text-xs font-normal uppercase tracking-[0.12em] text-[#444650]">Email</span>
+              <span className="text-xs font-normal uppercase tracking-[0.12em] text-[#444650]">אימייל</span>
               <input
                 name="email"
                 type="email"
                 autoComplete="email"
                 required
-                placeholder="name@company.com"
+                placeholder="הזינו כתובת אימייל"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="h-12 w-full rounded-lg border border-transparent bg-[#F8FAFC] px-4 text-right text-base text-[#191C1D] outline-none ring-1 ring-[rgba(32,28,68,0.08)] placeholder:text-[#6B7280] focus:ring-[#4721DF]/40"
@@ -95,13 +96,13 @@ export default function ContactUsPage() {
               {emailError ? <p className="w-full text-right text-xs text-red-600">{emailError}</p> : null}
             </label>
             <label className="flex flex-col items-end gap-2 text-right">
-              <span className="text-xs font-normal uppercase tracking-[0.12em] text-[#444650]">Full name</span>
+              <span className="text-xs font-normal uppercase tracking-[0.12em] text-[#444650]">שם מלא</span>
               <input
                 name="fullName"
                 type="text"
                 autoComplete="name"
                 required
-                placeholder="Full name"
+                placeholder="שם מלא"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 className="h-12 w-full rounded-lg border border-transparent bg-[#F8FAFC] px-4 text-right text-base text-[#191C1D] outline-none ring-1 ring-[rgba(32,28,68,0.08)] placeholder:text-[#6B7280] focus:ring-[#4721DF]/40"
@@ -110,12 +111,12 @@ export default function ContactUsPage() {
           </div>
 
           <label className="mt-6 flex flex-col items-end gap-2 text-right">
-            <span className="text-xs font-normal uppercase tracking-[0.12em] text-[#444650]">Subject of the inquiry</span>
+            <span className="text-xs font-normal uppercase tracking-[0.12em] text-[#444650]">נושא הפנייה</span>
             <input
               name="subject"
               type="text"
               required
-              placeholder="What can we help with?"
+              placeholder="במה נוכל לעזור?"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               className="h-12 w-full rounded-lg border border-transparent bg-[#F8FAFC] px-4 text-right text-base text-[#191C1D] outline-none ring-1 ring-[rgba(32,28,68,0.08)] placeholder:text-[#6B7280] focus:ring-[#4721DF]/40"
@@ -123,12 +124,12 @@ export default function ContactUsPage() {
           </label>
 
           <label className="mt-6 flex flex-col items-end gap-2 text-right">
-            <span className="text-xs font-normal uppercase tracking-[0.12em] text-[#444650]">Message content</span>
+            <span className="text-xs font-normal uppercase tracking-[0.12em] text-[#444650]">תוכן ההודעה</span>
             <textarea
               name="message"
               required
               rows={5}
-              placeholder="Write to us here."
+              placeholder="כתבו לנו כאן."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               className="min-h-[140px] w-full resize-y rounded-lg border border-transparent bg-[#F8FAFC] px-4 py-3 text-right text-base text-[#191C1D] outline-none ring-1 ring-[rgba(32,28,68,0.08)] placeholder:text-[#6B7280] focus:ring-[#4721DF]/40"
@@ -145,7 +146,7 @@ export default function ContactUsPage() {
                 canSubmit ? "cursor-pointer bg-[#201C44] hover:opacity-95" : "cursor-not-allowed bg-[#201C44] opacity-60"
               }`}
             >
-              Sending a message
+              שליחת הודעה
             </button>
           </div>
         </form>
@@ -191,18 +192,18 @@ export default function ContactUsPage() {
             type="button"
             className="absolute right-5 top-4 text-[28px] leading-6 text-[#A1A1A1] transition hover:opacity-70"
             onClick={() => setSubmitted(false)}
-            aria-label="Close"
+            aria-label="סגירה"
           >
             ×
           </button>
           <div className="mx-auto flex w-full max-w-[min(100%,420px)] flex-row flex-wrap items-center justify-center gap-2 rounded-[99px] bg-[#6AB7FF] px-3 py-2 sm:gap-3.5 sm:px-4 sm:py-2.5">
             <p className="max-w-[min(100%,280px)] text-balance text-center text-base font-normal leading-tight tracking-[0.3px] text-[#201C44] sm:max-w-[320px] sm:text-xl sm:leading-snug">
-              Your request has been successfully received!
+              הבקשה התקבלה בהצלחה!
             </p>
             <SuccessBadgeCheckIcon />
           </div>
           <p className="mt-8 text-xl text-[#00113A] sm:text-2xl">
-            Thank you for your inquiry! We will respond as soon as possible.
+            תודה על הפנייה! נחזור אליכם בהקדם האפשרי.
           </p>
           <div className="mx-auto mt-10 w-full max-w-md">
             <Link
@@ -210,7 +211,7 @@ export default function ContactUsPage() {
               className="relative isolate flex h-14 w-full flex-row items-center justify-center gap-2 rounded-[99px] bg-[#201C44] px-8 py-4 text-base font-normal leading-6 text-white! transition hover:opacity-95"
             >
               <Image src="/icons/left-arrow.svg" alt="" width={13} height={13} className="size-[13px] shrink-0 brightness-0 invert" unoptimized aria-hidden />
-              Back to main page
+              חזרה לדף הבית
             </Link>
           </div>
         </div>

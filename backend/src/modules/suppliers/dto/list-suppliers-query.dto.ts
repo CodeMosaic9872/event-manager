@@ -73,4 +73,28 @@ export class ListSuppliersQueryDto {
   @IsOptional()
   @IsString()
   cursor?: string;
+
+  @ApiPropertyOptional({
+    description: 'Comma-separated general attribute filters: mod,reservist,insurance,shabbat',
+    example: 'insurance,reservist',
+  })
+  @IsOptional()
+  @IsString()
+  general?: string;
+
+  @ApiPropertyOptional({
+    description: 'Comma-separated niche filters: mehadrin,accessible,parking,disability,outdoor',
+    example: 'accessible,parking',
+  })
+  @IsOptional()
+  @IsString()
+  niche?: string;
+
+  @ApiPropertyOptional({
+    description: 'Supplier must list this extra language code (e.g. en, ar, ru, am)',
+    example: 'en',
+  })
+  @IsOptional()
+  @IsString()
+  lang?: string;
 }

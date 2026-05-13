@@ -19,7 +19,7 @@ export function JoinSupplierStep3ProfileSection({
 }: JoinSupplierStep3ProfileSectionProps) {
   return (
     <div className="flex w-full shrink-0 flex-col gap-4 lg:w-[245px] lg:shrink-0">
-      <span className="w-full text-right text-[18px] leading-7 text-black">Profile picture</span>
+      <span className="w-full text-right text-[18px] font-bold leading-7 text-black">תמונת פרופיל</span>
       <input
         ref={profileInputRef}
         type="file"
@@ -61,15 +61,16 @@ export function JoinSupplierStep3ProfileSection({
                   fontFamily: "var(--font-assistant), ui-sans-serif, system-ui, sans-serif",
                 }}
               >
-                Click to upload a picture
+                לחץ להעלאת תמונה
               </span>
             </>
           )}
         </button>
         {!profileFile ? (
-          <p className="max-w-[130px] text-center text-[12px] leading-4 text-black">
-            Recommended: Clear JPG/PNG facial image up to {JOIN_SUPPLIER_STEP3_PROFILE_MAX_MB}MB
-          </p>
+          <div className="max-w-[180px] space-y-1 text-center text-[12px] leading-4 text-black">
+            <p>מומלץ: תמונת פנים ברורה</p>
+            <p dir="ltr">JPG/PNG עד {JOIN_SUPPLIER_STEP3_PROFILE_MAX_MB}MB</p>
+          </div>
         ) : null}
       </div>
     </div>

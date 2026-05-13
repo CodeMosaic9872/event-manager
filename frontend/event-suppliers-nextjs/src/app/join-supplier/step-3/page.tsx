@@ -3,7 +3,8 @@
 import { type DragEvent, type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useUploadUserProfileFileMutation } from "@/shared/api/api";
+import { useUploadUserProfileFileMutation, useMeQuery } from "@/shared/api/api";
+import { useAppSelector } from "@/store/hooks";
 import { SupplierJoinGlassCard } from "@/shared/components/supplier-join/supplier-join-glass-card";
 import { SupplierJoinProgress } from "@/shared/components/supplier-join/supplier-join-progress";
 import { MarketingPageShell } from "@/shared/components/marketing-page-shell";
@@ -27,6 +28,15 @@ const STEP3_UPLOAD_KIND = {
 
 export default function JoinSupplierStep3Page() {
   const router = useRouter();
+  const isAuthHydrated = useAppSelector((state) => state.auth.isHydrated);
+  const sessionUser = useAppSelector((state) => state.auth.user);
+  const mp = useAppSelector((state) => state.auth.user?.marketplaceProfile);
+  const { data: me } = useMeQuery(undefined, { skip: !isAuthHydrated || !sessionUser });
+  const mpData = mp ?? me?.marketplaceProfile;
+  const existingGalleryUrls = mpData?.gallery ?? [];
+  const existingProfileUrl = mpData?.avatarImageUrl ?? null;
+  const existingKosherUrl = mpData?.kosher ?? null;
+  const existingForm3010Url = mpData?.form3010 ?? null;
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const profileInputRef = useRef<HTMLInputElement>(null);
   const kosherInputRef = useRef<HTMLInputElement>(null);
@@ -95,28 +105,28 @@ export default function JoinSupplierStep3Page() {
 
   const allFilesReady = useMemo(
     () =>
-      galleryFiles.length >= JOIN_SUPPLIER_STEP3_MIN_GALLERY &&
-      profileFile != null &&
-      kosherFile != null &&
-      form3010File != null,
-    [galleryFiles.length, profileFile, kosherFile, form3010File],
+      (galleryFiles.length + existingGalleryUrls.length >= JOIN_SUPPLIER_STEP3_MIN_GALLERY) &&
+      (profileFile != null || existingProfileUrl != null) &&
+      (kosherFile != null || existingKosherUrl != null) &&
+      (form3010File != null || existingForm3010Url != null),
+    [galleryFiles.length, profileFile, kosherFile, form3010File, existingGalleryUrls.length, existingProfileUrl, existingKosherUrl, existingForm3010Url],
   );
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!allFilesReady) return;
     const next: Record<string, string> = {};
-    if (galleryFiles.length < JOIN_SUPPLIER_STEP3_MIN_GALLERY) {
-      next.gallery = `Please upload at least ${JOIN_SUPPLIER_STEP3_MIN_GALLERY} gallery photos.`;
+    if ((galleryFiles.length + existingGalleryUrls.length) < JOIN_SUPPLIER_STEP3_MIN_GALLERY) {
+      next.gallery = `נא להעלות לפחות ${JOIN_SUPPLIER_STEP3_MIN_GALLERY} תמונות לגלריה.`;
     }
-    if (!profileFile) {
-      next.profile = "Profile picture is required.";
+    if (!profileFile && !existingProfileUrl) {
+      next.profile = "תמונת פרופיל נדרשת.";
     }
-    if (!kosherFile) {
-      next.kosher = "Kosher certificate file is required.";
+    if (!kosherFile && !existingKosherUrl) {
+      next.kosher = "נדרש קובץ תעודת כשרות.";
     }
-    if (!form3010File) {
-      next.form3010 = "Form 3010 file is required.";
+    if (!form3010File && !existingForm3010Url) {
+      next.form3010 = "נדרש קובץ טופס 3010.";
     }
     if (Object.keys(next).length > 0) {
       setErrors(next);
@@ -136,24 +146,43 @@ export default function JoinSupplierStep3Page() {
       await Promise.all(uploads);
       router.push("/join-supplier/step-4");
     } catch {
-      setErrors({ form: "Failed to upload media. Please try again." });
+      setErrors({ form: "העלאת המדיה נכשלה. נסו שוב." });
     } finally {
       setIsSaving(false);
     }
   };
 
   return (
-    <MarketingPageShell showBackgroundImage className="bg-white!" dir="rtl" lang="he">
+    <MarketingPageShell showBackgroundImage dir="rtl" lang="he">
       <div className="mx-auto flex w-full max-w-[977px] flex-col items-stretch">
-        <SupplierJoinProgress percent={75} stepLabel="Step 3 of 4" title="Media upload" />
+        <SupplierJoinProgress percent={75} stepLabel="שלב 3 מתוך 4" title="העלאת מדיה" />
 
         <SupplierJoinGlassCard className="w-full px-5 py-8 sm:px-8 sm:py-10" style={{ fontFamily: marketingPloniFont }}>
-          <form className="flex w-full min-w-0 flex-col gap-10 lg:gap-12" dir="ltr" lang="en" onSubmit={handleSubmit}>
+          <form className="flex w-full min-w-0 flex-col gap-10 lg:gap-12" dir="rtl" lang="he" onSubmit={handleSubmit}>
             <div className="flex w-full flex-col gap-6">
               <div className="w-full text-center">
-                <h2 className="text-[28px] font-normal leading-10 text-black sm:text-[36px] sm:leading-[40px]">Add photos to your gallery</h2>
-                <p className="mt-3 text-[16px] leading-7 text-black sm:text-[18px]">Your profile looks better with a smile :)</p>
+                <h2 className="text-[28px] font-bold leading-10 text-black sm:text-[36px] sm:leading-[40px]">
+                  צרף/י תמונות לגלריה שלך
+                </h2>
+                <p className="mt-3 text-[16px] leading-7 text-black sm:text-[18px]">הפרופיל שלך נראה טוב יותר עם חיוך :)</p>
               </div>
+
+              {(existingGalleryUrls.length > 0 || existingProfileUrl) && (
+                <div className="flex flex-col gap-2 rounded-xl border border-[#BFDBFE] bg-[#F0F7FF] p-4">
+                  <p className="text-sm text-[#4721DF]">כבר הועלה:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {existingGalleryUrls.map((url) => (
+                      <img key={url} src={url} alt="" className="size-16 rounded-lg object-cover" />
+                    ))}
+                    {existingProfileUrl && (
+                      <div className="relative size-16 rounded-lg border-2 border-[#3B82F6] overflow-hidden">
+                        <img src={existingProfileUrl} alt="" className="size-full object-cover" />
+                        <span className="absolute bottom-0 left-0 right-0 bg-[#3B82F6] text-[8px] text-white text-center">פרופיל</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
                 <JoinSupplierStep3GallerySection
@@ -186,23 +215,29 @@ export default function JoinSupplierStep3Page() {
             </div>
 
             <div className="flex w-full flex-col gap-4 border-t border-black/10 pt-8">
-              <h3 className="text-right text-[18px] leading-5 text-black">Label Validation - Attaching Files</h3>
+              <h3 className="text-right text-[18px] font-bold leading-5 text-black">אימות לייבלים - צירוף קבצים</h3>
+              {(existingKosherUrl || existingForm3010Url) && (
+                <div className="flex flex-col gap-1 text-right text-sm text-[#4721DF]">
+                  {existingKosherUrl && <p>תעודת כשרות כבר הועלתה</p>}
+                  {existingForm3010Url && <p>טופס 3010 כבר הועלה</p>}
+                </div>
+              )}
               <div className="flex w-full flex-col items-end gap-3">
                 <JoinSupplierStep3DocumentRow
                   inputRef={kosherInputRef}
                   fileName={kosherName}
-                  placeholder="Attach a file - Kosher certificate"
-                  chipLabel={kosherName ? "kashrut" : ""}
-                  clearAriaLabel="Remove kashrut attachment"
+                  placeholder="צירוף קובץ - תעודת כשרות"
+                  chipLabel={kosherName ? "כשרות" : ""}
+                  clearAriaLabel="הסרת קובץ כשרות"
                   onInputChange={(e) => { const f = e.target.files?.[0]; setKosherName(f?.name ?? ""); setKosherFile(f ?? null); e.target.value = ""; }}
                   onClear={clearKosherAttachment}
                 />
                 <JoinSupplierStep3DocumentRow
                   inputRef={form3010InputRef}
                   fileName={form3010Name}
-                  placeholder="Attach a file - Form 3010"
-                  chipLabel={form3010Name ? "Reservist" : ""}
-                  clearAriaLabel="Remove Reservist attachment"
+                  placeholder="צירוף קובץ - טופס 3010"
+                  chipLabel={form3010Name ? "מילואימניק" : ""}
+                  clearAriaLabel="הסרת קובץ טופס 3010"
                   onInputChange={(e) => { const f = e.target.files?.[0]; setForm3010Name(f?.name ?? ""); setForm3010File(f ?? null); e.target.value = ""; }}
                   onClear={clearForm3010Attachment}
                 />
@@ -213,7 +248,9 @@ export default function JoinSupplierStep3Page() {
                   {errors.form3010 ? <p>{errors.form3010}</p> : null}
                 </div>
               )}
-              <p className="text-right text-[14px] leading-[22px] text-[#FF5353]">You can upload files in JPG, PNG or PDF format.</p>
+              <p className="text-right text-[14px] leading-[22px] text-[#FF5353]">
+                ניתן להעלות קבצים בפורמט JPG, PNG או PDF
+              </p>
             </div>
 
             {errors.form && <p className="text-center text-sm text-red-600">{errors.form}</p>}
@@ -222,14 +259,14 @@ export default function JoinSupplierStep3Page() {
               <button
                 type="submit"
                 disabled={isSaving || !allFilesReady}
-                title={!allFilesReady && !isSaving ? "Add profile photo, gallery, and both documents to continue" : undefined}
-                className="inline-flex h-[60px] min-w-[200px] items-center justify-center gap-3 rounded-[99px] bg-[#201C44] px-10 text-[18px] font-normal leading-7 text-white shadow-[0_8px_24px_rgba(32,28,68,0.25)] transition hover:bg-[#151238] disabled:opacity-50 disabled:cursor-not-allowed"
+                title={!allFilesReady && !isSaving ? "יש להעלות את כל המדיה הנדרשת כדי להמשיך" : undefined}
+                className="inline-flex h-[60px] min-w-[200px] items-center justify-center gap-3 rounded-[99px] bg-[#201C44] px-10 text-[18px] font-bold leading-7 text-white shadow-[0_8px_24px_rgba(32,28,68,0.25)] transition hover:bg-[#151238] disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ fontFamily: marketingPloniFont }}
               >
-                {isSaving ? "Uploading..." : (
+                {isSaving ? "מעלה…" : (
                   <>
                     <Image src="/icons/right_arrow.svg" alt="" width={16} height={16} className="size-4 shrink-0 rotate-180 brightness-0 invert" unoptimized aria-hidden />
-                    <span>Continue to choose a package</span>
+                    <span>המשך לבחירת חבילה</span>
                   </>
                 )}
               </button>
@@ -240,15 +277,15 @@ export default function JoinSupplierStep3Page() {
                 className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-[16px] font-bold leading-6 text-black disabled:opacity-50"
                 style={{ fontFamily: "var(--font-assistant), ui-sans-serif, system-ui, sans-serif" }}
               >
-                <span>return</span>
+                <span>חזרה</span>
                 <Image src="/icons/right_arrow.svg" alt="" width={16} height={16} className="size-4 shrink-0" unoptimized aria-hidden />
               </button>
             </div>
           </form>
         </SupplierJoinGlassCard>
 
-        <p className="mt-8 w-full max-w-2xl text-left text-[14px] leading-5 text-[#64748B]">
-          The information is saved automatically. You can edit it even after registration is complete.
+        <p className="mt-8 w-full max-w-2xl text-right text-[14px] leading-5 text-[#64748B]">
+          המידע נשמר באופן אוטומטי, תוכל לערוך אותו גם לאחר סיום ההרשמה.
         </p>
       </div>
     </MarketingPageShell>
