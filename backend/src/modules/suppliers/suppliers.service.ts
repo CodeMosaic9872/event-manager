@@ -161,15 +161,13 @@ export class SuppliersService {
     const hasNextPage = items.length > take;
     const sliced = hasNextPage ? items.slice(0, take) : items;
     const nextCursor = hasNextPage ? sliced[sliced.length - 1]?.id ?? null : null;
-    const [categoryFacets] = await Promise.all([
-      this.prisma.supplierCategory.groupBy({
-        by: ['categoryId'],
-        where: { supplier: supplierWhere },
-        _count: { categoryId: true },
-        orderBy: { _count: { categoryId: 'desc' } },
-        take: 5,
-      }),
-    ]);
+    const categoryFacets = await this.prisma.supplierCategory.groupBy({
+      by: ['categoryId'],
+      where: { supplier: supplierWhere },
+      _count: { categoryId: true },
+      orderBy: { _count: { categoryId: 'desc' } },
+      take: 5,
+    });
     const regionFacetRows = await this.prisma.supplier.findMany({
       where: supplierWhere,
       select: { serviceAreas: true },
