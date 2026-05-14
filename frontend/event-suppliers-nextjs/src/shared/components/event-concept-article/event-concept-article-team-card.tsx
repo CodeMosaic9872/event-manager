@@ -11,9 +11,9 @@ export function EventConceptArticleTeamCard({ member }: { member: EventConceptAr
         </div>
       </div>
       <div className="flex flex-col items-center gap-1 text-center">
-        <h3 className="text-lg font-normal leading-7 text-[#0F172A]">{member.name}</h3>
-        <p className="text-sm leading-5 text-[#201C44]">{member.specialty}</p>
-        <Link href={member.profileHref} className="text-sm leading-5 text-[#0F172A] underline underline-offset-2">
+        <h3 className="text-lg font-bold leading-7 text-[#0F172A]">{member.name}</h3>
+        <p className="text-sm font-normal leading-5 text-[#201C44]">{member.specialty}</p>
+        <Link href={member.profileHref} className="text-sm font-normal leading-5 text-[#0F172A] underline underline-offset-2">
           צפייה בפרופיל
         </Link>
       </div>

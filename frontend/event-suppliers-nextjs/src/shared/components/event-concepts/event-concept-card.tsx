@@ -27,7 +27,7 @@ function HeartIcon({ filled }: { filled: boolean }) {
 
 export function EventConceptCard({
   concept,
-  continueReadingLabel = "המשך קריאה",
+  continueReadingLabel = "המשך לקריאה",
   favoriteLabels = { add: "שמירת קונספט", remove: "הסרה מהשמורים" },
 }: EventConceptCardProps) {
   const [favorited, setFavorited] = useState(false);
@@ -51,18 +51,18 @@ export function EventConceptCard({
         {concept.badge ? (
           <div
             className={`absolute left-4 top-3 z-[2] rounded-full px-3 py-0.5 font-sans text-[10px] font-bold uppercase leading-[15px] tracking-[0.05em] text-white ${
-              concept.badge === "new" ? "bg-[#2563EB]" : "bg-[#201C44]"
+              concept.badge === "new" ? "bg-[#60A5FA]" : "bg-[#201C44]"
             }`}
           >
-            {concept.badge === "new" ? "חדש" : "פופולרי"}
+            {concept.badge === "new" ? "NEW" : "POPULAR"}
           </div>
         ) : null}
       </div>
 
       <div className="flex flex-1 flex-col justify-between gap-6 p-6">
         <div className="flex flex-col gap-4">
-          <h3 className="text-right text-xl font-normal leading-7 tracking-normal text-[#0F172A]">{concept.title}</h3>
-          <p className="text-right text-sm leading-5 text-[#201C44]">{concept.description}</p>
+          <h3 className="text-right text-xl font-bold leading-7 tracking-normal text-[#0F172A]">{concept.title}</h3>
+          <p className="text-right text-sm font-normal leading-5 text-[#334155]">{concept.description}</p>
           <div className="flex flex-col gap-3">
             {concept.vendors.map((v, i) => (
               <EventConceptVendorRow key={`${concept.id}-v-${i}`} item={v} />
@@ -82,7 +82,7 @@ export function EventConceptCard({
           </button>
           <Link
             href={concept.href}
-            className="flex min-h-12 flex-1 items-center justify-center rounded-full bg-[#201C44] px-4 text-center text-sm leading-5 text-white! visited:text-white! hover:text-white!"
+            className="flex min-h-12 flex-1 items-center justify-center rounded-full bg-[#201C44] px-4 text-center text-sm font-bold leading-5 text-white! visited:text-white! hover:text-white!"
           >
             {continueReadingLabel}
           </Link>

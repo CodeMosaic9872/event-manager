@@ -124,6 +124,9 @@ function ReferFriendBlock({
           dir="ltr"
           className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between"
         >
+          <div>
+
+          </div>
           <div className="flex min-w-0 flex-1 flex-row items-stretch overflow-hidden rounded-xl border border-[var(--supplier-dashboard-inner-border)] bg-white">
             <button
               type="button"
@@ -137,6 +140,13 @@ function ReferFriendBlock({
                 {referralUrl}
               </p>
             </div>
+            <button
+              type="button"
+              onClick={onCopy}
+              className="flex h-[42px] shrink-0 items-center justify-center bg-[#3B82F6] px-4 text-base font-normal leading-6 text-white transition hover:opacity-95"
+            >
+              {copied ? "הועתק" : "העתק"}
+            </button>
           </div>
           <div className="flex max-w-md flex-col gap-1 text-right sm:shrink-0 sm:pl-2">
             <p className="text-base font-normal leading-6 text-[#1E1B4B]">{shareTitle}</p>
@@ -413,7 +423,7 @@ export default function SupplierDashboardPage() {
               </div>
               <Link
                 href="/jobs"
-                className="shrink-0 text-base font-normal leading-5 text-[#3B82F6] transition hover:underline"
+                className="shrink-0 text-base font-bold leading-5 text-[#3B82F6]! hover:text-[#3B82F6]! transition hover:underline"
               >
                 View all
               </Link>

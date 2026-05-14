@@ -47,6 +47,11 @@ export type CreateJobPayload = {
   guestCount?: number;
 };
 export type UpdateJobPayload = Partial<CreateJobPayload & { status?: string }>;
+/** `POST /v1/jobs/:id/applications` (supplier apply) */
+export type ApplyToJobPayload = {
+  jobId: string;
+  message?: string;
+};
 export type JobApplication = {
   id: string;
   jobId: string;

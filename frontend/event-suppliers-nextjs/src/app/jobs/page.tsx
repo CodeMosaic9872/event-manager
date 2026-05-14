@@ -1,29 +1,57 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
-import { useGetJobsQuery } from "@/shared/api/api";
+import { useGetJobsQuery, useGetUserJobsQuery } from "@/shared/api/api";
 import { MarketingPageShell } from "@/shared/components/marketing-page-shell";
 import { SupplierJobOfferCard } from "@/shared/components/jobs/supplier-job-offer-card";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
+import { useAppSelector } from "@/store/hooks";
+import type { JobSummaryResponse } from "@/shared/types";
+import {
+  JobsCategoryFilter,
+  jobPassesCategoryFilters,
+  type JobsFilterCategoryId,
+} from "@/app/jobs/jobs-category-filter";
+
+function mergeOwnedFlags(
+  jobs: JobSummaryResponse[],
+  myJobIds: Set<string>,
+  userId: string | undefined,
+): JobSummaryResponse[] {
+  return jobs.map((job) => ({
+    ...job,
+    isMine:
+      Boolean(job.isMine) ||
+      myJobIds.has(job.id) ||
+      (Boolean(userId) && Boolean(job.ownerUserId) && job.ownerUserId === userId),
+  }));
+}
 
 export default function JobsPage() {
-  const { data: allJobs = [], isLoading } = useGetJobsQuery({ status: "PUBLISHED" });
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const sessionUser = useAppSelector((s) => s.auth.user);
+  const isAuthHydrated = useAppSelector((s) => s.auth.isHydrated);
 
-  const categoryOptions = useMemo(() => {
-    const set = new Set(
-      allJobs
-        .map((job) => (job.category ?? "").trim())
-        .filter((category) => category.length > 0),
-    );
-    return ["all", ...Array.from(set)];
-  }, [allJobs]);
+  const [appliedCategoryIds, setAppliedCategoryIds] = useState<Set<JobsFilterCategoryId>>(() => new Set());
+
+  const { data: publicJobs = [], isLoading: loadingPublic } = useGetJobsQuery({ page: 1, limit: 100 });
+
+  const { data: myPostedJobs = [], isLoading: loadingMine } = useGetUserJobsQuery(
+    { page: 1, limit: 100 },
+    { skip: !isAuthHydrated || !sessionUser },
+  );
+
+  const myJobIds = useMemo(() => new Set(myPostedJobs.map((j) => j.id)), [myPostedJobs]);
+
+  const publicWithMine = useMemo(
+    () => mergeOwnedFlags(publicJobs, myJobIds, sessionUser?.id),
+    [publicJobs, myJobIds, sessionUser?.id],
+  );
+
+  const isLoading = loadingPublic || (!!sessionUser && loadingMine);
 
   const filtered = useMemo(() => {
-    if (selectedCategory === "all") return allJobs;
-    return allJobs.filter((job) => (job.category ?? "").trim() === selectedCategory);
-  }, [allJobs, selectedCategory]);
+    return publicWithMine.filter((job) => jobPassesCategoryFilters(job, appliedCategoryIds));
+  }, [publicWithMine, appliedCategoryIds]);
 
   return (
     <MarketingPageShell
@@ -33,7 +61,7 @@ export default function JobsPage() {
       <div className="mx-auto flex w-full max-w-[900px] flex-col items-stretch" style={{ fontFamily: marketingPloniFont }}>
         <div className="w-full text-right">
           <p className="text-[14px] font-normal uppercase leading-4 tracking-[1.2px] text-[#0061A7]">הזדמנויות בזמן אמת</p>
-          <h1 className="mt-2 text-[32px] font-normal leading-none tracking-[-1.2px] text-[#00113A] sm:text-[40px] sm:tracking-[-2.4px] md:text-[48px]">לוח הצעות עבודה</h1>
+          <h1 className="mt-2 text-[32px] font-bold leading-none tracking-[-1.2px] text-[#00113A] sm:text-[40px] sm:tracking-[-2.4px] md:text-[48px]">לוח הצעות עבודה</h1>
           <p className="mt-3 text-base font-normal leading-6 text-[#00113A] sm:text-[20px] sm:leading-6">איך זה עובד? מחברים בין לקוחות לספקים - כאן אפשר לראות הזדמנויות בזמן אמת ולהגיש הצעה.</p>
         </div>
 
@@ -42,16 +70,7 @@ export default function JobsPage() {
             {isLoading ? "טוען..." : `מוצגות ${filtered.length} הצעות פעילות`}
           </p>
           <div className="order-2 flex w-full sm:order-1 sm:w-auto">
-            <label className="sr-only" htmlFor="jobs-category-filter">Filter by category</label>
-            <select
-              id="jobs-category-filter"
-              value={selectedCategory}
-              onChange={(event) => setSelectedCategory(event.target.value)}
-              className="h-[56px] w-full rounded-2xl border border-[#BFDBFE] bg-white px-5 text-base leading-6 text-[#00113A] outline-none sm:min-w-[290px]"
-            >
-              <option value="all">Filter by: Select a category</option>
-              {categoryOptions.filter((c) => c !== "all").map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
+            <JobsCategoryFilter appliedIds={appliedCategoryIds} onAppliedIdsChange={setAppliedCategoryIds} />
           </div>
         </div>
 
@@ -66,7 +85,9 @@ export default function JobsPage() {
                 </li>
               ))}
             </ul>
-            {filtered.length === 0 && <p className="mt-10 text-center text-[#00113A]">לא נמצאו הצעות בקטגוריה זו.</p>}
+            {filtered.length === 0 && (
+              <p className="mt-10 text-center text-[#00113A]">לא נמצאו הצעות בקטגוריה זו.</p>
+            )}
           </>
         )}
       </div>

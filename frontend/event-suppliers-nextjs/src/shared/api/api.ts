@@ -30,7 +30,15 @@ const baseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> =
   const state = api.getState() as { auth: { accessToken: string | null; isHydrated: boolean } };
   const url = typeof args === "string" ? args : args.url;
 
-  if (!state.auth.accessToken && state.auth.isHydrated && !url.startsWith("/v1/auth/") && !url.startsWith("/v1/suppliers") && !url.startsWith("/v1/search/") && !url.startsWith("/v1/taxonomy/") && !url.startsWith("/v1/jobs")) {
+  if (
+    !state.auth.accessToken &&
+    state.auth.isHydrated &&
+    !url.startsWith("/v1/auth/") &&
+    !url.startsWith("/v1/suppliers") &&
+    !url.startsWith("/v1/search/") &&
+    !url.startsWith("/v1/taxonomy/") &&
+    !url.startsWith("/v1/jobs")
+  ) {
     return { error: { status: 401, data: { message: "No token available" } } };
   }
 
@@ -134,6 +142,7 @@ export const {
   useGetUserJobQuery,
   useUpdateUserJobMutation,
   usePublishJobMutation,
+  useApplyToJobMutation,
   useGetJobApplicationsQuery,
   useCloseJobMutation,
   useCancelJobMutation,
@@ -149,11 +158,13 @@ export const {
   useGetAdminIncompleteSuppliersQuery,
   useApproveSupplierMutation,
   useRejectSupplierMutation,
+  useFeatureSupplierMutation,
   useGetAdminJobsQuery,
   useGetAdminJobApplicationsQuery,
   useArchiveJobMutation,
   useGetAdminUsersQuery,
   useGetAdminIncompleteUsersQuery,
+  useGetAdminUnpaidUsersQuery,
   useGetAdminReferralsQuery,
   useGetAdminNotificationsQuery,
   useGetAdminAutomationMetricsQuery,

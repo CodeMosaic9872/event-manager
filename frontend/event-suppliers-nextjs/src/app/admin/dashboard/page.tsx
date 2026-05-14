@@ -46,9 +46,12 @@ export default function AdminDashboardPage() {
   const [rejectReason, setRejectReason] = useState("");
   const [rejectingId, setRejectingId] = useState<string | null>(null);
 
-  const { data: suppliers = [], isLoading: loadingSuppliers } = useGetAdminSuppliersQuery(undefined, { skip: shouldSkip });
-  const { data: users = [], isLoading: loadingUsers } = useGetAdminUsersQuery(undefined, { skip: shouldSkip });
-  const { data: jobs = [], isLoading: loadingJobs } = useGetAdminJobsQuery(undefined, { skip: shouldSkip });
+  const { data: suppliers = [], isLoading: loadingSuppliers } = useGetAdminSuppliersQuery(
+    { page: 1, limit: 200 },
+    { skip: shouldSkip },
+  );
+  const { data: users = [], isLoading: loadingUsers } = useGetAdminUsersQuery({ page: 1, limit: 200 }, { skip: shouldSkip });
+  const { data: jobs = [], isLoading: loadingJobs } = useGetAdminJobsQuery({ page: 1, limit: 200 }, { skip: shouldSkip });
   const { data: referrals } = useGetAdminReferralsQuery(undefined, { skip: shouldSkip });
   const { data: metrics } = useGetAdminAutomationMetricsQuery(undefined, { skip: shouldSkip });
 
@@ -192,7 +195,10 @@ export default function AdminDashboardPage() {
                     <div key={r.id} className="flex items-center justify-between px-6 py-4">
                       <div>
                         <p className="text-sm text-[#1E1B4B]">{r.id}</p>
-                        <p className="text-xs text-[#94A3B8]">Status: {r.rewardStatus ?? "—"}</p>
+                        <p className="text-xs text-[#94A3B8]">
+                          Status: {r.status}
+                          {r.supplierId ? ` · Supplier: ${r.supplierId}` : ""}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -233,7 +239,15 @@ export default function AdminDashboardPage() {
                   Cancel
                 </button>
                 <button
-                  onClick={() => { rejectSupplier({ id: rejectingId, reason: rejectReason || undefined }); setRejectingId(null); setRejectReason(""); }}
+                  onClick={() => {
+                    rejectSupplier({
+                      id: rejectingId,
+                      reason: rejectReason || undefined,
+                      adminUserId: sessionUser?.id,
+                    });
+                    setRejectingId(null);
+                    setRejectReason("");
+                  }}
                   className="rounded-lg bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700"
                 >
                   Reject

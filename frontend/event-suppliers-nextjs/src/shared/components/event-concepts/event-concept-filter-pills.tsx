@@ -11,7 +11,7 @@ export type EventConceptFilterPillsProps = {
 };
 
 const defaultLabels: Record<ConceptFilterKey, string> = {
-  all: "כל התבניות",
+  all: "כל הקונספטים",
   business: "עסקי",
   private: "פרטי",
 };

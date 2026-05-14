@@ -28,7 +28,7 @@ function ChatIcon() {
 export function EventConceptArticleSpecsCard({
   specs,
   plannerHref = "#",
-  plannerLabel = "שיחה עם מתכנן",
+  plannerLabel = "דברו עם מתכנן",
 }: {
   specs: EventConceptArticle["specs"];
   plannerHref?: string;
@@ -40,7 +40,7 @@ export function EventConceptArticleSpecsCard({
       className="relative isolate flex flex-col gap-6 rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)] sm:gap-8 sm:rounded-3xl sm:p-8"
     >
       <div className="flex flex-row items-center gap-2">
-        <h2 className="text-xl font-normal leading-7 text-[#0F172A]">פרטי הקונספט</h2>
+        <h2 className="text-xl font-bold leading-7 text-[#0F172A]">פרטי הקונספט</h2>
         <InfoIcon />
       </div>
       <div className="flex flex-col gap-6">
@@ -56,7 +56,7 @@ export function EventConceptArticleSpecsCard({
       </div>
       <Link
         href={plannerHref}
-        className="mt-2 inline-flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[#F1F5F9] text-base leading-6 text-[#0F172A]! visited:text-[#0F172A]! transition-colors hover:bg-slate-200/80"
+        className="mt-2 inline-flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[#F1F5F9] text-base font-normal leading-6 text-[#0F172A]! visited:text-[#0F172A]! transition-colors hover:bg-slate-200/80"
       >
         <span>{plannerLabel}</span>
         <ChatIcon />

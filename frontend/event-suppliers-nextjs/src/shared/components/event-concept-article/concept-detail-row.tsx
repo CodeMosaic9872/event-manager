@@ -17,9 +17,9 @@ export function ConceptDetailRow({ label, value, icon, showDivider = true }: Con
     >
       <div className="flex min-w-0 shrink items-center gap-3">
         <span className="flex shrink-0">{icon}</span>
-        <span className="text-sm leading-5 text-[#0F172A]">{label}</span>
+        <span className="text-sm font-bold leading-5 text-[#0F172A]">{label}</span>
       </div>
-      <p className="min-w-0 text-end text-base leading-6 text-[#334155] sm:ps-4" dir="ltr">
+      <p className="min-w-0 text-end text-base font-normal leading-6 text-[#334155] sm:ps-4" dir="ltr">
         {value}
       </p>
     </div>

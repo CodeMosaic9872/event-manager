@@ -125,6 +125,13 @@ export type JobSummaryResponse = {
   eventDate?: string;
   description?: string;
   isMine?: boolean;
+  /** Job owner (from API) — compare to `auth.user.id` when `isMine` is not set. */
+  ownerUserId?: string;
+  guestCount?: number;
+  /** From `GET /v1/supplier/jobs/recommended` */
+  isRecommended?: boolean;
+  matchScore?: number;
+  matchReasons?: string[];
   /** @deprecated use locationText */
   location?: string;
   /** @deprecated not available in latest API */

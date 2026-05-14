@@ -10,9 +10,9 @@ export const eventConceptArticleDefaults: Omit<EventConceptArticle, "slug" | "he
   quote:
     '"המטרה שלנו הייתה ליצור ניתוק מוחלט מהשגרה. רצינו שהאורחים ירגישו בחופשה יוקרתית על הריביירה, אבל עם החום האישי של אירוע פרטי."',
   specs: [
-    { label: "תקציב משוער", value: "150–250 אלף ש״ח", icon: "wallet" },
-    { label: "מספר אורחים", value: "80 - 150", icon: "users" },
-    { label: "סוג מיקום", value: "וילה פרטית / חוף", icon: "map-pin" },
+    { label: "מחיר משוער", value: "₪150k - 250k", icon: "wallet" },
+    { label: "כמות אורחים", value: "80 - 150", icon: "users" },
+    { label: "סוג אירוע", value: "וילה פרטית / חוץ", icon: "map-pin" },
     { label: "עונה מומלצת", value: "קיץ / אביב", icon: "clock" },
   ],
   map: {
@@ -21,13 +21,13 @@ export const eventConceptArticleDefaults: Omit<EventConceptArticle, "slug" | "he
     imageAlt: "תצוגת מפה ליד החוף",
     recommendedArea: "הרצליה פיתוח",
   },
-  teamTitle: "צוות הספקים",
+  teamTitle: "נבחרת הספקים",
   team: [
     {
-      name: "וילה ׳בלו ביי׳",
-      specialty: "מתחם אירועים",
-      imageSrc: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=200&q=80&auto=format&fit=crop",
-      imageAlt: "חזית וילה יוקרתית",
+      name: "די-ג'יי אופיר רם",
+      specialty: "מוזיקה ואווירה",
+      imageSrc: "https://images.unsplash.com/photo-1571266028243-e4733b0f91d1?w=200&q=80&auto=format&fit=crop",
+      imageAlt: "די ג׳י ליד המיקסר",
       profileHref: "#",
     },
     {
@@ -38,10 +38,10 @@ export const eventConceptArticleDefaults: Omit<EventConceptArticle, "slug" | "he
       profileHref: "#",
     },
     {
-      name: "די ג׳י אופיר רם",
-      specialty: "מוזיקה ואווירה",
-      imageSrc: "https://images.unsplash.com/photo-1571266028243-e4733b0f91d1?w=200&q=80&auto=format&fit=crop",
-      imageAlt: "די ג׳י ליד המיקסר",
+      name: "וילה 'בלו-ביי'",
+      specialty: "מתחם אירועים",
+      imageSrc: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=200&q=80&auto=format&fit=crop",
+      imageAlt: "חזית וילה יוקרתית",
       profileHref: "#",
     },
   ],
@@ -75,9 +75,9 @@ export const eventConceptArticleDefaults: Omit<EventConceptArticle, "slug" | "he
 };
 
 export const eventConceptArticleDefaultHero: EventConceptArticle["hero"] = {
-  badgeLabel: "קונספט נבחר",
-  title: "מסיבת בריכה יוקרתית בווילה",
-  subtitle: "חוויה בלעדית שמשלבת יוקרה, מים ואווירה חופשית תחת שמיים פתוחים.",
+  badgeLabel: "",
+  title: "מסיבת בריכה יוקרתית בוילה",
+  subtitle: "חוויה אקסקלוסיבית המשלבת יוקרה, מים ואווירה חופשית תחת כיפת השמיים",
   imageSrc:
     "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1400&q=80&auto=format&fit=crop",
   imageAlt: "ארוחת ערב יוקרתית ליד הבריכה בדמדומים",

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useId, useState } from "react";
 import type { JobSummaryResponse } from "@/shared/types";
+import { useApplyToJobMutation } from "@/shared/api/api";
 import {
   JobIconBackArrow,
   JobIconClose,
@@ -23,8 +24,7 @@ function formatEventDate(iso: string | undefined) {
 }
 
 function formatBudgetRange(min: number, max: number) {
-  const fmt = (n: number) =>
-    n.toLocaleString("he-IL", { maximumFractionDigits: 0, useGrouping: true });
+  const fmt = (n: number) => n.toLocaleString("he-IL", { maximumFractionDigits: 0, useGrouping: true });
   return `₪${fmt(min)} - ₪${fmt(max)}`;
 }
 
@@ -38,16 +38,20 @@ export type SubmitProposalModalProps = {
   job: JobSummaryResponse;
   open: boolean;
   onClose: () => void;
-  /** Optional: wire to API later */
+  /** Called after a successful API apply (optional). */
   onConfirm?: () => void;
 };
 
 export function SubmitProposalModal({ job, open, onClose, onConfirm }: SubmitProposalModalProps) {
   const [step, setStep] = useState<"form" | "success">("form");
+  const [message, setMessage] = useState("");
+  const [applyToJob, { isLoading: isApplying, error: applyError }] = useApplyToJobMutation();
   const formTitleId = useId();
   const successTitleId = useId();
+
   const close = useCallback(() => {
     setStep("form");
+    setMessage("");
     onClose();
   }, [onClose]);
 
@@ -72,13 +76,23 @@ export function SubmitProposalModal({ job, open, onClose, onConfirm }: SubmitPro
   if (!open) return null;
 
   const dateLabel = formatEventDate(job.eventDate);
-  const location = job.location ?? "תל אביב";
+  const location = job.locationText ?? job.location ?? "תל אביב";
   const audience = job.audienceLabel ?? "כמות קהל: 1000 - 1200 איש";
   const budget = formatBudgetRange(job.budgetMin, job.budgetMax);
 
-  const handleSubmit = () => {
-    onConfirm?.();
-    setStep("success");
+  const applyErrorMessage =
+    applyError && typeof applyError === "object" && applyError !== null && "data" in applyError
+      ? String((applyError as { data?: { message?: string } }).data?.message ?? "")
+      : "";
+
+  const handleSubmit = async () => {
+    try {
+      await applyToJob({ jobId: job.id, message: message.trim() || undefined }).unwrap();
+      onConfirm?.();
+      setStep("success");
+    } catch {
+      /* error surfaced via applyError */
+    }
   };
 
   const labelledBy = step === "form" ? formTitleId : successTitleId;
@@ -151,13 +165,35 @@ export function SubmitProposalModal({ job, open, onClose, onConfirm }: SubmitPro
                 </div>
               </div>
 
+              <div className="mx-auto mt-6 w-full max-w-[368px]">
+                <label htmlFor="proposal-message" className="text-start text-sm font-normal text-[#00113A]">
+                  הודעה ללקוח (אופציונלי)
+                </label>
+                <textarea
+                  id="proposal-message"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  rows={3}
+                  maxLength={2000}
+                  placeholder="למשל: ניסיון של 8 שנים באירועי חברה..."
+                  className="mt-2 w-full resize-y rounded-xl border border-[#BFDBFE] bg-white px-3 py-2 text-start text-sm text-[#00113A] outline-none focus:border-[#0061A7]"
+                />
+              </div>
+
+              {applyErrorMessage ? (
+                <p className="mx-auto mt-4 w-full max-w-[368px] text-start text-sm text-red-600" role="alert">
+                  {applyErrorMessage || "לא ניתן להגיש את ההצעה. נסה שוב."}
+                </p>
+              ) : null}
+
               <div className="mx-auto mt-8 flex w-full justify-center">
                 <button
                   type="button"
-                  onClick={handleSubmit}
-                  className="flex h-12 min-w-[209px] items-center justify-center rounded-[99px] bg-[#00113A] px-6 text-center text-2xl font-normal leading-6 text-white!"
+                  onClick={() => void handleSubmit()}
+                  disabled={isApplying}
+                  className="flex h-12 min-w-[209px] items-center justify-center rounded-[99px] bg-[#00113A] px-6 text-center text-2xl font-normal leading-6 text-white! disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  הגשת הצעה
+                  {isApplying ? "שולח..." : "הגשת הצעה"}
                 </button>
               </div>
             </>

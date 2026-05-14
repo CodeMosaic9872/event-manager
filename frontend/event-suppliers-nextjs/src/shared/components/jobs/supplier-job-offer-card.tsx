@@ -58,15 +58,19 @@ export function SupplierJobOfferCard({ job }: { job: JobSummaryResponse }) {
   const description =
     job.description ?? "אירוע חברה, ציוד הגברה ותאורה כולל.";
   const budget = formatBudgetRange(job.budgetMin, job.budgetMax);
-  const isActive = (job.status || "").toUpperCase() === "OPEN" || job.status === "OPEN";
-  const isMine = Boolean(job.isMine);
+  const isOwner =
+    Boolean(job.isMine) ||
+    (Boolean(sessionUser?.id) && Boolean(job.ownerUserId) && sessionUser!.id === job.ownerUserId);
+  const statusUpper = (job.status || "").toUpperCase();
+  const isActive =
+    statusUpper === "OPEN" || statusUpper === "PUBLISHED" || job.status === "OPEN" || job.status === "PUBLISHED";
   const canSubmitProposal = Boolean(
     sessionUser?.roles.some((role) => role === "supplier" || role === "admin"),
   );
-  const canPrimaryAction = isMine || canSubmitProposal;
+  const canPrimaryAction = isOwner || canSubmitProposal;
 
   const handlePrimaryAction = () => {
-    if (isMine) {
+    if (isOwner) {
       const params = new URLSearchParams({
         edit: "1",
         id: job.id,
@@ -87,7 +91,7 @@ export function SupplierJobOfferCard({ job }: { job: JobSummaryResponse }) {
     setProposalOpen(true);
   };
 
-  const primaryLabel = isMine ? "ניהול ההצעה" : "הגשת הצעה";
+  const primaryLabel = isOwner ? "ניהול ההצעה" : "הגשת הצעה";
 
   return (
     <>
@@ -99,11 +103,11 @@ export function SupplierJobOfferCard({ job }: { job: JobSummaryResponse }) {
         {isActive ? (
           <div
             className={`absolute left-[9px] top-3.5 z-10 flex h-[21px] min-w-[93px] items-center justify-center rounded-[20px] px-2.5 ${
-              isMine ? "bg-[#BDC3FF]" : "bg-[#6AB7FF]"
+              isOwner ? "bg-[#BDC3FF]" : "bg-[#6AB7FF]"
             }`}
           >
             <span className="text-center text-xs font-normal uppercase leading-4 tracking-[0.6px] text-[#002D53]">
-              {isMine ? "המכרז שלי" : "פעיל"}
+              {isOwner ? "המכרז שלי" : "פעיל"}
             </span>
           </div>
         ) : null}
@@ -117,6 +121,11 @@ export function SupplierJobOfferCard({ job }: { job: JobSummaryResponse }) {
               <h2 className="mt-2 w-full text-right text-2xl font-normal leading-8 text-black">
                 {job.title}
               </h2>
+              {job.isRecommended && job.matchScore != null && job.matchScore > 0 ? (
+                <p className="mt-1 w-full text-right text-xs font-normal text-[#0061A7]">
+                  ציון התאמה: {Math.round(job.matchScore * 100)}%
+                </p>
+              ) : null}
             </div>
 
             {/* Meta row: group from the physical right (reading start in RTL) */}
@@ -202,12 +211,18 @@ export function SupplierJobOfferCard({ job }: { job: JobSummaryResponse }) {
                   </p>
                 </div>
               </div>
-              <Link
-                href="/join-supplier"
-                className="z-1 max-w-[132px] shrink-0 text-right text-[10px] font-normal leading-3 text-[#0061A7] hover:underline"
-              >
-                הירשם כספק כדי להגיש מועמדות
-              </Link>
+              {canSubmitProposal ? (
+                <p className="z-1 max-w-[160px] shrink-0 text-right text-[10px] font-normal leading-3 text-[#444650]">
+                  פרטי הלקוח ישותפו איתך דרך המערכת לאחר בחירתך.
+                </p>
+              ) : (
+                <Link
+                  href="/join-supplier"
+                  className="z-1 max-w-[132px] shrink-0 text-right text-[10px] font-normal leading-3 text-[#0061A7] hover:underline"
+                >
+                  הירשם כספק כדי להגיש מועמדות
+                </Link>
+              )}
             </div>
           </div>
         </div>

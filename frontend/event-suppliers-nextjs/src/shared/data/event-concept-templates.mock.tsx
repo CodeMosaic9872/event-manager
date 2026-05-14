@@ -6,7 +6,7 @@ export const eventConceptTemplatesMock: EventConceptTemplate[] = [
   {
     id: "tech-networking",
     title: "נטוורקינג טכנולוגי",
-    description: "אירוע עם תוכן מקצועי ברמה אחרת.",
+    description: "אירוע מלא בתוכן מקצועי ברמה אחרת.",
     imageSrc:
       "https://images.unsplash.com/photo-1540575467063-27aef4e7bd44?w=800&q=80",
     imageAlt: "משתתפים בכנס מקצועי",
@@ -50,15 +50,15 @@ export const eventConceptTemplatesMock: EventConceptTemplate[] = [
   },
   {
     id: "wellness-retreat",
-    title: "ריטריט וולנס למנהלים",
-    description: "יומיים של שקט והתאחדות לעובדי חברה בלוקיישן פסטורלי.",
+    title: "ריטריט בריאות למנהלים",
+    description: "יומיים של שקט וגיבוש לעובדי החברה במיקום פסטורלי.",
     imageSrc:
       "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&q=80",
     imageAlt: "מרחב וולנס רגוע",
     audience: "business",
     vendors: [
-      { label: "קולקטיב יוגה מיינדפול", icon: <IconSparkles /> },
-      { label: "קייטרינג שורשים אורגניים", icon: <IconUtensils /> },
+      { label: "קולקטיב יוגה מודעת", icon: <IconSparkles /> },
+      { label: "קייטרינג שורשים אורגניים", icon: <IconFlower /> },
     ],
     href: eventConceptArticlePath("wellness-retreat"),
   },

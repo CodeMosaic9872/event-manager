@@ -20,14 +20,16 @@ export function EventConceptArticleHero({ hero }: { hero: EventConceptArticle["h
               "linear-gradient(0deg, rgba(26, 28, 44, 0.9) 0%, rgba(26, 28, 44, 0.3) 50%, rgba(26, 28, 44, 0) 100%)",
           }}
         >
-          <div className="flex w-full flex-col items-end gap-3 px-4 pb-8 pt-16 text-right sm:gap-4 sm:px-8 sm:pb-12 sm:pt-24 md:px-12 md:pb-16 lg:pl-72 lg:pr-16">
-            <span className="rounded-full bg-[#201C44] px-3 py-1 text-[10px] font-normal uppercase tracking-[0.06em] text-white sm:px-4 sm:text-xs">
-              {hero.badgeLabel}
-            </span>
-            <h1 className="max-w-[768px] text-balance text-[clamp(1.625rem,6vw,3.75rem)] font-normal leading-tight text-white sm:leading-none">
+          <div className="flex w-full flex-col items-center gap-3 px-4 pb-8 pt-16 text-center sm:gap-4 sm:px-8 sm:pb-12 sm:pt-24 md:px-12 md:pb-16">
+            {hero.badgeLabel.trim() ? (
+              <span className="rounded-full bg-[#201C44] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.06em] text-white sm:px-4 sm:text-xs">
+                {hero.badgeLabel}
+              </span>
+            ) : null}
+            <h1 className="max-w-[768px] text-balance text-[clamp(1.625rem,6vw,3.75rem)] font-bold leading-tight text-white sm:leading-none">
               {hero.title}
             </h1>
-            <p className="max-w-[672px] text-sm leading-6 text-[#E2E8F0] sm:text-lg sm:leading-7">{hero.subtitle}</p>
+            <p className="max-w-[672px] text-sm font-normal leading-6 text-white sm:text-lg sm:leading-7">{hero.subtitle}</p>
           </div>
         </div>
       </div>
