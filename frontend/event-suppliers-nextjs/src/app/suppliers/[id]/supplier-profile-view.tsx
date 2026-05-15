@@ -46,7 +46,7 @@ export function SupplierProfileView({ profile }: SupplierProfileViewProps) {
   const userHasReviewed = sessionUser ? reviews.some((r) => r.authorUserId === sessionUser.id) : false;
 
   return (
-    <section className="relative mx-auto w-full overflow-x-hidden bg-white pb-24">
+    <section className="relative mx-auto w-full overflow-x-hidden pb-24">
       <SupplierProfileBackground />
 
       <div className="relative z-10 mx-auto w-full pt-20 sm:pt-24 lg:pt-[119px]">
@@ -92,7 +92,7 @@ export function SupplierProfileView({ profile }: SupplierProfileViewProps) {
               <p className="text-center text-sm text-[#94A3B8]">אין עדיין ביקורות.</p>
             )}
 
-            <SupplierProfileCtaRow onRate={() => setShowRating(true)} hasReviewed={userHasReviewed} />
+            <SupplierProfileCtaRow onRate={() => setShowRating(true)} hasReviewed={userHasReviewed} isLoggedIn={!!sessionUser} />
           </div>
         </div>
       </div>

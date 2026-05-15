@@ -78,7 +78,7 @@ export function MarketingModal({
       aria-modal={ariaModal}
       aria-labelledby={ariaLabelledBy}
       dir={dir}
-      className={`fixed inset-0 ${zClass} flex min-h-0 items-center justify-center overflow-x-hidden overflow-y-auto px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6 ${backdropPreset[backdrop]} ${className}`.trim()}
+      className={`fixed inset-0 ${zClass} flex min-h-0 items-center justify-center overflow-x-hidden overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6 ${backdropPreset[backdrop]} ${className}`.trim()}
       onMouseDown={handleBackdropMouseDown}
     >
       {children}

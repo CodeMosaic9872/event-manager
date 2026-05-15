@@ -24,7 +24,7 @@ export function SelectableChip({ selected, onToggle, children, className = "" }:
       } ${className}`.trim()}
     >
       <span className="whitespace-nowrap">{children}</span>
-      <span className="flex size-3 shrink-0 items-center justify-center text-[10px] font-semibold leading-none" aria-hidden>
+      <span className="flex size-3 shrink-0 items-center justify-center text-[20px] font-semibold leading-none" aria-hidden>
         {selected ? "×" : "+"}
       </span>
     </button>

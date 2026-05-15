@@ -21,11 +21,10 @@ export function EventConceptsClient() {
     >
       <header className="mx-auto flex w-full max-w-[1120px] flex-col items-center gap-3 pb-8 text-center sm:items-end sm:gap-4 sm:pb-10 sm:text-right">
         <h1 className="w-full text-balance text-[clamp(1.75rem,4vw,3rem)] font-normal leading-tight tracking-[-0.025em] text-[#0F172A] sm:leading-none">
-          Ready-made concepts for events
+          רעיונות מוכנים לאירועים
         </h1>
         <p className="max-w-[672px] text-base leading-7 text-black sm:text-lg sm:leading-[29px]">
-          Skip the stress of planning from scratch, take inspiration from a ready-made package and start planning your
-          perfect event now.
+          בלי לחץ של תכנון מאפס — קחו השראה מחבילה מוכנה והתחילו לתכנן את האירוע המושלם שלכם עכשיו.
         </p>
       </header>
 

@@ -43,10 +43,18 @@ function PillArrowInCircle() {
       className="pointer-events-none flex size-12 shrink-0 items-center justify-center rounded-full bg-white sm:size-14 md:size-16 lg:size-[70px]"
       aria-hidden="true"
     >
-      <span
-        className="block h-5 w-6 bg-[#201C44] mask-[url(/right_arrow.svg)] mask-contain mask-center mask-no-repeat sm:h-5 sm:w-7 md:h-6 md:w-8 lg:h-7 lg:w-9"
+      <svg
+        className="h-5 w-6 text-[#201C44] sm:h-5 sm:w-7 md:h-6 md:w-8 lg:h-7 lg:w-9"
+        viewBox="0 0 16 16"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
-      />
+      >
+        <path
+          d="M12.175 9H0V7H12.175L6.575 1.4L8 0L16 8L8 16L6.575 14.6L12.175 9Z"
+          fill="currentColor"
+        />
+      </svg>
     </span>
   );
 }

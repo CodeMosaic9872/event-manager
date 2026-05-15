@@ -27,25 +27,25 @@ export function SupplierGlassCard({
     <article className="flex h-[362px] flex-col justify-center pt-12">
       <div className="relative flex h-[314px] flex-col items-center rounded-2xl border border-black/10 bg-[linear-gradient(180deg,rgba(185,185,185,0.308)_0%,rgba(255,255,255,0.1232)_100%)] px-6 pb-6 pt-12 backdrop-blur-[6px]">
         <div className="flex w-full flex-col items-center gap-1">
-          <h3 className="text-center text-[20px] leading-7 text-black">{name}</h3>
+          <h3 className="text-center text-[20px] leading-7 text-black font-bold">{name}</h3>
           <p className="text-center text-xs uppercase tracking-[0.3px] text-black">{subtitle}</p>
         </div>
 
         <div className="mt-3 flex items-center gap-3 text-black">
-          <img src="/icons/camera.svg" alt="camera" className="size-[15px]" />
-          <img src="/icons/message.svg" alt="message" className="h-3 w-[15px]" />
-          <img src="/icons/share.svg" alt="share" className="size-[15px]" />
+          <img src="/icons/camera.svg" alt="מצלמה" className="size-[15px]" />
+          <img src="/icons/message.svg" alt="הודעה" className="h-3 w-[15px]" />
+          <img src="/icons/share.svg" alt="שיתוף" className="size-[15px]" />
         </div>
 
         <div className="mt-3 flex gap-2 pb-2">
           <span className="flex size-12 items-center justify-center rounded border border-black/10 bg-black/5 text-[10px] text-black">
-            image
+            תמונה
           </span>
           <span className="flex size-12 items-center justify-center rounded border border-black/10 bg-black/5 text-[10px] text-black">
-            image
+            תמונה
           </span>
           <span className="flex size-12 items-center justify-center rounded border border-black/10 bg-black/5 text-[10px] text-black">
-            image
+          תמונה
           </span>
         </div>
 
@@ -53,7 +53,7 @@ export function SupplierGlassCard({
           <p className="text-center text-xs leading-4 text-black">{description}</p>
         </div>
 
-        <div className="mt-3 w-full border-t border-black/5 pt-3 text-center text-xs text-black">
+        <div className="mt-3 w-full border-t border-black/5 pt-3 text-center text-xs text-black font-bold">
           {compactLocation ? location : location}
         </div>
 

@@ -50,7 +50,7 @@ export function SupplierAuthMarketingLayout({
         style={{ fontFamily: marketingPloniFont }}
       >
         <SupplierAuthGlassCard className="flex w-full min-h-[min(600px,calc(100vh-180px))] flex-col px-4 pb-10 pt-6 sm:min-h-[min(797px,calc(100vh-180px))] sm:px-[24px] sm:pt-5 md:px-[49px]">
-          <div className="flex min-h-0 flex-1 flex-col items-center" dir="ltr" lang="en">
+          <div className="flex min-h-0 flex-1 flex-col items-center" dir="ltr" lang="he">
             <div className="mb-6 w-full max-w-full sm:w-[300px] rounded-full bg-[#D3E2F5] p-1">
               <div className="grid grid-cols-2 gap-0 text-center text-[14px] leading-5">
                 {activeTab === "user" ? (
@@ -75,7 +75,7 @@ export function SupplierAuthMarketingLayout({
               type="button"
               className="mb-6 flex h-[50px] w-full max-w-full flex-row items-center justify-center gap-3 rounded-xl border border-[#CBD5E1] bg-white px-4 text-[16px] font-normal leading-6 text-[#334155] transition hover:bg-slate-50 sm:max-w-[320px]"
             >
-              <span>Sign in with Google</span>
+              <span>התחברות עם גוגל</span>
               <GoogleMark />
             </button>
 
@@ -85,14 +85,14 @@ export function SupplierAuthMarketingLayout({
                 onClick={() => onContactModeChange("phone")}
                 className={`flex flex-1 items-center justify-center rounded-xl py-2.5 text-[14px] leading-5 transition ${contactMode === "phone" ? "bg-black/10 text-black" : "text-black hover:bg-black/5"}`}
               >
-                Phone number
+                טלפון
               </button>
               <button
                 type="button"
                 onClick={() => onContactModeChange("email")}
                 className={`flex flex-1 items-center justify-center rounded-xl py-2.5 text-[14px] leading-5 transition ${contactMode === "email" ? "bg-black/10 text-black" : "text-black hover:bg-black/5"}`}
               >
-                Email
+                אימייל
               </button>
             </div>
 

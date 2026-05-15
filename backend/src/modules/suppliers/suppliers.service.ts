@@ -42,12 +42,89 @@ export class SuppliersService {
     return { skip: (safePage - 1) * safeLimit, take: safeLimit };
   }
 
+  private parseCsv(s?: string): string[] {
+    return s?.split(',').map((x) => x.trim()).filter(Boolean) ?? [];
+  }
+
+  /**
+   * Allow-list suppliers whose `SupplierAttribute` row matches selected marketplace filters.
+   * Returns `undefined` when no attribute filters are requested.
+   */
+  private async filterSupplierIdsByMarketplaceFilters(query: ListSuppliersQueryDto): Promise<string[] | undefined> {
+    const ALLOW_GENERAL = new Set(['mod', 'reservist', 'insurance', 'shabbat']);
+    const ALLOW_NICHE = new Set(['mehadrin', 'accessible', 'parking', 'disability', 'outdoor']);
+    const ALLOW_LANG = new Set(['en', 'ar', 'ru', 'am']);
+
+    const general = this.parseCsv(query.general).filter((k) => ALLOW_GENERAL.has(k));
+    const niche = this.parseCsv(query.niche).filter((k) => ALLOW_NICHE.has(k));
+    const langRaw = query.lang?.trim();
+    const lang = langRaw && ALLOW_LANG.has(langRaw) ? langRaw : undefined;
+
+    if (general.length === 0 && niche.length === 0 && !lang) {
+      return undefined;
+    }
+
+    const clauses: Prisma.Sql[] = [];
+    clauses.push(Prisma.sql`s."isActive" = true`);
+    clauses.push(Prisma.sql`s."approvalStatus" = 'APPROVED'`);
+    clauses.push(Prisma.sql`s."deletedAt" IS NULL`);
+
+    if (general.includes('insurance')) {
+      clauses.push(Prisma.sql`a."insurance" = true`);
+    }
+    if (general.includes('mod')) {
+      clauses.push(
+        Prisma.sql`(COALESCE(a."govSupplierFlags"::jsonb ->> 'mod', '') IN ('true','1') OR COALESCE(a."govSupplierFlags"::jsonb ->> 'defenseMinistry', '') IN ('true','1'))`,
+      );
+    }
+    if (general.includes('reservist')) {
+      clauses.push(
+        Prisma.sql`(COALESCE(a."govSupplierFlags"::jsonb ->> 'reservist', '') IN ('true','1') OR COALESCE(a."govSupplierFlags"::jsonb ->> 'miluim', '') IN ('true','1'))`,
+      );
+    }
+    if (general.includes('shabbat')) {
+      clauses.push(
+        Prisma.sql`(a."workingDaysJson"::jsonb @> '[6]'::jsonb OR a."workingDaysJson"::jsonb @> '6'::jsonb OR a."workingDaysJson"::jsonb @> '"6"'::jsonb)`,
+      );
+    }
+
+    if (niche.includes('accessible') || niche.includes('disability')) {
+      clauses.push(Prisma.sql`a."accessibility" = true`);
+    }
+    if (niche.includes('mehadrin')) {
+      clauses.push(
+        Prisma.sql`(a."kosherOptions"::text ILIKE '%mehadrin%' OR a."kosherOptions"::text ILIKE '%מהדרין%')`,
+      );
+    }
+    if (niche.includes('parking')) {
+      clauses.push(
+        Prisma.sql`(a."certificationsJson"::text ILIKE '%parking%' OR a."certificationsJson"::text ILIKE '%חניה%')`,
+      );
+    }
+    if (niche.includes('outdoor')) {
+      clauses.push(
+        Prisma.sql`(a."certificationsJson"::text ILIKE '%outdoor%' OR a."certificationsJson"::text ILIKE '%חוץ%')`,
+      );
+    }
+
+    if (lang) {
+      const langMatch = `'["${lang}"]'::jsonb`;
+      clauses.push(Prisma.sql`a."languagesJson"::jsonb @> ${Prisma.raw(langMatch)}`);
+    }
+
+    const whereClause = Prisma.join(clauses, ' AND ');
+    const rows = await this.prisma.$queryRaw<{ id: string }[]>(
+      Prisma.sql`SELECT DISTINCT s.id FROM "Supplier" s INNER JOIN "SupplierAttribute" a ON a."supplierId" = s.id WHERE ${whereClause}`,
+    );
+
+    return rows.map((r) => r.id);
+  }
+
   async list(query: ListSuppliersQueryDto) {
     const startedAt = Date.now();
     const take = Math.min(query.take ?? 20, 100);
     const cursor = query.cursor ?? undefined;
     const hasCursor = Boolean(cursor);
-    const hasEventType = Boolean(query.eventTypeId);
     const warnings: string[] = [];
 
     let categoryId = query.categoryId;
@@ -146,6 +223,31 @@ export class SuppliersService {
       ratingAvg: query.minRating ? { gte: query.minRating } : undefined,
     };
 
+    const attributeSupplierIds = await this.filterSupplierIdsByMarketplaceFilters(query);
+    if (attributeSupplierIds !== undefined && attributeSupplierIds.length === 0) {
+      return {
+        items: [],
+        pageInfo: {
+          hasNextPage: false,
+          nextCursor: null,
+          take,
+        },
+        relaxationHints: this.buildRelaxationHints(query),
+        warnings,
+        facets: {
+          categories: [],
+          regions: [],
+        },
+        searchMeta: {
+          latencyMs: Date.now() - startedAt,
+          constrainedByEventType: Boolean(eventTypeId),
+        },
+      };
+    }
+    if (attributeSupplierIds !== undefined && attributeSupplierIds.length > 0) {
+      supplierWhere.id = { in: attributeSupplierIds };
+    }
+
     const items = await this.prisma.supplier.findMany({
       where: supplierWhere,
       include: {
@@ -239,6 +341,15 @@ export class SuppliersService {
     }
     if (query.q) {
       hints.push('Try a shorter keyword');
+    }
+    if (query.general) {
+      hints.push('Try clearing general filters');
+    }
+    if (query.niche) {
+      hints.push('Try clearing niche filters');
+    }
+    if (query.lang) {
+      hints.push('Try removing extra language filter');
     }
     return hints;
   }

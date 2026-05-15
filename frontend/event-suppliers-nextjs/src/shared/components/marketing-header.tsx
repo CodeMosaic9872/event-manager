@@ -8,17 +8,17 @@ import { logout } from "@/features/auth/auth-slice";
 type NavItem = { href: string; activePath: string; label: string; exact?: boolean };
 
 const DESKTOP_LINKS: NavItem[] = [
-  { href: "/jobs", activePath: "/jobs", label: "Job offers" },
-  { href: "/event-production/concepts", activePath: "/event-production", label: "Concepts" },
-  { href: "/ai-planner", activePath: "/ai-planner", label: "Planning with AI" },
-  { href: "/marketplace", activePath: "/marketplace", label: "Suppliers" },
-  { href: "/", activePath: "/", label: "Home", exact: true },
+  { href: "/jobs", activePath: "/jobs", label: "הצעות עבודה" },
+  { href: "/event-production/concepts", activePath: "/event-production", label: "קונספטים" },
+  { href: "/ai-planner", activePath: "/ai-planner", label: "תכנון עם AI" },
+  { href: "/marketplace", activePath: "/marketplace", label: "ספקים" },
+  { href: "/", activePath: "/", label: "בית", exact: true },
 ];
 
 const MOBILE_LINKS: NavItem[] = [
-  { href: "/jobs", activePath: "/jobs", label: "Jobs" },
-  { href: "/marketplace", activePath: "/marketplace", label: "Suppliers" },
-  { href: "/", activePath: "/", label: "Home", exact: true },
+  { href: "/jobs", activePath: "/jobs", label: "הצעות עבודה" },
+  { href: "/marketplace", activePath: "/marketplace", label: "ספקים" },
+  { href: "/", activePath: "/", label: "בית", exact: true },
 ];
 
 function navLinkClass(active: boolean, extra = "") {
@@ -32,7 +32,7 @@ function linkIsActive(pathname: string, item: NavItem): boolean {
   return pathname === item.activePath || pathname.startsWith(`${item.activePath}/`);
 }
 
-/** Top marketing navigation — LTR bar: LOGO left, links center, login / supplier CTA right (matches public register mock). */
+/** Top marketing navigation — LTR bar: logo left, links center, login / supplier CTA right. */
 export function MarketingHeader() {
   const user = useAppSelector((state) => state.auth.user);
   const dispatch = useAppDispatch();
@@ -41,7 +41,7 @@ export function MarketingHeader() {
   return (
     <header
       dir="ltr"
-      lang="en"
+      lang="he"
       className="absolute left-0 top-0 z-50 w-full bg-transparent"
     >
       <nav className="relative mx-auto hidden h-[84px] w-full max-w-[1440px] px-4 lg:block lg:px-6">
@@ -50,7 +50,7 @@ export function MarketingHeader() {
             href="/"
             className={`relative z-10 text-xl font-normal leading-none text-[#1e1b4b] md:text-2xl ${navLinkClass(pathname === "/")}`}
           >
-            LOGO
+            לוגו
           </Link>
 
           <div className="absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 flex-wrap items-center justify-center gap-x-5 gap-y-1 text-[15px] leading-snug text-[#101426] md:gap-x-7 md:text-[17px]">
@@ -69,32 +69,42 @@ export function MarketingHeader() {
             {user ? (
               <>
                 <Link
-                  href="/profile"
-                  className="flex h-[39px] items-center justify-center rounded-[99px] border border-[#201C44] px-4 text-center text-sm leading-tight text-[#1e1b4b] transition hover:bg-[#201C44] hover:text-white!"
+                  href="/supplier/dashboard"
+                  className="flex flex-row items-center gap-3 rounded-full border border-[#4721DF] py-1 pe-3 ps-1 text-sm text-[#4721DF] transition hover:opacity-90"
+                  style={{ fontFamily: "PloniMLv2AAA-Regular, var(--font-assistant), system-ui, sans-serif" }}
                 >
-                  My Profile
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-[rgba(137,90,246,0.4)] bg-[rgba(137,90,246,0.2)]">
+                    {user.avatarImageUrl ? (
+                      <img src={user.avatarImageUrl} alt="" className="size-[30px] rounded-full object-cover" />
+                    ) : (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="#4721DF" aria-hidden>
+                        <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v1.2c0 .66.54 1.2 1.2 1.2h16.8c.66 0 1.2-.54 1.2-1.2v-1.2c0-3.2-6.4-4.8-9.6-4.8z" />
+                      </svg>
+                    )}
+                  </span>
+                  <span>{user.email ? `שלום, ${user.email.split("@")[0]}` : "שלום"}</span>
                 </Link>
                 <button
-                type="button"
-                className="flex h-[39px] items-center justify-center rounded-[99px] border border-[#6ab7ff] bg-[#e0edff] px-4 text-center text-sm leading-tight text-[#1e1b4b] transition hover:bg-[#d2e4fc]"
-                onClick={() => dispatch(logout())}
-              >
-                Log out
-              </button>
+                  type="button"
+                  className="flex h-[39px] items-center justify-center rounded-[99px] border border-[#6ab7ff] bg-[#e0edff] px-4 text-center text-sm leading-tight text-[#1e1b4b] transition hover:bg-[#d2e4fc]"
+                  onClick={() => dispatch(logout())}
+                >
+                  התנתקות
+                </button>
               </>
             ) : (
               <>
                 <Link
                   href="/join-supplier"
-                  className="flex h-[39px] items-center justify-center rounded-[99px] border border-[#6ab7ff] bg-[#e0edff] px-4 text-center text-sm leading-tight text-[#1e1b4b] transition hover:bg-[#d2e4fc]"
+                  className="flex h-[39px] items-center justify-center rounded-[99px] border border-[#4721DF] px-4 text-center text-sm leading-tight text-[#4721DF]! visited:text-[#4721DF]! transition hover:bg-[#d2e4fc]"
                 >
-                  Join as a supplier
+                  הצטרפות כספק
                 </Link>
                 <Link
                   href="/auth/login"
-                  className="flex items-center text-base font-normal text-[#1e1b4b] underline-offset-4 hover:text-[#4721DF] hover:underline md:text-lg"
+                  className="flex items-center text-base font-normal text-[#4721DF]! visited:text-[#4721DF]! underline-offset-4 hover:text-[#4721DF] hover:underline md:text-lg"
                 >
-                  Login
+                  התחברות
                 </Link>
               </>
             )}
@@ -107,7 +117,7 @@ export function MarketingHeader() {
           href="/"
           className={`text-base font-semibold tracking-wide ${navLinkClass(pathname === "/")}`}
         >
-          LOGO
+          לוגו
         </Link>
         <div className="flex max-w-[65vw] flex-wrap items-center justify-end gap-x-2 gap-y-1 text-xs">
           {MOBILE_LINKS.map((item) => (
@@ -122,13 +132,13 @@ export function MarketingHeader() {
           {!user ? (
             <>
               <Link href="/auth/login" className="text-[#4721DF]">
-                Login
+                התחברות
               </Link>
               <Link
                 href="/join-supplier"
                 className="rounded-full border border-[#6ab7ff] bg-[#e0edff] px-2 py-1 text-[#1e1b4b]"
               >
-                Join
+                הצטרפות
               </Link>
             </>
           ) : (
@@ -137,14 +147,14 @@ export function MarketingHeader() {
                 href="/profile"
                 className="rounded-full border border-[#201C44] px-2 py-1 text-[#201C44]"
               >
-                Profile
+                פרופיל
               </Link>
               <button
                 type="button"
                 className="rounded-full border border-[#4721DF] px-2 py-1 text-[#4721DF]"
                 onClick={() => dispatch(logout())}
               >
-                Log out
+                התנתקות
               </button>
             </>
           )}

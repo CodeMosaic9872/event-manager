@@ -14,8 +14,8 @@ export function EventConceptArticleMapCard({ map }: { map: EventConceptArticle["
       <div className="relative z-[1] flex w-full items-center justify-center p-6">
         <div className="relative rounded-xl border border-[rgba(236,91,19,0.2)] bg-white px-4 py-2 shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.1),0px_8px_10px_-6px_rgba(0,0,0,0.1)]">
           <div dir="rtl" className="flex items-center gap-2">
-            <span className="text-sm leading-5 text-[#0F172A]" dir="ltr">
-              Recommended area: {map.recommendedArea}
+            <span className="text-sm leading-5 text-[#0F172A]" dir="rtl">
+              אזור מומלץ: {map.recommendedArea}
             </span>
             <svg className="h-3 w-3 shrink-0 text-[#201C44]" viewBox="0 0 12 12" fill="none" aria-hidden>
               <path

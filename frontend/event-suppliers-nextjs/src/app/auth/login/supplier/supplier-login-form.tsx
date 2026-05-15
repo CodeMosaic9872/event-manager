@@ -21,6 +21,7 @@ import {
   getPostLoginFallbackPath,
   getSafeInternalRedirectPath,
 } from "@/shared/lib/safe-redirect-path";
+import { HeAuth } from "@/shared/lib/he-ui";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -29,9 +30,9 @@ const PURPOSE = "login" as const;
 
 function validateContact(value: string, mode: "email" | "phone"): string | null {
   const trimmed = value.trim();
-  if (!trimmed) return "Please enter your email or phone number.";
-  if (mode === "email" && !EMAIL_RE.test(trimmed)) return "Please enter a valid email address.";
-  if (mode === "phone" && !PHONE_RE.test(trimmed)) return "Please enter a valid Israeli phone number (05XXXXXXXX or +972XXXXXXXXX).";
+  if (!trimmed) return HeAuth.enterEmailOrPhone;
+  if (mode === "email" && !EMAIL_RE.test(trimmed)) return HeAuth.validEmail;
+  if (mode === "phone" && !PHONE_RE.test(trimmed)) return HeAuth.validPhone;
   return null;
 }
 
@@ -103,7 +104,7 @@ function SupplierLoginInner() {
       }).unwrap();
       setOtpSent(true);
     } catch {
-      setError("Failed to send verification code. Please try again.");
+      setError(HeAuth.otpSendFailed);
     }
   };
 
@@ -117,7 +118,7 @@ function SupplierLoginInner() {
     const loginIdentity = contact.trim();
 
     if (!loginIdentity || otpCode.length !== 6) {
-      setError("Please enter your details and a 6-digit verification code.");
+      setError(HeAuth.supplierOtpHint);
       return;
     }
 
@@ -141,7 +142,7 @@ function SupplierLoginInner() {
       }
       router.push(resolveSupplierNextPath(nextRaw));
     } catch {
-      setError("Login failed. Please try again.");
+      setError(HeAuth.loginFailed);
     }
   };
 
@@ -170,20 +171,21 @@ function SupplierLoginInner() {
   return (
     <SupplierAuthMarketingLayout
       userTabHref={loginUserHref}
-      userTabLabel="User login"
-      providerTabLabel="Provider login"
-      heading="Supplier entry"
-      subheading="Choose your preferred login method to log into our platform."
+      userTabLabel="התחברות משתמש"
+      providerTabLabel="התחברות ספק"
+      activeTab="provider"
+      heading="כניסת ספק"
+      subheading="בחרו אימייל או טלפון, קבלו קוד אימות והתחברו לפלטפורמה."
       contactMode={contactMode}
       onContactModeChange={setContactMode}
     >
       <form className="flex w-full max-w-[382px] flex-col gap-6" onSubmit={handleFinalLogin}>
         <div className="flex flex-col gap-2">
-          <label className="w-full pe-1 text-right text-[14px] leading-5 text-black">Email / Phone</label>
+          <label className="w-full pe-1 text-right text-[14px] leading-5 text-black">אימייל / טלפון</label>
           <div className="relative">
             <input
               className={supplierAuthContactInputClass}
-              placeholder="Enter your details"
+              placeholder="הזינו אימייל או מספר טלפון"
               value={contact}
               onChange={(e) => setContact(e.target.value)}
               autoComplete="email"
@@ -204,7 +206,7 @@ function SupplierLoginInner() {
             canRequestOtp ? "cursor-pointer bg-[#201C44] hover:bg-[#151238]" : "cursor-not-allowed bg-[#201C44] opacity-60"
           }`}
         >
-          {isRequestingOtp ? "Sending..." : otpSent ? "Send again" : "Getting a code"}
+          {isRequestingOtp ? "שולח…" : otpSent ? "שליחה מחדש" : "קבלת קוד"}
         </button>
 
         <div className="flex w-full flex-col gap-4 border-t border-black/10 pt-4">
@@ -215,9 +217,9 @@ function SupplierLoginInner() {
               disabled={!canRequestOtp}
               className="shrink-0 cursor-pointer text-left text-[12px] leading-4 text-[#201C44] hover:underline disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Send again
+              שליחה מחדש
             </button>
-            <span className="text-right text-[14px] leading-5 text-black">Enter verification code (OTP)</span>
+            <span className="text-right text-[14px] leading-5 text-black">קוד אימות (OTP)</span>
           </div>
           <div className="flex w-full flex-row justify-center gap-4">
             {otp.map((digit, i) => (
@@ -229,7 +231,7 @@ function SupplierLoginInner() {
                 value={digit}
                 onChange={(e) => setOtpDigit(i, e.target.value)}
                 className="box-border size-12 rounded-xl border border-black/10 bg-white text-center text-[18px] tabular-nums outline-none backdrop-blur-[8px] focus:ring-2 focus:ring-[#4721DF]/30"
-                aria-label={`Digit ${i + 1}`}
+                aria-label={`ספרה ${i + 1}`}
               />
             ))}
           </div>
@@ -246,7 +248,7 @@ function SupplierLoginInner() {
               : "cursor-not-allowed border-transparent bg-[#201C44] text-white opacity-60"
           }`}
         >
-          <span>{isLoggingIn ? "Logging in..." : "Logging in to the system"}</span>
+          <span>{isLoggingIn ? "מתחבר…" : "התחברות למערכת"}</span>
           <span className={otpComplete && !isLoading ? "opacity-90 brightness-0 invert" : "opacity-70"} aria-hidden>
             <Image src="/icons/go-to.svg" alt="" width={18} height={18} unoptimized />
           </span>
@@ -254,8 +256,8 @@ function SupplierLoginInner() {
       </form>
 
       <footer className="mt-10 flex w-full flex-row flex-wrap items-center justify-center gap-2 text-center text-[14px] leading-5">
-        <span className="text-black">Don&apos;t have a vendor account?</span>
-        <Link href="/join-supplier" className="font-normal text-[#201C44] hover:underline">Register here</Link>
+        <span className="text-black">אין לכם חשבון ספק?</span>
+        <Link href="/join-supplier" className="font-normal text-[#201C44] hover:underline">הרשמה כאן</Link>
       </footer>
     </SupplierAuthMarketingLayout>
   );
@@ -267,10 +269,11 @@ export function SupplierLoginFormWithSuspense() {
       fallback={
         <SupplierAuthMarketingLayout
           userTabHref="/auth/login"
-          userTabLabel="User login"
-          providerTabLabel="Provider login"
-          heading="Supplier entry"
-          subheading="Choose your preferred login method to log into our platform."
+          userTabLabel="התחברות משתמש"
+          providerTabLabel="התחברות ספק"
+          activeTab="provider"
+          heading="כניסת ספק"
+          subheading="בחרו אימייל או טלפון, קבלו קוד אימות והתחברו לפלטפורמה."
           contactMode="email"
           onContactModeChange={() => {}}
         >

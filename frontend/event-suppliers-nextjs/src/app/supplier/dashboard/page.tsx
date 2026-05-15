@@ -1,5 +1,4 @@
 "use client";
-import { toSlug } from "@/shared/lib/to-slug";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -7,20 +6,15 @@ import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "re
 import {
   useGetRecommendedSupplierJobsQuery,
   useGetSupplierReferralLinkQuery,
-  useGetMySupplierProfileQuery,
   useUpdateSupplierProfileMutation,
-  useUpdateSupplierServiceAreasMutation, useMeQuery,
+  useMeQuery,
+  useUploadUserProfileFileMutation,
 } from "@/shared/api/api";
 import { ProtectedRoute } from "@/shared/components/protected-route";
+import { SupplierDashboardSectionCard } from "@/shared/components/supplier-dashboard/supplier-dashboard-section-card";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
 import { saveSupplierDraftField } from "@/features/job-board/job-board-slice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-
-const PANEL_CLASS =
-  "relative isolate overflow-hidden rounded-2xl border border-[#BFDBFE] bg-white shadow-[0px_4px_24px_rgba(30,27,75,0.08)]";
-
-const INNER_WELL_CLASS =
-  "rounded-2xl border border-[#BFDBFE] bg-[#F8FAFC] p-6";
 
 const SERVICE_AREAS = [
   "Eilat and the Arava",
@@ -93,7 +87,7 @@ function SectionHeaderIcon({
   iconSizeClass?: string;
 }) {
   return (
-    <div className="relative z-1 mb-6 flex w-full flex-row-reverse items-center justify-end gap-2">
+    <div className="relative flex w-full flex-row-reverse items-center justify-end gap-2">
       <h3 className="text-right text-xl font-normal leading-7 text-[#1E1B4B]">{title}</h3>
       <Image
         src={iconSrc}
@@ -123,14 +117,14 @@ function ReferFriendBlock({
   copied: boolean;
 }) {
   return (
-    <section className={`${PANEL_CLASS} p-6 sm:p-10`}>
+    <SupplierDashboardSectionCard>
       <SectionHeaderIcon title={title} iconSrc="/icons/refer.svg" />
-      <div className={`relative z-2 ${INNER_WELL_CLASS}`}>
+      <SupplierDashboardSectionCard.InnerWell>
         <div
           dir="ltr"
           className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between"
         >
-          <div className="flex min-w-0 flex-1 flex-row items-stretch overflow-hidden rounded-xl border border-[#BFDBFE] bg-white">
+          <div className="flex min-w-0 flex-1 flex-row items-stretch overflow-hidden rounded-xl border border-[var(--supplier-dashboard-inner-border)] bg-white">
             <button
               type="button"
               onClick={onCopy}
@@ -149,8 +143,8 @@ function ReferFriendBlock({
             <p className="text-sm font-normal leading-5 text-[#64748B]">{shareHint}</p>
           </div>
         </div>
-      </div>
-    </section>
+      </SupplierDashboardSectionCard.InnerWell>
+    </SupplierDashboardSectionCard>
   );
 }
 
@@ -205,11 +199,8 @@ export default function SupplierDashboardPage() {
   const { data: referralData } = useGetSupplierReferralLinkQuery(me?.id ?? "", {
     skip: shouldSkipProtectedQueries,
   });
-  const { data: profileData } = useGetMySupplierProfileQuery(undefined, {
-    skip: shouldSkipProtectedQueries,
-  });
   const [updateProfile, { isLoading: isSavingProfile }] = useUpdateSupplierProfileMutation();
-  const [updateServiceAreas, { isLoading: isSavingAreas }] = useUpdateSupplierServiceAreasMutation();
+  const [uploadFile, { isLoading: isUploadingFile }] = useUploadUserProfileFileMutation();
   const { data: recommendedJobs = [] } = useGetRecommendedSupplierJobsQuery(undefined, {
     skip: shouldSkipProtectedQueries,
   });
@@ -234,18 +225,37 @@ export default function SupplierDashboardPage() {
   const [selectedSpecialties, setSelectedSpecialties] = useState<Set<string>>(
     () => new Set(["Reservist", "Ministry of Defense Supplier"]),
   );
-  const [uploadedGalleryImages, setUploadedGalleryImages] = useState<string[]>([]);
+  const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
   const galleryInputRef = useRef<HTMLInputElement | null>(null);
+  const [isUploadingGallery, setIsUploadingGallery] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [showUploadSuccessModal, setShowUploadSuccessModal] = useState(false);
   const [verificationFileName, setVerificationFileName] = useState<string | null>(null);
   const verificationInputRef = useRef<HTMLInputElement | null>(null);
+  const [linkEmail, setLinkEmail] = useState("");
+  const [linkPhone, setLinkPhone] = useState("");
+  const [linkFacebook, setLinkFacebook] = useState("");
+  const [linkInstagram, setLinkInstagram] = useState("");
+  const [linkYoutube, setLinkYoutube] = useState("");
+  const [linkTiktok, setLinkTiktok] = useState("");
+  const [linkWebsite, setLinkWebsite] = useState("");
+  const [linkWhatsapp, setLinkWhatsapp] = useState("");
+  const [isSavingLinks, setIsSavingLinks] = useState(false);
 
   useEffect(() => {
-    if (!profileData) return;
-    setBusinessName(profileData.businessName);
-    if (profileData.description) setDescription(profileData.description);
-  }, [profileData]);
+    const mp = me?.marketplaceProfile;
+    if (!mp) return;
+    setBusinessName(mp.businessName);
+    if (mp.description) setDescription(mp.description);
+    setLinkEmail(mp.email ?? "");
+    setLinkPhone(mp.phone ?? "");
+    setLinkFacebook(mp.facebook ?? "");
+    setLinkInstagram(mp.instagram ?? "");
+    setLinkYoutube(mp.socialLinks?.find((s: { platform: string }) => s.platform === "youtube")?.url ?? "");
+    setLinkTiktok(mp.socialLinks?.find((s: { platform: string }) => s.platform === "tiktok")?.url ?? "");
+    setLinkWebsite(mp.website ?? "");
+    setLinkWhatsapp(mp.whatsapp ?? "");
+  }, [me?.marketplaceProfile]);
 
   const jobCards = useMemo(() => {
     return DEMO_JOB_CARDS.map((demo, i) => {
@@ -269,13 +279,13 @@ export default function SupplierDashboardPage() {
     }
   };
 
-  const onSave = async (event: FormEvent<HTMLFormElement>) => {
+  const onSave = async (event: FormEvent<HTMLElement>) => {
     event.preventDefault();
     const slug = businessName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
     try {
       await updateProfile({ businessName, slug, description }).unwrap();
       await updateServiceAreas({
-        serviceAreas: [...selectedAreas].map((a) => a.toLowerCase().replace(/\s+/g, "_")),
+        serviceAreas: [...selectedAreas].map((a) => ({ regionCode: a.toLowerCase().replace(/\s+/g, "_") })),
       }).unwrap();
     } catch {
       /* silently fail */
@@ -291,12 +301,21 @@ export default function SupplierDashboardPage() {
     else next.add(key);
     update(next);
   };
-
-  const onPickGalleryImages = (event: ChangeEvent<HTMLInputElement>) => {
+  const onPickGalleryImages = async (event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? []);
     if (!files.length) return;
-    const nextUrls = files.map((file) => URL.createObjectURL(file));
-    setUploadedGalleryImages((prev) => [...prev, ...nextUrls].slice(0, 12));
+    setIsUploadingGallery(true);
+    const newUrls: string[] = [];
+    for (const file of files) {
+      try {
+        const result = await uploadFile({ file, imageKind: "gallery" }).unwrap();
+        if (result.url) newUrls.push(result.url);
+      } catch {
+        /* silently fail */
+      }
+    }
+    setGalleryUrls((prev) => [...prev, ...newUrls].slice(0, 12));
+    setIsUploadingGallery(false);
     event.target.value = "";
   };
 
@@ -309,7 +328,7 @@ export default function SupplierDashboardPage() {
     event.target.value = "";
   };
 
-  const isSaving = isSavingProfile || isSavingAreas;
+  const isSaving = isSavingProfile;
 
   return (
     <ProtectedRoute roles={["supplier", "admin"]}>
@@ -320,7 +339,7 @@ export default function SupplierDashboardPage() {
         <div
           className="pointer-events-none absolute inset-0"
           style={{
-            backgroundImage: "url('/images/background-1.png'), url('/images/background-2.png')",
+            backgroundImage: "url('/images/background-1.png')",
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
@@ -380,8 +399,8 @@ export default function SupplierDashboardPage() {
             copied={copiedRating}
           />
 
-          <section className={`${PANEL_CLASS} px-6 pb-8 pt-10 sm:px-10`} dir="rtl">
-            <div className="relative z-1 mb-6 flex w-full flex-row items-center justify-between gap-4">
+          <SupplierDashboardSectionCard dir="rtl">
+            <div className="relative flex w-full flex-row items-center justify-between gap-4">
               <div className="flex flex-row items-center gap-2">
                 <h3 className="text-right text-xl font-normal leading-7 text-[#1E1B4B]">
                   New job offers in your niche
@@ -403,7 +422,7 @@ export default function SupplierDashboardPage() {
               </Link>
             </div>
 
-            <div className="relative z-[2] grid gap-4 md:grid-cols-2">
+            <div className="relative grid gap-4 md:grid-cols-2">
               {jobCards.map((card) => (
                 <article
                   key={card.id}
@@ -419,7 +438,7 @@ export default function SupplierDashboardPage() {
               ))}
             </div>
 
-            <div className="relative z-2 mt-8 flex justify-start">
+            <div className="relative mt-8 flex justify-start">
               <Link
                 href="/jobs"
                 className="inline-flex h-12 items-center justify-center rounded-[99px] bg-[#201C44] px-10 text-base font-normal leading-6 text-white! shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),0px_2px_4px_-2px_rgba(0,0,0,0.1)] transition hover:opacity-95"
@@ -427,16 +446,16 @@ export default function SupplierDashboardPage() {
                 Go to the auctions page
               </Link>
             </div>
-          </section>
+          </SupplierDashboardSectionCard>
 
-          <form className={`${PANEL_CLASS} p-6 sm:p-10`} onSubmit={onSave} dir="rtl">
+          <SupplierDashboardSectionCard as="form" onSubmit={onSave} dir="rtl">
             <SectionHeaderIcon
               title="Business details"
               iconSrc="/icons/business-detail.svg"
               iconSizeClass="h-[22px] w-5"
             />
 
-            <div className="relative z-[2] grid gap-6 md:grid-cols-2 md:gap-8">
+            <div className="relative grid gap-6 md:grid-cols-2 md:gap-8">
               <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-2">
                   <label className="text-right text-xs leading-4 text-[#64748B]">Business name</label>
@@ -475,7 +494,7 @@ export default function SupplierDashboardPage() {
               </div>
             </div>
 
-            <div className="relative z-[2] mt-8">
+            <div className="relative mt-8">
               <p className="mb-3 text-right text-base leading-5 text-black">Service area</p>
               <div className="flex flex-row-reverse flex-wrap justify-end gap-3">
                 {SERVICE_AREAS.map((a) => (
@@ -489,7 +508,7 @@ export default function SupplierDashboardPage() {
               </div>
             </div>
 
-            <div className="relative z-[2] mt-8 flex flex-col gap-2">
+            <div className="relative mt-8 flex flex-col gap-2">
               <div className="flex flex-row items-center gap-2">
                 <span className="rounded-lg bg-black/10 px-2 py-0.5 text-[10px] leading-5 text-black">Optional</span>
                 <span className="text-base leading-5 text-black">Business address</span>
@@ -517,7 +536,7 @@ export default function SupplierDashboardPage() {
               <div className="mt-2 h-32 w-full rounded-2xl border border-black/10 bg-slate-200/80 bg-cover opacity-90" />
             </div>
 
-            <div className="relative z-[2] mt-8">
+            <div className="relative mt-8">
               <p className="mb-3 text-right text-base leading-5 text-black">Specialties</p>
               <div className="flex flex-row-reverse flex-wrap justify-end gap-3">
                 {SPECIALTIES.map((s) => (
@@ -534,7 +553,7 @@ export default function SupplierDashboardPage() {
               </div>
             </div>
 
-            <div className="relative z-2 mt-10 flex justify-end">
+            <div className="relative mt-10 flex justify-end">
               <button
                 type="submit"
                 disabled={isSaving}
@@ -554,54 +573,82 @@ export default function SupplierDashboardPage() {
                 />
               </button>
             </div>
-          </form>
+          </SupplierDashboardSectionCard>
 
-          <section className={`${PANEL_CLASS} p-6 sm:p-10`} dir="rtl">
+          <SupplierDashboardSectionCard dir="rtl">
             <SectionHeaderIcon title="Links" iconSrc="/icons/linking.svg" iconSizeClass="h-6 w-[30px]" />
 
-            <div className="relative z-[2] flex flex-col gap-8">
-              {(
-                [
+            <div className="relative flex flex-col gap-8">
+              {(() => {
+                const rows = [
                   [
-                    { label: "Email", placeholder: "name@gmail.com", defaultValue: "name@gmail.com" },
-                    { label: "Phone number", placeholder: "050-0000000", defaultValue: "050-0000000" },
+                    { label: "Email", value: me?.email ?? "", setter: setLinkEmail, placeholder: "name@gmail.com", disabled: true },
+                    { label: "Phone number", value: linkPhone, setter: setLinkPhone, placeholder: "050-0000000" },
                   ],
                   [
-                    { label: "Personal page", placeholder: "yoursite.com or social URL", defaultValue: "" },
-                    { label: "Instagram account", placeholder: "@username", defaultValue: "@username" },
+                    { label: "Facebook", value: linkFacebook, setter: setLinkFacebook, placeholder: "facebook.com/yourpage" },
+                    { label: "Instagram", value: linkInstagram, setter: setLinkInstagram, placeholder: "instagram.com/username" },
                   ],
                   [
-                    { label: "YouTube page", placeholder: "www.youtube.com", defaultValue: "" },
-                    { label: "TikTok page", placeholder: "@username", defaultValue: "@username" },
+                    { label: "YouTube", value: linkYoutube, setter: setLinkYoutube, placeholder: "youtube.com/@channel" },
+                    { label: "TikTok", value: linkTiktok, setter: setLinkTiktok, placeholder: "tiktok.com/@username" },
                   ],
                   [
-                    { label: "Website", placeholder: "www.example.com", defaultValue: "" },
-                    { label: "WhatsApp", placeholder: "050-0000000", defaultValue: "050-0000000" },
+                    { label: "Website", value: linkWebsite, setter: setLinkWebsite, placeholder: "www.example.com" },
+                    { label: "WhatsApp", value: linkWhatsapp, setter: setLinkWhatsapp, placeholder: "050-0000000" },
                   ],
-                ] as const
-              ).map((pair, rowIdx) => (
-                <div key={rowIdx} className="grid gap-8 md:grid-cols-2">
-                  {pair.map((row) => (
-                    <div key={row.label} className="flex flex-col gap-2">
-                      <label className="text-right text-xs leading-4 text-[#64748B]">{row.label}</label>
-                      <input
-                        defaultValue={row.defaultValue}
-                        placeholder={row.placeholder}
-                        className="h-[50px] w-full rounded-xl border border-[#E2E8F0] bg-white px-4 py-3 text-right text-sm text-black outline-none focus:ring-2 focus:ring-[#3B82F6]/30"
-                        dir="ltr"
-                      />
-                    </div>
-                  ))}
-                </div>
-              ))}
+                ];
+                return rows.map((pair, rowIdx) => (
+                  <div key={rowIdx} className="grid gap-8 md:grid-cols-2">
+                    {pair.map((row) => (
+                      <div key={row.label} className="flex flex-col gap-2">
+                        <label className="text-right text-xs leading-4 text-[#64748B]">{row.label}</label>
+                        <input
+                          value={row.value}
+                          onChange={(e) => row.setter(e.target.value)}
+                          placeholder={row.placeholder}
+                          className={`h-[50px] w-full rounded-xl border border-[#E2E8F0] px-4 py-3 text-right text-sm text-black outline-none focus:ring-2 focus:ring-[#3B82F6]/30 ${row.disabled ? "bg-[#F1F5F9] cursor-not-allowed" : "bg-white"}`}
+                          disabled={row.disabled}
+                          dir="ltr"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ));
+              })()}
             </div>
 
-            <div className="relative z-2 mt-10 flex justify-start">
+            <div className="relative mt-10 flex justify-start">
               <button
                 type="button"
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-[99px] bg-[#201C44] px-10 text-base font-normal leading-6 text-white shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1)] transition hover:opacity-95"
+                disabled={isSavingLinks}
+                className={`inline-flex h-12 items-center justify-center gap-2 rounded-[99px] px-10 text-base font-normal leading-6 text-white shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1)] transition ${isSavingLinks ? "cursor-not-allowed bg-[#201C44] opacity-60" : "cursor-pointer bg-[#201C44] hover:opacity-95"}`}
+                onClick={async () => {
+                  setIsSavingLinks(true);
+                  try {
+                    const socialLinks = [
+                      ...(linkInstagram ? [{ platform: "instagram", url: linkInstagram }] : []),
+                      ...(linkFacebook ? [{ platform: "facebook", url: linkFacebook }] : []),
+                      ...(linkYoutube ? [{ platform: "youtube", url: linkYoutube }] : []),
+                      ...(linkTiktok ? [{ platform: "tiktok", url: linkTiktok }] : []),
+                      ...(linkWhatsapp ? [{ platform: "whatsapp", url: linkWhatsapp }] : []),
+                      ...(linkWebsite ? [{ platform: "website", url: linkWebsite }] : []),
+                    ];
+                    await updateProfile({
+                      businessName,
+                      slug: businessName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
+                      description,
+                      phone: linkPhone || undefined,
+                      socialLinks: socialLinks.length > 0 ? socialLinks : undefined,
+                    }).unwrap();
+                  } catch {
+                    /* silently fail */
+                  } finally {
+                    setIsSavingLinks(false);
+                  }
+                }}
               >
-                Update links
+                {isSavingLinks ? "Saving..." : "Update links"}
                 <Image
                   src="/icons/upload.svg"
                   alt=""
@@ -613,9 +660,9 @@ export default function SupplierDashboardPage() {
                 />
               </button>
             </div>
-          </section>
+          </SupplierDashboardSectionCard>
 
-          <section className={`${PANEL_CLASS} p-6 sm:p-10`} dir="rtl">
+          <SupplierDashboardSectionCard dir="rtl">
             <SectionHeaderIcon title="Gallery management" iconSrc="/icons/gallery.svg" iconSizeClass="h-7 w-7" />
             <input
               ref={galleryInputRef}
@@ -624,58 +671,59 @@ export default function SupplierDashboardPage() {
               multiple
               className="hidden"
               onChange={onPickGalleryImages}
+              disabled={isUploadingGallery}
             />
 
             <div
-              className="relative z-[2] grid grid-cols-2 gap-3 sm:grid-cols-4"
+              className="relative grid grid-cols-2 gap-3 sm:grid-cols-4"
               dir="ltr"
             >
               <button
                 type="button"
                 onClick={() => galleryInputRef.current?.click()}
-                className="flex min-h-[184px] flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[#CBD5E1] bg-[rgba(255,255,255,0.5)] text-[#94A3B8] transition hover:bg-white/80"
+                disabled={isUploadingGallery}
+                className={`flex min-h-[184px] flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[#CBD5E1] bg-[rgba(255,255,255,0.5)] text-[#94A3B8] transition hover:bg-white/80 ${isUploadingGallery ? "cursor-not-allowed opacity-60" : ""}`}
               >
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" aria-hidden>
-                  <path
-                    d="M12 5v14M5 12h14"
-                    stroke="#94A3B8"
-                    strokeWidth="2.67"
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <span className="text-sm leading-5">Add a photo</span>
+                {isUploadingGallery ? (
+                  <svg className="animate-spin size-8 text-[#94A3B8]" viewBox="0 0 24 24" fill="none" aria-hidden>
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="31.4 31.4" strokeLinecap="round" />
+                  </svg>
+                ) : (
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" aria-hidden>
+                    <path d="M12 5v14M5 12h14" stroke="#94A3B8" strokeWidth="2.67" strokeLinecap="round" />
+                  </svg>
+                )}
+                <span className="text-sm leading-5">{isUploadingGallery ? "Uploading..." : "Add a photo"}</span>
               </button>
-              {uploadedGalleryImages.map((src) => (
-                <div
-                  key={src}
-                  className="relative min-h-[184px] overflow-hidden rounded-2xl border border-[#F1F5F9] bg-slate-100"
-                >
-                  <Image src={src} alt="" fill className="object-cover" sizes="200px" unoptimized />
+              {(() => {
+                const mp = me?.marketplaceProfile;
+                const allImages = [...(mp?.gallery ?? []), ...galleryUrls];
+                return allImages.map((src) => (
+                  <div
+                    key={src}
+                    className="relative min-h-[184px] overflow-hidden rounded-2xl border border-[#F1F5F9] bg-slate-100"
+                  >
+                    <Image src={src} alt="" fill className="object-cover" sizes="200px" unoptimized />
+                  </div>
+                ));
+              })()}
+              {me?.marketplaceProfile?.avatarImageUrl && (
+                <div className="relative min-h-[184px] overflow-hidden rounded-2xl border-4 border-[#3B82F6] shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1)]">
+                  <Image
+                    src={me.marketplaceProfile.avatarImageUrl}
+                    alt=""
+                    fill
+                    className="object-cover"
+                    sizes="240px"
+                    unoptimized
+                  />
+                  <span className="absolute right-3 top-3 rounded-lg bg-[#3B82F6] px-2 py-1 text-[10px] font-bold leading-[15px] text-white">
+                    Profile picture
+                  </span>
                 </div>
-              ))}
-              {["/avatars/3.jpg", "/avatars/2.jpg", "/avatars/1.jpg"].map((src) => (
-                <div
-                  key={src}
-                  className="relative min-h-[184px] overflow-hidden rounded-2xl border border-[#F1F5F9] bg-slate-100"
-                >
-                  <Image src={src} alt="" fill className="object-cover" sizes="200px" unoptimized />
-                </div>
-              ))}
-              <div className="relative min-h-[184px] overflow-hidden rounded-2xl border-4 border-[#3B82F6] shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1)]">
-                <Image
-                  src="/avatars/4.jpg"
-                  alt=""
-                  fill
-                  className="object-cover"
-                  sizes="240px"
-                  unoptimized
-                />
-                <span className="absolute right-3 top-3 rounded-lg bg-[#3B82F6] px-2 py-1 text-[10px] font-bold leading-[15px] text-white">
-                  Set as profile picture
-                </span>
-              </div>
+              )}
             </div>
-          </section>
+          </SupplierDashboardSectionCard>
         </div>
 
         {showMessages && (

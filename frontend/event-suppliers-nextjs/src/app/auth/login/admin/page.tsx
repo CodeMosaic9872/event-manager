@@ -11,6 +11,7 @@ import {
 } from "@/shared/components/supplier-auth/supplier-auth-marketing-layout";
 import { supplierAuthContactInputClass } from "@/shared/components/supplier-auth/supplier-auth-glass-card";
 import { getSafeInternalRedirectPath } from "@/shared/lib/safe-redirect-path";
+import { HeAuth } from "@/shared/lib/he-ui";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -19,9 +20,9 @@ const PURPOSE = "login" as const;
 
 function validateContact(value: string, mode: "email" | "phone"): string | null {
   const trimmed = value.trim();
-  if (!trimmed) return "Please enter your email or phone number.";
-  if (mode === "email" && !EMAIL_RE.test(trimmed)) return "Please enter a valid email address.";
-  if (mode === "phone" && !PHONE_RE.test(trimmed)) return "Please enter a valid Israeli phone number (05XXXXXXXX or +972XXXXXXXXX).";
+  if (!trimmed) return HeAuth.enterEmailOrPhone;
+  if (mode === "email" && !EMAIL_RE.test(trimmed)) return HeAuth.validEmail;
+  if (mode === "phone" && !PHONE_RE.test(trimmed)) return HeAuth.validPhone;
   return null;
 }
 
@@ -67,7 +68,7 @@ function AdminLoginContent() {
       }).unwrap();
       setOtpSent(true);
     } catch {
-      setError("Failed to send verification code. Please try again.");
+      setError(HeAuth.otpSendFailed);
     }
   };
 
@@ -81,7 +82,7 @@ function AdminLoginContent() {
     const loginIdentity = contact.trim();
 
     if (!loginIdentity || otpCode.length !== 6) {
-      setError("Please enter your admin details and a 6-digit verification code.");
+      setError(HeAuth.adminOtpHint);
       return;
     }
 
@@ -100,7 +101,7 @@ function AdminLoginContent() {
       );
       router.push(nextPath.startsWith("/admin") ? nextPath : "/admin");
     } catch {
-      setError("Login failed. Please try again.");
+      setError(HeAuth.loginFailed);
     }
   };
 
@@ -117,20 +118,20 @@ function AdminLoginContent() {
   return (
     <SupplierAuthMarketingLayout
       userTabHref="/auth/login"
-      userTabLabel="User login"
-      providerTabLabel="Admin login"
-      heading="Admin login"
-      subheading="Login with an admin account to manage the platform."
+      userTabLabel="התחברות משתמש"
+      providerTabLabel="התחברות מנהל"
+      heading="כניסת מנהל"
+      subheading="התחברו עם חשבון מנהל לניהול הפלטפורמה."
       contactMode={contactMode}
       onContactModeChange={setContactMode}
     >
       <form className="flex w-full max-w-full flex-col gap-6 sm:max-w-[382px]" onSubmit={onSubmit}>
         <div className="flex flex-col gap-2">
-          <label className="w-full pe-1 text-right text-[14px] leading-5 text-black">Email / Phone</label>
+          <label className="w-full pe-1 text-right text-[14px] leading-5 text-black">אימייל / טלפון</label>
           <div className="relative">
             <input
               className={supplierAuthContactInputClass}
-              placeholder="Enter your admin account"
+              placeholder="הזינו פרטי מנהל"
               value={contact}
               onChange={(event) => setContact(event.target.value)}
               autoComplete={contactMode === "email" ? "email" : "tel"}
@@ -151,7 +152,7 @@ function AdminLoginContent() {
             canRequestOtp ? "cursor-pointer bg-[#201C44] hover:bg-[#151238]" : "cursor-not-allowed bg-[#201C44] opacity-60"
           }`}
         >
-          {isRequestingOtp ? "Sending..." : otpSent ? "Send again" : "Getting a code"}
+          {isRequestingOtp ? "שולח…" : otpSent ? "שליחה מחדש" : "קבלת קוד"}
         </button>
 
         <div className="flex w-full flex-col gap-4 border-t border-black/10 pt-4">
@@ -162,9 +163,9 @@ function AdminLoginContent() {
               disabled={!canRequestOtp}
               className="shrink-0 cursor-pointer text-left text-[12px] leading-4 text-[#201C44] hover:underline disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Send again
+              שליחה מחדש
             </button>
-            <span className="text-right text-[14px] leading-5 text-black">Enter verification code (OTP)</span>
+            <span className="text-right text-[14px] leading-5 text-black">הזינו קוד אימות בן 6 ספרות</span>
           </div>
           <div className="flex w-full flex-row justify-center gap-1 sm:gap-2">
             {otp.map((digit, index) => (
@@ -176,7 +177,7 @@ function AdminLoginContent() {
                 value={digit}
                 onChange={(event) => setOtpDigit(index, event.target.value)}
                 className="box-border sm:size-14 size-12 rounded-xl border border-black/10 bg-white text-center text-[18px] tabular-nums outline-none backdrop-blur-sm focus:ring-2 focus:ring-[#4721DF]/30"
-                aria-label={`Digit ${index + 1}`}
+                aria-label={`ספרה ${index + 1}`}
               />
             ))}
           </div>
@@ -193,7 +194,7 @@ function AdminLoginContent() {
               : "cursor-not-allowed border-transparent bg-[#201C44] text-white opacity-60"
           }`}
         >
-          <span>{isLoggingIn ? "Logging in..." : "Login as admin"}</span>
+          <span>{isLoggingIn ? "מתחבר…" : "כניסה כמנהל"}</span>
           <span className={otpComplete && !isLoading ? "opacity-90 brightness-0 invert" : "opacity-70"} aria-hidden>
             <Image src="/icons/go-to.svg" alt="" width={18} height={18} />
           </span>

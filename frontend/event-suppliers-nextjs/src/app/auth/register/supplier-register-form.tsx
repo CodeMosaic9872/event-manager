@@ -19,6 +19,7 @@ import {
 } from "@/shared/components/supplier-auth/supplier-auth-marketing-layout";
 import { getSafeInternalRedirectPath } from "@/shared/lib/safe-redirect-path";
 import { MarketingPageShell } from "@/shared/components/marketing-page-shell";
+import { HeAuth } from "@/shared/lib/he-ui";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
 import { useAppDispatch } from "@/store/hooks";
 
@@ -28,9 +29,9 @@ const PURPOSE = "register" as const;
 
 function validateContact(value: string, mode: "email" | "phone"): string | null {
   const trimmed = value.trim();
-  if (!trimmed) return "Please enter your email or phone number.";
-  if (mode === "email" && !EMAIL_RE.test(trimmed)) return "Please enter a valid email address.";
-  if (mode === "phone" && !PHONE_RE.test(trimmed)) return "Please enter a valid Israeli phone number (05XXXXXXXX or +972XXXXXXXXX).";
+  if (!trimmed) return HeAuth.enterEmailOrPhone;
+  if (mode === "email" && !EMAIL_RE.test(trimmed)) return HeAuth.validEmail;
+  if (mode === "phone" && !PHONE_RE.test(trimmed)) return HeAuth.validPhone;
   return null;
 }
 
@@ -82,7 +83,7 @@ function SupplierRegisterInner() {
       setOtpSent(true);
       setStep("verify");
     } catch {
-      setError("Failed to send verification code. Please try again.");
+      setError(HeAuth.otpSendFailed);
     }
   };
 
@@ -98,14 +99,14 @@ function SupplierRegisterInner() {
 
     if (!canSubmit) return;
     if (otpCode.length !== 6) {
-      setError("Please enter a 6-digit verification code.");
+      setError(HeAuth.enterOtp6);
       return;
     }
 
     try {
       await verifyOtp({ phone: identity, code: otpCode, purpose: PURPOSE }).unwrap();
     } catch {
-      setError("Invalid verification code. Please try again.");
+      setError(HeAuth.invalidOtp);
       return;
     }
 
@@ -127,7 +128,7 @@ function SupplierRegisterInner() {
         }),
       );
     } catch {
-      setError("Registration failed. Please try again.");
+      setError(HeAuth.registerFailed);
       return;
     }
 
@@ -158,10 +159,10 @@ function SupplierRegisterInner() {
         >
           <div className="relative w-full max-w-[480px] overflow-hidden rounded-[24px] border border-[rgba(134,85,246,0.2)] bg-[rgba(71,33,223,0.07)] px-6 py-10 shadow-[0px_8px_32px_rgba(0,0,0,0.37)] backdrop-blur-[6px] sm:px-12 sm:py-12">
             <h1 className="mb-2 text-center text-[28px] font-normal leading-9 tracking-[-0.75px] text-black sm:text-[30px]">
-              Create a new account
+              יצירת חשבון חדש
             </h1>
             <p className="mb-8 text-center text-[14px] leading-5 text-black/70">
-              A verification code will be sent to you shortly.
+              קוד אימות יישלח אליכם בקרוב.
             </p>
 
             <form className="flex flex-col items-center gap-6" onSubmit={handleVerifyAndRegister}>
@@ -173,10 +174,10 @@ function SupplierRegisterInner() {
                     disabled={isRequestingOtp}
                     className="cursor-pointer text-[16px] leading-6 text-black underline hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    To resend
+                    שליחת קוד מחדש
                   </button>
                   <span className="text-right text-[16px] leading-5 text-black">
-                    Enter verification code
+                    הזינו קוד אימות
                   </span>
                 </div>
                 <div className="flex w-full flex-row justify-center gap-[29px]">
@@ -189,7 +190,7 @@ function SupplierRegisterInner() {
                       value={digit}
                       onChange={(e) => setOtpDigit(i, e.target.value)}
                       className="box-border size-14 rounded-xl border border-black/10 bg-white text-center text-[18px] tabular-nums outline-none backdrop-blur-[8px] focus:ring-2 focus:ring-[#4721DF]/30"
-                      aria-label={`Digit ${i + 1}`}
+                      aria-label={`ספרה ${i + 1}`}
                     />
                   ))}
                 </div>
@@ -206,7 +207,7 @@ function SupplierRegisterInner() {
                     : "cursor-not-allowed border-black/10 bg-black/10 text-black opacity-100"
                 }`}
               >
-                <span>{isVerifyingOtp || isRegistering ? "Creating..." : "Logging in to the system"}</span>
+                <span>{isVerifyingOtp || isRegistering ? "יוצר חשבון…" : "השלמת הרשמה"}</span>
               </button>
             </form>
           </div>
@@ -229,20 +230,20 @@ function SupplierRegisterInner() {
   return (
     <SupplierAuthMarketingLayout
       userTabHref={userRegisterHref}
-      userTabLabel="User registration"
-      providerTabLabel="Provider registration"
-      heading="Supplier entry"
-      subheading="Choose your preferred login method to log into our platform."
+      userTabLabel="הרשמת משתמש"
+      providerTabLabel="הרשמת ספק"
+      heading="כניסת ספק"
+      subheading="בחרו אימייל או טלפון, קבלו קוד אימות והירשמו לפלטפורמה."
       contactMode={contactMode}
       onContactModeChange={setContactMode}
     >
       <form className="flex w-full max-w-[382px] flex-col gap-6" onSubmit={handleVerifyAndRegister}>
         <div className="flex flex-col gap-2">
-          <label className="w-full pe-1 text-right text-[14px] leading-5 text-black">Email / Phone</label>
+          <label className="w-full pe-1 text-right text-[14px] leading-5 text-black">אימייל / טלפון</label>
           <div className="relative">
             <input
               className={supplierAuthContactInputClass}
-              placeholder="Enter your details"
+              placeholder="הזינו אימייל או טלפון"
               value={contact}
               onChange={(e) => setContact(e.target.value)}
               autoComplete="email"
@@ -264,7 +265,7 @@ function SupplierRegisterInner() {
             canRequestOtp ? "cursor-pointer bg-[#201C44] hover:bg-[#151238]" : "cursor-not-allowed bg-[#201C44] opacity-60"
           }`}
         >
-          {isRequestingOtp ? "Sending..." : otpSent ? "Send again" : "Getting a code"}
+          {isRequestingOtp ? "שולח…" : otpSent ? "שליחה מחדש" : "קבלת קוד"}
         </button>
 
         <div className="flex w-full flex-col gap-4 border-t border-black/10 pt-4">
@@ -275,9 +276,9 @@ function SupplierRegisterInner() {
               disabled={!canRequestOtp}
               className="shrink-0 cursor-pointer text-left text-[12px] leading-4 text-[#201C44] hover:underline disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Send again
+              שליחה מחדש
             </button>
-            <span className="text-right text-[14px] leading-5 text-black">Enter verification code (OTP)</span>
+            <span className="text-right text-[14px] leading-5 text-black">הזינו קוד אימות בן 6 ספרות</span>
           </div>
           <div className="flex w-full flex-row justify-center gap-1 sm:gap-2">
             {otp.map((digit, i) => (
@@ -289,7 +290,7 @@ function SupplierRegisterInner() {
                 value={digit}
                 onChange={(e) => setOtpDigit(i, e.target.value)}
                 className="box-border sm:size-14 size-12 rounded-xl border border-black/10 bg-white text-center text-[18px] tabular-nums outline-none backdrop-blur-sm focus:ring-2 focus:ring-[#4721DF]/30"
-                aria-label={`Digit ${i + 1}`}
+                aria-label={`ספרה ${i + 1}`}
               />
             ))}
           </div>
@@ -306,7 +307,7 @@ function SupplierRegisterInner() {
               : "cursor-not-allowed border-transparent bg-[#201C44] text-white opacity-60"
           }`}
         >
-          <span>{isRegistering ? "Creating…" : "Create supplier account"}</span>
+          <span>{isRegistering ? "יוצר חשבון…" : "יצירת חשבון ספק"}</span>
           <span className={canSubmit ? "opacity-90 brightness-0 invert" : "opacity-70"} aria-hidden>
             <Image src="/icons/go-to.svg" alt="" width={18} height={18} />
           </span>
@@ -314,12 +315,12 @@ function SupplierRegisterInner() {
       </form>
 
       <footer className="mt-10 flex w-full flex-row flex-wrap items-center justify-center gap-2 text-center text-[14px] leading-5">
-        <span className="text-black">Already have an account?</span>
+        <span className="text-black">כבר יש לכם חשבון?</span>
         <Link
           href={`/auth/login/supplier?next=${encodeURIComponent(nextPath)}`}
           className="font-normal text-[#201C44] hover:underline"
         >
-          Log in here
+          התחברות כאן
         </Link>
       </footer>
     </SupplierAuthMarketingLayout>
@@ -332,10 +333,10 @@ export function SupplierRegisterFormWithSuspense() {
       fallback={
         <SupplierAuthMarketingLayout
           userTabHref="/auth/register"
-          userTabLabel="User registration"
-          providerTabLabel="Provider registration"
-          heading="Supplier entry"
-          subheading="Choose your preferred login method to log into our platform."
+          userTabLabel="הרשמת משתמש"
+          providerTabLabel="הרשמת ספק"
+          heading="כניסת ספק"
+          subheading="בחרו אימייל או טלפון, קבלו קוד אימות והירשמו לפלטפורמה."
           contactMode="email"
           onContactModeChange={() => {}}
         >

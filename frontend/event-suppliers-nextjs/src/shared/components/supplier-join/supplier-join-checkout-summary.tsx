@@ -17,7 +17,7 @@ type Props = {
 function FeatureBullet({ children }: { children: string }) {
   return (
     <li className="flex w-full min-w-0 items-start justify-between gap-3">
-      <span className="min-w-0 flex-1 text-right text-[14px] leading-5 text-black/70">
+      <span className="min-w-0 flex-1 text-right text-[14px] font-normal leading-5 text-black">
         {children}
       </span>
       <Image
@@ -44,12 +44,12 @@ export function SupplierJoinCheckoutSummary({ plan, styleFont }: Props) {
     >
       <div
         className="w-full min-w-0 overflow-hidden rounded-[24px] border border-black bg-[rgba(134,85,246,0.06)] backdrop-blur-[6px]"
-        dir="ltr"
-        lang="en"
+        dir="rtl"
+        lang="he"
       >
         <div className="relative flex h-32 w-full items-center justify-center bg-[rgba(134,85,246,0.2)]">
-          <p className="relative z-[1] text-center text-[24px] font-normal leading-6 text-black">
-            Partner subscription
+          <p className="relative z-[1] text-center text-[24px] font-bold leading-6 text-black">
+            מנוי שותפים לדרך
           </p>
         </div>
 
@@ -57,18 +57,18 @@ export function SupplierJoinCheckoutSummary({ plan, styleFont }: Props) {
           <div className="flex w-full flex-row items-start justify-between gap-3 border-b border-black/5 pb-4">
             <div className="h-5 w-[68px] shrink-0" aria-hidden />
             <div className="min-w-0 max-w-[calc(100%-80px)] text-right">
-              <p className="text-[12px] leading-4 text-black/50">
-                Subscription period
+              <p className="text-[12px] font-normal leading-4 text-black/50">
+                תקופת מנוי
               </p>
-              <p className="break-words text-[16px] font-normal leading-6 text-black">
+              <p className="break-words text-[16px] font-bold leading-6 text-black">
                 {plan.summaryTitle}
               </p>
             </div>
           </div>
 
           <div className="flex w-full flex-col gap-4">
-            <h4 className="w-full text-right text-[14px] font-normal leading-5 text-black">
-              What is included in the program:
+            <h4 className="w-full text-right text-[14px] font-bold leading-5 text-black">
+              מה כלול בתוכנית:
             </h4>
             <ul className="flex w-full flex-col gap-3">
               {SUPPLIER_JOIN_PROGRAM_FEATURES.map((line) => (
@@ -79,17 +79,17 @@ export function SupplierJoinCheckoutSummary({ plan, styleFont }: Props) {
 
           <div className="w-full border-t border-black pt-6">
             <div className="flex w-full flex-col gap-2">
-              <div className="flex w-full flex-row items-baseline justify-between gap-4 text-[14px] leading-5 text-black">
-                <span className="min-w-0 shrink text-left text-[14px]">
-                  Subscription price
+              <div className="flex w-full flex-row items-baseline justify-between gap-4 text-[14px] font-normal leading-5 text-black">
+                <span className="min-w-0 shrink text-right text-[14px]">
+                  מחיר מנוי
                 </span>
                 <span className="shrink-0 tabular-nums" dir="ltr">
                   {formatIls(pretax)}
                 </span>
               </div>
-              <div className="flex w-full flex-row items-baseline justify-between gap-4 text-[14px] leading-5 text-black">
-                <span className="min-w-0 shrink text-left text-[14px]">
-                  VAT (17%)
+              <div className="flex w-full flex-row items-baseline justify-between gap-4 text-[14px] font-normal leading-5 text-black">
+                <span className="min-w-0 shrink text-right text-[14px]">
+                  מע״מ (17%)
                 </span>
                 <span className="shrink-0 tabular-nums" dir="ltr">
                   {formatIls(vat)}
@@ -98,20 +98,20 @@ export function SupplierJoinCheckoutSummary({ plan, styleFont }: Props) {
             </div>
 
             <div className="mt-4 flex w-full flex-row items-end justify-between gap-4">
-              <div className="min-w-0 text-left">
+              <p className="max-w-[180px] shrink-0 text-right text-[24px] font-bold leading-7 text-black">
+                סה״כ לתשלום
+              </p>
+              <div className="min-w-0 text-right">
                 <p
-                  className="text-[30px] font-normal leading-9 text-black tabular-nums"
+                  className="text-[30px] font-bold leading-9 text-black tabular-nums"
                   dir="ltr"
                 >
                   {formatIls(total)}
                 </p>
-                <p className="text-[10px] leading-[15px] text-black">
+                <p className="text-[10px] font-normal leading-[15px] text-black">
                   {plan.totalPeriodNote}
                 </p>
               </div>
-              <p className="max-w-[180px] shrink-0 text-right text-[24px] font-normal leading-7 text-black">
-                Total to be paid
-              </p>
             </div>
           </div>
         </div>
@@ -119,23 +119,9 @@ export function SupplierJoinCheckoutSummary({ plan, styleFont }: Props) {
 
       <div
         className="flex w-full min-w-0 flex-row items-center gap-4 rounded-[24px] border border-black bg-[rgba(134,85,246,0.06)] p-4 backdrop-blur-[6px]"
-        dir="ltr"
-        lang="en"
+        dir="rtl"
+        lang="he"
       >
-        <div className="shrink-0">
-          <button
-            type="button"
-            className="rounded-2xl bg-black/5 px-3 py-1.5 text-[12px] font-normal leading-4 text-black transition hover:bg-black/10"
-          >
-            Live chat
-          </button>
-        </div>
-        <div className="min-w-0 flex-1 text-right">
-          <p className="text-[14px] leading-5 text-black">Need help?</p>
-          <p className="text-[12px] leading-4 text-black/50">
-            Our sales representatives are available for you.
-          </p>
-        </div>
         <div
           className="flex size-10 shrink-0 items-center justify-center rounded-full bg-black/5"
           aria-hidden
@@ -148,6 +134,20 @@ export function SupplierJoinCheckoutSummary({ plan, styleFont }: Props) {
             className="object-contain"
             unoptimized
           />
+        </div>
+        <div className="min-w-0 flex-1 text-right">
+          <p className="text-[14px] font-bold leading-5 text-black">צריכים עזרה?</p>
+          <p className="text-[12px] font-normal leading-4 text-black/50">
+            נציגי המכירות שלנו זמינים עבורכם
+          </p>
+        </div>
+        <div className="shrink-0">
+          <button
+            type="button"
+            className="rounded-2xl bg-black/5 px-3 py-1.5 text-[12px] font-normal leading-4 text-black transition hover:bg-black/10"
+          >
+            צ&apos;אט חי
+          </button>
         </div>
       </div>
     </div>

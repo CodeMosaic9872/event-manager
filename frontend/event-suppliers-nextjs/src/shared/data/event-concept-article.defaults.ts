@@ -1,84 +1,84 @@
 import type { EventConceptArticle } from "@/shared/types/event-concept-article";
 
-/** Full article body matching the pool-villa Figma; hero is merged per slug in `getEventConceptArticle`. */
+/** תוכן מאמר לדוגמה — גיבור מותאם לפי slug ב־`getEventConceptArticle`. */
 export const eventConceptArticleDefaults: Omit<EventConceptArticle, "slug" | "hero"> = {
-  visionTitle: "The vision and atmosphere",
+  visionTitle: "החזון והאווירה",
   visionParagraphs: [
-    "The concept of a private villa pool party offers the perfect combination of a luxurious event and a relaxed atmosphere. The event begins in the late afternoon with refreshing cocktails by the pool, and continues into the night with decorative lighting, immersive music and a customized chef's menu.",
-    "The design focuses on shades of deep blue and bold orange touches to create an impressive contrast. The use of luxurious garden furniture, pampering lounge areas and lighting that sinks into the water create an unparalleled hospitality space. Every detail has been carefully chosen - from the branding on the cocktail glasses to the precise sound that surrounds the floating dance floor.",
+    "קונספט של מסיבת בריכה בווילה פרטית משלב אירוע יוקרתי עם אווירה רגועה. האירוע מתחיל אחר הצהריים עם קוקטיילים מרעננים ליד הבריכה, ונמשך לתוך הלילה עם תאורה דקורטיבית, מוזיקה סוחפת ותפריט שף מותאם.",
+    "העיצוב מתמקד בגווני כחול עמוק ומגעי כתום נועזים ליצירת ניגוד מרשים. שימוש בריהוט גן יוקרתי, פינות ישיבה מפנקות ותאורה שנשקעת במים יוצרים חלל אירוח יוצא דופן. כל פרט נבחר בקפידה — מהמיתוג על כוסות הקוקטייל ועד לצליל המדויק סביב רחבת הריקוד הצפה.",
   ],
   quote:
-    '"Our goal was to create a complete disconnect from the everyday. We wanted guests to feel like they were on a luxury vacation on the Riviera, but with the personal and warm touch of a private event."',
+    '"המטרה שלנו הייתה ליצור ניתוק מוחלט מהשגרה. רצינו שהאורחים ירגישו בחופשה יוקרתית על הריביירה, אבל עם החום האישי של אירוע פרטי."',
   specs: [
-    { label: "Estimated budget", value: "₪150k - 250k", icon: "wallet" },
-    { label: "Number of guests", value: "80 - 150", icon: "users" },
-    { label: "Location type", value: "Private villa / beach", icon: "map-pin" },
-    { label: "Recommended season", value: "Summer / Spring", icon: "clock" },
+    { label: "תקציב משוער", value: "150–250 אלף ש״ח", icon: "wallet" },
+    { label: "מספר אורחים", value: "80 - 150", icon: "users" },
+    { label: "סוג מיקום", value: "וילה פרטית / חוף", icon: "map-pin" },
+    { label: "עונה מומלצת", value: "קיץ / אביב", icon: "clock" },
   ],
   map: {
     imageSrc:
       "https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&q=80&auto=format&fit=crop",
-    imageAlt: "Map preview near the coast",
-    recommendedArea: "Herzliya Pituach",
+    imageAlt: "תצוגת מפה ליד החוף",
+    recommendedArea: "הרצליה פיתוח",
   },
-  teamTitle: "The supplier team",
+  teamTitle: "צוות הספקים",
   team: [
     {
-      name: "Villa 'Blue Bay'",
-      specialty: "Event complex",
+      name: "וילה ׳בלו ביי׳",
+      specialty: "מתחם אירועים",
       imageSrc: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=200&q=80&auto=format&fit=crop",
-      imageAlt: "Luxury villa exterior",
+      imageAlt: "חזית וילה יוקרתית",
       profileHref: "#",
     },
     {
-      name: "Chef Idan Levy",
-      specialty: "Catering chef",
+      name: "שף עידן לוי",
+      specialty: "שף קייטרינג",
       imageSrc: "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=200&q=80&auto=format&fit=crop",
-      imageAlt: "Chef portrait",
+      imageAlt: "דיוקן שף",
       profileHref: "#",
     },
     {
-      name: "DJ Ofir Ram",
-      specialty: "Music and atmosphere",
+      name: "די ג׳י אופיר רם",
+      specialty: "מוזיקה ואווירה",
       imageSrc: "https://images.unsplash.com/photo-1571266028243-e4733b0f91d1?w=200&q=80&auto=format&fit=crop",
-      imageAlt: "DJ at decks",
+      imageAlt: "די ג׳י ליד המיקסר",
       profileHref: "#",
     },
   ],
-  galleryTitle: "Moments Gallery",
+  galleryTitle: "גלריית רגעים",
   gallery: [
     {
       src: "https://images.unsplash.com/photo-1575429198097-0414ec08e8cd?w=600&q=80&auto=format&fit=crop",
-      alt: "Guests by the pool",
+      alt: "אורחים ליד הבריכה",
     },
     {
       src: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=600&q=80&auto=format&fit=crop",
-      alt: "Evening table setting",
+      alt: "עיצוב שולחן ערב",
     },
     {
       src: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&q=80&auto=format&fit=crop",
-      alt: "Celebration details",
+      alt: "פרטי חגיגה",
     },
     {
       src: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=600&q=80&auto=format&fit=crop",
-      alt: "Outdoor lounge",
+      alt: "לאונג׳ חוץ",
     },
     {
       src: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80&auto=format&fit=crop",
-      alt: "Pool floats and decor",
+      alt: "ציפים בבריכה ודקור",
     },
     {
       src: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600&q=80&auto=format&fit=crop",
-      alt: "Guests enjoying the pool",
+      alt: "אורחים נהנים מהבריכה",
     },
   ],
 };
 
 export const eventConceptArticleDefaultHero: EventConceptArticle["hero"] = {
-  badgeLabel: "Selected concept",
-  title: "Luxurious pool party at the villa",
-  subtitle: "An exclusive experience that combines luxury, water and a free atmosphere under the open sky.",
+  badgeLabel: "קונספט נבחר",
+  title: "מסיבת בריכה יוקרתית בווילה",
+  subtitle: "חוויה בלעדית שמשלבת יוקרה, מים ואווירה חופשית תחת שמיים פתוחים.",
   imageSrc:
     "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1400&q=80&auto=format&fit=crop",
-  imageAlt: "Luxurious poolside dining at dusk",
+  imageAlt: "ארוחת ערב יוקרתית ליד הבריכה בדמדומים",
 };

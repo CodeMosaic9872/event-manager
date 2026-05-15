@@ -6,6 +6,7 @@ import { createAuthEndpoints } from "@/shared/api/endpoints/auth-endpoints";
 import { createJobsEndpoints } from "@/shared/api/endpoints/jobs-endpoints";
 import { createSuppliersEndpoints } from "@/shared/api/endpoints/suppliers-endpoints";
 import { createTaxonomyEndpoints } from "@/shared/api/endpoints/taxonomy-endpoints";
+import { createAdminEndpoints } from "@/shared/api/endpoints/admin-endpoints";
 
 const baseUrl =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -26,6 +27,13 @@ const baseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> =
   api,
   extraOptions,
 ) => {
+  const state = api.getState() as { auth: { accessToken: string | null; isHydrated: boolean } };
+  const url = typeof args === "string" ? args : args.url;
+
+  if (!state.auth.accessToken && state.auth.isHydrated && !url.startsWith("/v1/auth/") && !url.startsWith("/v1/suppliers") && !url.startsWith("/v1/search/") && !url.startsWith("/v1/taxonomy/") && !url.startsWith("/v1/jobs")) {
+    return { error: { status: 401, data: { message: "No token available" } } };
+  }
+
   const result = await rawBaseQuery(args, api, extraOptions);
 
   if (!result.error && result.data && typeof result.data === "object" && (result.data as any).success === false) {
@@ -83,7 +91,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 export const api = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Suppliers", "Jobs", "Notifications", "Auth"],
+  tagTypes: ["Suppliers", "Jobs", "Notifications", "Auth", "AdminSuppliers", "AdminJobs", "AdminUsers", "AdminReferrals", "AdminNotifications", "AdminAutomations"],
   keepUnusedDataFor: 60,
   refetchOnReconnect: true,
   endpoints: (builder) => ({
@@ -92,6 +100,7 @@ export const api = createApi({
     ...createTaxonomyEndpoints(builder),
     ...createJobsEndpoints(builder),
     ...createAiAndNotificationEndpoints(builder),
+    ...createAdminEndpoints(builder),
   }),
 });
 
@@ -136,6 +145,18 @@ export const {
   useDeleteMySupplierReviewMutation,
   useCreateMediaUploadUrlMutation,
   useCompleteMediaUploadMutation,
+  useGetAdminSuppliersQuery,
+  useGetAdminIncompleteSuppliersQuery,
+  useApproveSupplierMutation,
+  useRejectSupplierMutation,
+  useGetAdminJobsQuery,
+  useGetAdminJobApplicationsQuery,
+  useArchiveJobMutation,
+  useGetAdminUsersQuery,
+  useGetAdminIncompleteUsersQuery,
+  useGetAdminReferralsQuery,
+  useGetAdminNotificationsQuery,
+  useGetAdminAutomationMetricsQuery,
   useGetEventTypesQuery,
   useGetCategoriesQuery,
   useGetSubcategoriesQuery,

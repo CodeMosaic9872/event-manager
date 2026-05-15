@@ -13,6 +13,7 @@ import {
 import type { UserRole } from "@/shared/types";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { MarketingPageShell } from "@/shared/components/marketing-page-shell";
+import { HeAuth } from "@/shared/lib/he-ui";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
 import { SupplierRegisterFormWithSuspense } from "./supplier-register-form";
 
@@ -95,13 +96,13 @@ function GenericRegisterForm() {
 
   const emailError = useMemo(() => {
     if (!email.trim()) return null;
-    if (!EMAIL_RE.test(email.trim())) return "Please enter a valid email address.";
+    if (!EMAIL_RE.test(email.trim())) return HeAuth.validEmail;
     return null;
   }, [email]);
 
   const phoneError = useMemo(() => {
     if (!phone.trim()) return null;
-    if (!PHONE_RE.test(phone.trim())) return "Please enter a valid Israeli phone number (05XXXXXXXX or +972XXXXXXXXX).";
+    if (!PHONE_RE.test(phone.trim())) return HeAuth.validPhone;
     return null;
   }, [phone]);
 
@@ -130,7 +131,7 @@ function GenericRegisterForm() {
       await requestOtp({ phone: phone.trim(), purpose: PURPOSE }).unwrap();
       setStep("verify");
     } catch {
-      setError("Failed to send verification code. Please try again.");
+      setError(HeAuth.otpSendFailed);
     }
   };
 
@@ -143,14 +144,14 @@ function GenericRegisterForm() {
 
     const otpCode = otp.join("");
     if (otpCode.length !== 6) {
-      setError("Please enter a 6-digit verification code.");
+      setError(HeAuth.enterOtp6);
       return;
     }
 
     try {
       await verifyOtp({ phone: phone.trim(), code: otpCode, purpose: PURPOSE }).unwrap();
     } catch {
-      setError("Invalid verification code. Please try again.");
+      setError(HeAuth.invalidOtp);
       return;
     }
 
@@ -173,7 +174,7 @@ function GenericRegisterForm() {
         }),
       );
     } catch {
-      setError("Registration failed. Please try again.");
+      setError(HeAuth.registerFailed);
       return;
     }
 
@@ -199,26 +200,26 @@ function GenericRegisterForm() {
     return (
       <MarketingPageShell
         showBackgroundImage={false}
-        dir="ltr"
-        lang="en"
+        dir="rtl"
+        lang="he"
         contentClassName="pt-12 sm:pt-16 lg:pt-20"
       >
         <div className="flex w-full max-w-[560px] flex-col items-center px-4" style={{ fontFamily: marketingPloniFont }}>
           <h1 className="mb-4 text-center text-[30px] font-normal leading-[0.95] tracking-[-0.8px] text-[#0f1a33] sm:text-[32px]">
-            Create a new
+            יצירת חשבון
             <br />
-            account
+            חדש
           </h1>
 
           <div className="w-full rounded-[24px] border border-[#c9d8f6] bg-[#eef3ff]/80 px-6 py-8 shadow-[0_14px_32px_rgba(23,40,83,0.20)] backdrop-blur-xs sm:px-8 sm:py-9">
             <p className="mx-auto mb-4 max-w-[420px] text-center text-[30px] font-normal leading-snug text-[#111827] sm:text-[18px]">
-              A verification code will be sent to you shortly.
+              קוד אימות יישלח אליכם בקרוב.
             </p>
 
             <form className="flex flex-col items-center gap-5" onSubmit={handleVerifyAndRegister}>
               <div className="w-full border-t border-[#dce5f8] pt-2">
                 <p className="mb-3 text-right text-[16px] leading-[1.05] text-[#111827]">
-                  Enter verification code
+                  הזינו קוד אימות
                 </p>
                 <div className="mb-4 flex w-full flex-wrap justify-center gap-4 sm:gap-5">
                   {otp.map((digit, i) => (
@@ -230,7 +231,7 @@ function GenericRegisterForm() {
                       value={digit}
                       onChange={(e) => setOtpDigit(i, e.target.value)}
                       className="size-14 rounded-xl border border-[#d5def2] bg-white text-center text-[18px] tabular-nums text-[#111827] outline-none focus:border-[#7a8cff] focus:ring-2 focus:ring-[#7a8cff]/30 sm:size-[58px]"
-                      aria-label={`Digit ${i + 1}`}
+                      aria-label={`ספרה ${i + 1}`}
                     />
                   ))}
                 </div>
@@ -241,7 +242,7 @@ function GenericRegisterForm() {
                     disabled={isRequestingOtp}
                     className="cursor-pointer text-[14px] leading-6 text-[#2f3648] underline underline-offset-2 hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    To resend
+                    שליחת קוד מחדש
                   </button>
                 </div>
               </div>
@@ -257,7 +258,7 @@ function GenericRegisterForm() {
                     : "cursor-not-allowed border-[#d2d8ea] bg-[#eceef5] text-[#7a849b]"
                 }`}
               >
-                <span>{isRegistering ? "Creating..." : "Logging in to the system"}</span>
+                <span>{isRegistering ? "יוצר חשבון…" : "השלמת הרשמה"}</span>
                 <Image
                   src="/icons/go-to.svg"
                   alt=""
@@ -289,9 +290,9 @@ function GenericRegisterForm() {
         <div className="pointer-events-none absolute -right-20 top-32 size-80 rounded-full bg-[#6ab7ff]/28 blur-3xl" />
 
         <h1 className="relative z-10 mb-5 text-center text-3xl font-normal leading-tight tracking-tight text-[#101426] sm:text-4xl md:text-[42px] md:leading-tight">
-          Create a new
+          יצירת חשבון
           <br />
-          account
+          חדש
         </h1>
 
         <form
@@ -303,31 +304,31 @@ function GenericRegisterForm() {
         >
           <button
             type="button"
-            dir="ltr"
-            lang="en"
+            dir="rtl"
+            lang="he"
             className="flex h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-slate-200/90 bg-white px-4 text-sm font-normal text-[#1e1b4b] shadow-sm transition hover:bg-slate-50"
           >
-            <span>Sign in with Google</span>
+            <span>המשך עם גוגל</span>
             <GoogleGlyph />
           </button>
 
           <div className="mt-1">
-            <label className="mb-1.5 block text-right text-sm font-medium text-[#101426]">Full name</label>
+            <label className="mb-1.5 block text-right text-sm font-medium text-[#101426]">שם מלא</label>
             <input
               className={fieldClass}
-              placeholder="Full name"
+              placeholder="שם מלא"
               value={fullName}
               onChange={(event) => setFullName(event.target.value)}
             />
           </div>
 
           <div>
-            <label className="mb-1.5 block text-right text-sm font-medium text-[#101426]">Email</label>
+            <label className="mb-1.5 block text-right text-sm font-medium text-[#101426]">אימייל</label>
             <input
               required
               type="email"
               className={fieldClass}
-              placeholder="name@example.com"
+              placeholder="הזינו כתובת אימייל"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
             />
@@ -335,7 +336,7 @@ function GenericRegisterForm() {
           </div>
 
           <div>
-            <label className="mb-1.5 block text-right text-sm font-medium text-[#101426]">Phone number</label>
+            <label className="mb-1.5 block text-right text-sm font-medium text-[#101426]">מספר טלפון</label>
             <input
               required
               className={fieldClass}
@@ -349,17 +350,17 @@ function GenericRegisterForm() {
           </div>
 
           <div>
-            <label className="mb-1.5 block text-right text-sm font-medium text-[#101426]">Choose a role</label>
+            <label className="mb-1.5 block text-right text-sm font-medium text-[#101426]">בחירת תפקיד</label>
             <div className="relative">
               <select
                 required
                 className={`${fieldClass} cursor-pointer appearance-none pe-12`}
                 value={role}
                 onChange={(event) => setRole(event.target.value as "USER" | "SUPPLIER")}
-                aria-label="Choose a role"
+                aria-label="בחירת תפקיד"
               >
-                <option value="USER">User</option>
-                <option value="SUPPLIER">Supplier</option>
+                <option value="USER">משתמש</option>
+                <option value="SUPPLIER">ספק</option>
               </select>
               <span className="pointer-events-none absolute top-1/2 inset-e-4 -translate-y-1/2 text-[#64748B]" aria-hidden>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -370,10 +371,10 @@ function GenericRegisterForm() {
           </div>
 
           <div>
-            <label className="mb-1.5 block text-right text-sm font-medium text-[#101426]">Company name</label>
+            <label className="mb-1.5 block text-right text-sm font-medium text-[#101426]">שם חברה</label>
             <input
               className={fieldClass}
-              placeholder="company"
+              placeholder="שם חברה"
               value={companyName}
               onChange={(event) => setCompanyName(event.target.value)}
             />
@@ -390,13 +391,13 @@ function GenericRegisterForm() {
                 : "cursor-not-allowed bg-[#1a1f4a] opacity-55"
             }`}
           >
-            {isRequestingOtp ? "Sending..." : "Create a free account"}
+            {isRequestingOtp ? "שולח…" : "יצירת חשבון בחינם"}
           </button>
 
           <p className="text-center text-sm text-slate-600">
-            Already have an account?{" "}
+            כבר יש לכם חשבון?{" "}
             <Link href="/auth/login" className="text-[#0b86d4] hover:underline">
-              Log in here
+              התחברות כאן
             </Link>
           </p>
         </form>

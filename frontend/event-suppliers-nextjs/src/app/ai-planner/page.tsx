@@ -11,6 +11,7 @@ import {
   useCreateConversationMutation,
   useSendConversationMessageMutation,
 } from "@/shared/api/api";
+import Image from "next/image";
 
 /** Max AI chat messages for anonymous users before login/register is required. */
 const AI_FREE_MESSAGE_LIMIT = 5;
@@ -94,23 +95,23 @@ const STARTER_MESSAGES: StarterMessage[] = [
     id: "intro-1",
     role: "assistant",
     rowPaddingLeft: "pl-0 lg:pl-[111px]",
-    body: "Hello! I'm your personal AI event planner. I'm here to help you make every dream a reality. So that we can get started, what type of event are we planning today? (wedding, business event, birthday, etc.)",
+    body: "שלום! אני מפיק ה-AI האישי שלך לתכנון אירועים. אני כאן כדי לעזור לך להפוך כל חלום למציאות. כדי שנוכל להתחיל, איזה סוג אירוע אנחנו מתכננים היום? (חתונה, אירוע עסקי, יום הולדת וכו')",
   },
   {
     id: "intro-2",
     role: "assistant",
     rowPaddingLeft: "pl-0 lg:pl-[69.54px]",
-    body: "Excellent, a budget of 250 NIS per person is an excellent basis for a quality launch conference. Would you like me to offer you a list of venues in the center that are suitable for this amount, or should we start building a catering menu?",
+    body: "מעולה, תקציב של 250₪ לאדם הוא בסיס מצוין לכנס השקה איכותי. האם תרצי שאציע לך רשימת אולמות במרכז שמתאימים לכמות הזו, או שנתחיל בבניית תפריט קייטרינג?",
   },
 ];
 
 /** RTL visual order (reference): wedding … Help — DOM wedding-first + dir=rtl places wedding on the right. */
 const QUICK_CHIPS: { label: string; prompt: string; icon: ChipIconName }[] = [
-  { label: "wedding", prompt: "wedding", icon: "heart" },
-  { label: "Business event", prompt: "Business event", icon: "briefcase" },
-  { label: "birthday", prompt: "birthday", icon: "cake" },
-  { label: "Bar/Bat Mitzvah", prompt: "Bar/Bat Mitzvah", icon: "sparkles" },
-  { label: "Help me choose", prompt: "Help me choose", icon: "help" },
+  { label: "חתונה", prompt: "חתונה", icon: "heart" },
+  { label: "אירוע עסקי", prompt: "אירוע עסקי", icon: "briefcase" },
+  { label: "יום הולדת", prompt: "יום הולדת", icon: "cake" },
+  { label: "בר/בת מצווה", prompt: "בר/בת מצווה", icon: "sparkles" },
+  { label: "עזור לי לבחור", prompt: "עזור לי לבחור", icon: "help" },
 ];
 
 const RegistrationQuotaModal = dynamic(
@@ -201,10 +202,10 @@ export default function AiPlannerPage() {
       }
     >
         <h1
-          className="max-w-4xl px-1 bg-[linear-gradient(180deg,#201C44_0%,#0657A2_100%)] bg-clip-text text-center text-[26px] leading-[1.15] text-transparent sm:text-[34px] sm:leading-tight md:text-[46px] lg:text-[60px] lg:leading-[60px] lg:tracking-[-1.5px]"
+          className="font-bold max-w-4xl px-1 bg-[linear-gradient(180deg,#201C44_0%,#0657A2_100%)] bg-clip-text text-center text-[26px] leading-[1.15] text-transparent sm:text-[34px] sm:leading-tight md:text-[46px] lg:text-[60px] lg:leading-[60px] lg:tracking-[-1.5px]"
           style={{ fontFamily: marketingPloniFont }}
         >
-          Event planning with the help of an AI producer
+          תכנון אירוע בעזרת מפיק AI
         </h1>
 
         <div
@@ -233,8 +234,8 @@ export default function AiPlannerPage() {
             </button>
             <div className="flex items-center gap-3">
               <div className="flex flex-col items-end text-right" style={{ fontFamily: marketingPloniFont }}>
-                <h3 className="font-medium text-[#1E1B4B] text-[16px] leading-6">Your AI producer</h3>
-                <p className="text-[12px] leading-[15px] text-[#717C8C]">Connected and ready to help</p>
+                <h3 className="font-bold text-[#1E1B4B] text-[16px] leading-6">מפיק ה-AI שלך</h3>
+                <p className="text-[12px] leading-[15px] text-[#717C8C]">מחובר ומוכן לעזור</p>
               </div>
               <div className="relative isolate flex size-10 shrink-0 items-center justify-center rounded-full bg-[#201C44]">
                 <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden>
@@ -330,7 +331,7 @@ export default function AiPlannerPage() {
               <input
                 className="box-border h-12 w-full rounded-full bg-[#F8FAFC] py-3 pl-4 pr-4 text-right text-[15px] leading-snug text-[#1E293B] shadow-[inset_0px_2px_4px_rgba(0,0,0,0.05)] outline-none placeholder:text-[#6B7280] sm:h-14 sm:py-[17px] sm:pl-[96px] sm:pr-6 sm:text-[16px] sm:leading-[19px]"
                 style={{ fontFamily: marketingPloniFont }}
-                placeholder="Type a message here..."
+                placeholder="הקלד הודעה כאן..."
                 value={prompt}
                 onChange={(event) => setPrompt(event.target.value)}
               />
@@ -340,16 +341,8 @@ export default function AiPlannerPage() {
                   className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-[#1E1B4B] px-4 text-[14px] leading-5 text-white sm:pointer-events-auto sm:h-10 sm:gap-2 sm:px-6 sm:text-[16px] sm:leading-6"
                   style={{ fontFamily: marketingPloniFont }}
                 >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-                    <path
-                      d="M10 12L6 8l4-4"
-                      stroke="white"
-                      strokeWidth="1.33"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  Send
+                 <Image src="/icons/left-arrow.svg" alt="שלח" width={16} height={16} className="brightness-0 invert" />
+                  שלח
                 </button>
                 <button
                   type="button"

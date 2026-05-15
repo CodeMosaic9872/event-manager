@@ -9,9 +9,9 @@ export type EventConceptCustomCtaProps = {
 };
 
 export function EventConceptCustomCta({
-  title = "Didn't find a concept?",
-  description = "Our planners can help you build a custom package from scratch.",
-  ctaLabel = "Talk to a planner",
+  title = "לא מצאתם קונספט מתאים?",
+  description = "המתכננים שלנו יכולים לעזור לבנות חבילה מותאמת מאפס.",
+  ctaLabel = "שיחה עם מתכנן",
   href = "#",
   className = "",
 }: EventConceptCustomCtaProps) {

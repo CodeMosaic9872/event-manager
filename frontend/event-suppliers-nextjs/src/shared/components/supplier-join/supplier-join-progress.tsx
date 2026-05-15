@@ -16,15 +16,15 @@ export function SupplierJoinProgress({
       className="mb-8 w-full px-1"
       style={{ fontFamily: marketingPloniFont }}
     >
-      <div className="mb-3 flex items-end justify-between gap-4" dir="ltr">
+      <div className="mb-3 flex items-end justify-between gap-4" dir="rtl">
         <span className="shrink-0 text-[16px] font-normal tabular-nums leading-6 text-[#4721DF]">
           {clamped}%
         </span>
-        <div className="min-w-0 text-left">
-          <p className="text-[14px] font-normal text-right leading-5 text-[#4721DF]">
+        <div className="min-w-0 text-right">
+          <p className="text-[14px] font-bold leading-5 text-[#4721DF]">
             {stepLabel}
           </p>
-          <h1 className="mt-1 pb-1 text-[28px] font-normal leading-7 text-black sm:text-[30px]">
+          <h1 className="mt-1 pb-1 text-[28px] font-bold leading-7 text-black sm:text-[30px]">
             {title}
           </h1>
         </div>

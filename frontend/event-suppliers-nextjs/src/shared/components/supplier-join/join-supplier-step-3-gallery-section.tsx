@@ -11,6 +11,7 @@ export type JoinSupplierStep3GallerySectionProps = {
   galleryInputRef: RefObject<HTMLInputElement | null>;
   galleryFiles: File[];
   galleryUrls: string[];
+  existingGalleryUrls?: string[];
   dragActive: boolean;
   setDragActive: (v: boolean) => void;
   onGalleryInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -22,6 +23,7 @@ export function JoinSupplierStep3GallerySection({
   galleryInputRef,
   galleryFiles,
   galleryUrls,
+  existingGalleryUrls,
   dragActive,
   setDragActive,
   onGalleryInputChange,
@@ -35,10 +37,10 @@ export function JoinSupplierStep3GallerySection({
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-3">
       <div className="mt-0 flex w-full flex-row flex-wrap items-center justify-between gap-3">
+        <span className="text-right text-[18px] font-bold leading-7 text-black">גלריית תמונות</span>
         <span className="rounded-2xl bg-[#EEF6FF] px-2 py-1 text-[12px] leading-4 text-[#4721DF]">
-          Minimum 3 photos
+          מינימום {JOIN_SUPPLIER_STEP3_MIN_GALLERY} תמונות
         </span>
-        <span className="text-right text-[18px] leading-7 text-black">Photo gallery</span>
       </div>
 
       <input
@@ -79,10 +81,7 @@ export function JoinSupplierStep3GallerySection({
             aria-hidden
           />
         </span>
-        <span className="text-[16px] leading-6 text-black">Drag and drop images here</span>
-        <span className="mt-1 block w-full max-w-full px-2 text-center text-[14px] leading-snug text-pretty text-black">
-          Or click to select files from your computer.
-        </span>
+        <span className="text-[16px] leading-6 text-black">גרור ושחרר תמונות כאן או לחץ לבחירת קבצים מהמחשב</span>
       </div>
 
       <div className="flex flex-wrap justify-center gap-3 pt-2">
@@ -125,12 +124,12 @@ export function JoinSupplierStep3GallerySection({
 
       <div className="flex flex-row flex-wrap items-center justify-between gap-2 text-[14px] leading-5">
         {needsMoreGallery ? (
-          <span className="text-[#FF5353]">At least one more image must be uploaded.</span>
+          <span className="text-[#FF5353]">יש להעלות לפחות עוד תמונה אחת</span>
         ) : (
           <span className="min-w-0 shrink text-transparent">.</span>
         )}
         <span className="shrink-0 tabular-nums text-black">
-          {galleryCount} of {JOIN_SUPPLIER_STEP3_MAX_GALLERY} photos uploaded
+          הועלו {galleryCount} מתוך {JOIN_SUPPLIER_STEP3_MAX_GALLERY} תמונות
         </span>
       </div>
     </div>

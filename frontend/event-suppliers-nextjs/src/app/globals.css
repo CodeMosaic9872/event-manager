@@ -6,6 +6,21 @@
   --accent: #201c44;
   --secondary: #6ab7ff;
   --secondary-dark: #4721df;
+
+  /* Supplier dashboard section cards (Figma: ReferAFriend + inner overlay) */
+  --supplier-dashboard-card-surface: rgb(198 220 255 / 0.3);
+  --supplier-dashboard-card-border: var(--secondary-dark);
+  --supplier-dashboard-card-radius: 1rem;
+  --supplier-dashboard-card-padding: clamp(1.25rem, 3.5vw, 2.5rem);
+  --supplier-dashboard-card-elevation-shadow: 0 8px 32px rgb(0 0 0 / 0.37);
+  --supplier-dashboard-card-backdrop: 6px;
+  --supplier-dashboard-card-glow-radius: 1.5rem;
+  --supplier-dashboard-card-glow-shadow: 0 10px 30px -10px rgb(0 0 0 / 0.1);
+
+  --supplier-dashboard-inner-surface: rgb(239 246 255 / 0.5);
+  --supplier-dashboard-inner-border: #bfdbfe;
+  --supplier-dashboard-inner-radius: 1rem;
+  --supplier-dashboard-inner-padding: clamp(1rem, 2.5vw, 1.5rem);
 }
 
 @theme inline {

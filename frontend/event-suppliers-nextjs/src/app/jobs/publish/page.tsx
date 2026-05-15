@@ -112,7 +112,7 @@ function PublishJobContent() {
   return (
     <MarketingPageShell
       showBackgroundImage
-      className="min-h-screen bg-white"
+      className="min-h-screen"
       contentClassName="!max-w-[1440px] !px-4 !pb-24 !pt-20 sm:!px-6 sm:!pt-24 lg:!pt-[123px]"
     >
       <section className="mx-auto w-full max-w-[896px]">

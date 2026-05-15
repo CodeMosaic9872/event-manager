@@ -4,9 +4,9 @@ export type SupplierPlanId = "two_year" | "annual" | "six_month";
 const VAT_RATE = 0.17;
 
 export const SUPPLIER_JOIN_PROGRAM_FEATURES = [
-  "Exposure in search results.",
-  "Active use and promotion by the AI producer for accurate leads.",
-  "Receive real-time SMS about relevant job offers",
+  "חשיפה בתוצאות החיפוש",
+  "שימוש וקידום אקטיביים ע״י המפיק AI ללידים מדויקים",
+  "קבלת סמס בזמן אמת על הצעות עבודה רלוונטיות",
 ] as const;
 
 export type SupplierPlanCheckoutDefinition = {
@@ -23,18 +23,18 @@ export const SUPPLIER_PLAN_CHECKOUT: Record<
   SupplierPlanCheckoutDefinition
 > = {
   two_year: {
-    summaryTitle: "Two-year subscription (Two years)",
-    totalPeriodNote: "For two years",
+    summaryTitle: "מנוי לשנתיים (שנתיים)",
+    totalPeriodNote: "למשך שנתיים",
     pretaxSubtotal: 1990,
   },
   annual: {
-    summaryTitle: "Annual subscription (Annual)",
-    totalPeriodNote: "For one year",
+    summaryTitle: "מנוי שנתי (Annual)",
+    totalPeriodNote: "לשנה אחת",
     pretaxSubtotal: 1390,
   },
   six_month: {
-    summaryTitle: "Six-month subscription (Six months)",
-    totalPeriodNote: "For six months",
+    summaryTitle: "מנוי לחצי שנה",
+    totalPeriodNote: "למשך חצי שנה",
     pretaxSubtotal: 790,
   },
 };
@@ -50,7 +50,7 @@ export function computeVatLineShekels(pretaxShekels: number): {
 
 /** Format whole shekels as in UI: “1,390 ₪” */
 export function formatIls(shekels: number): string {
-  return `${new Intl.NumberFormat("en-US").format(shekels)} ₪`;
+  return `${new Intl.NumberFormat("he-IL").format(shekels)} ₪`;
 }
 
 export function parseStoredSupplierPlanId(): SupplierPlanId | null {

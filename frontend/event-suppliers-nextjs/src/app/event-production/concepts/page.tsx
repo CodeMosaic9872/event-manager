@@ -4,8 +4,8 @@ import { MarketingPageShell } from "@/shared/components/marketing-page-shell";
 export default function EventProductionConceptsPage() {
   return (
     <MarketingPageShell
-      dir="ltr"
-      lang="en"
+      dir="rtl"
+      lang="he"
       showBackgroundImage
       contentClassName="items-stretch pt-20 sm:pt-24 lg:pt-[150px]"
     >

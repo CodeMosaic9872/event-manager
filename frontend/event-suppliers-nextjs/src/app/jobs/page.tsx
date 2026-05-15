@@ -27,7 +27,7 @@ export default function JobsPage() {
 
   return (
     <MarketingPageShell
-      className="min-h-screen bg-white"
+      className="min-h-screen"
       contentClassName="!max-w-[1440px] !px-4 !pb-20 !pt-20 sm:!px-6 sm:!pt-24 lg:!pt-[123px]"
     >
       <div className="mx-auto flex w-full max-w-[900px] flex-col items-stretch" style={{ fontFamily: marketingPloniFont }}>

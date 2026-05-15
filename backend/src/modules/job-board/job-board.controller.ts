@@ -21,7 +21,7 @@ import { ApiProtectedErrors } from '../../common/swagger/api-error-responses.dec
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
-import { ApplyJobDto, CreateJobDto, UpdateJobApplicationStatusDto, UpdateJobDto } from './dto/job-board.dto';
+import { ApplyJobDto, CreateJobDto, JobApplicationListQueryDto, PublicJobsQueryDto, UpdateJobApplicationStatusDto, UpdateJobDto } from './dto/job-board.dto';
 import {
   JobApplicationResponseDto,
   JobApplicationsCountResponseDto,
@@ -45,8 +45,8 @@ export class JobBoardController {
     description: 'Published jobs with taxonomy relations',
     type: PaginatedJobPostsResponseDto,
   })
-  listPublicJobs(@Query() query: PaginationQueryDto) {
-    return this.jobBoardService.listPublicJobs(query.page, query.limit);
+  listPublicJobs(@Query() query: PublicJobsQueryDto) {
+    return this.jobBoardService.listPublicJobs(query.page, query.limit, query.categoryId, query.subcategoryId);
   }
 
   @Get(':id')
@@ -175,9 +175,8 @@ export class JobBoardController {
 
   @Get(':id/applications')
   @ApiOperation({ summary: 'List applications for a specific job' })
-  @ApiOkResponse({ type: PaginatedJobApplicationsResponseDto })
-  applications(@Param('id') id: string, @Query() query: PaginationQueryDto) {
-    return this.jobBoardService.listApplications(id, query.page, query.limit);
+  applications(@Param('id') id: string, @Query() query: JobApplicationListQueryDto) {
+    return this.jobBoardService.listApplications(id, query.page, query.limit, query.status);
   }
 }
 
@@ -284,5 +283,17 @@ export class JobQueryController {
       throw new UnauthorizedException('Authenticated supplier required');
     }
     return this.jobBoardService.listRecommendedJobsForUser(userId, query.page, query.limit);
+  }
+
+  @Get('supplier/jobs/applied')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'List jobs the current supplier has applied to' })
+  @UseGuards(AuthGuard, SupplierOnlyGuard)
+  supplierAppliedJobs(@CurrentUser() user: AuthUser | undefined, @Query() query: PaginationQueryDto) {
+    const userId = user?.id;
+    if (!userId || userId.startsWith('anonymous:')) {
+      throw new UnauthorizedException('Authenticated supplier required');
+    }
+    return this.jobBoardService.listSupplierAppliedJobs(userId, query.page, query.limit);
   }
 }
