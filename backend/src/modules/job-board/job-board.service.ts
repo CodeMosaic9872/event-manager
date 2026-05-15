@@ -35,9 +35,16 @@ export class JobBoardService {
     return job;
   }
 
-  async listPublicJobs(page?: number, limit?: number) {
+  async listPublicJobs(page?: number, limit?: number, categoryId?: string, subcategoryId?: string) {
     const pg = this.toPagination(page, limit);
-    const where = { status: 'PUBLISHED' } as const;
+    const filterAnd: Prisma.JobPostWhereInput[] = [{ status: 'PUBLISHED' }];
+    if (categoryId) {
+      filterAnd.push({ categoryId });
+    }
+    if (subcategoryId) {
+      filterAnd.push({ subcategoryId });
+    }
+    const where: Prisma.JobPostWhereInput = { AND: filterAnd };
     const [items, totalItems] = await this.prisma.$transaction([
       this.prisma.jobPost.findMany({
         where,
@@ -444,9 +451,12 @@ export class JobBoardService {
     });
   }
 
-  async listApplications(jobId: string, page?: number, limit?: number) {
+  async listApplications(jobId: string, page?: number, limit?: number, status?: JobApplicationStatus) {
     const pg = this.toPagination(page, limit);
-    const where = { jobPostId: jobId };
+    const where: Prisma.JobApplicationWhereInput = {
+      jobPostId: jobId,
+      ...(status ? { status } : {})
+    };
     const [items, totalItems] = await this.prisma.$transaction([
       this.prisma.jobApplication.findMany({
         where,
@@ -635,6 +645,31 @@ export class JobBoardService {
       throw new NotFoundException('Supplier profile not found for user');
     }
     return this.listRecommendedJobsForSupplier(supplier.id, page, limit);
+  }
+
+  async listSupplierAppliedJobs(userId: string, page?: number, limit?: number) {
+    const supplier = await this.prisma.supplier.findUnique({
+      where: { ownerUserId: userId },
+      select: { id: true },
+    });
+    if (!supplier) {
+      throw new NotFoundException('Supplier profile not found for user');
+    }
+    const pg = this.toPagination(page, limit);
+    const where = { supplierId: supplier.id };
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.jobApplication.findMany({
+        where,
+        include: {
+          jobPost: { include: jobPostListInclude },
+        },
+        orderBy: { submittedAt: 'desc' },
+        skip: pg.skip,
+        take: pg.take,
+      }),
+      this.prisma.jobApplication.count({ where }),
+    ]);
+    return { items, totalItems };
   }
 
   private calculateJobMatch(

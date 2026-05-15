@@ -1,4 +1,5 @@
 import { Type } from 'class-transformer';
+import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsIn, IsInt, IsOptional, IsString, MaxLength, Min } from 'class-validator';
 
@@ -111,4 +112,28 @@ export class UpdateJobApplicationStatusDto {
   @IsString()
   @IsIn(['SUBMITTED', 'SHORTLISTED', 'REJECTED', 'WITHDRAWN'])
   status!: 'SUBMITTED' | 'SHORTLISTED' | 'REJECTED' | 'WITHDRAWN';
+}
+
+export class JobApplicationListQueryDto extends PaginationQueryDto {
+  @ApiPropertyOptional({
+    description: 'Filter applications by status',
+    enum: ['SUBMITTED', 'SHORTLISTED', 'REJECTED', 'WITHDRAWN'],
+    example: 'SUBMITTED',
+  })
+  @IsOptional()
+  @IsString()
+  @IsIn(['SUBMITTED', 'SHORTLISTED', 'REJECTED', 'WITHDRAWN'])
+  status?: 'SUBMITTED' | 'SHORTLISTED' | 'REJECTED' | 'WITHDRAWN';
+}
+
+export class PublicJobsQueryDto extends PaginationQueryDto {
+  @ApiPropertyOptional({ description: 'Filter by category id' })
+  @IsOptional()
+  @IsString()
+  categoryId?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by subcategory id' })
+  @IsOptional()
+  @IsString()
+  subcategoryId?: string;
 }
