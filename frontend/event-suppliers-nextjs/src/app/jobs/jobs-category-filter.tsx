@@ -147,35 +147,32 @@ export function JobsCategoryFilter({ appliedIds, onAppliedIdsChange }: JobsCateg
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
-            className="fixed left-1/2 top-1/2 z-[81] w-[min(400px,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 rounded-[24px] border border-[#E2E8F0] bg-[#F0F7FC] p-6 shadow-[0px_8px_32px_rgba(0,0,0,0.18)]"
+            className="absolute inset-s-0 top-[calc(100%+8px)] z-[81] box-border w-[min(304px,calc(100vw-2rem))] rounded-[24px] border border-[rgba(134,85,246,0.2)] bg-[#E3F0FC] shadow-[0px_8px_32px_rgba(0,0,0,0.37)]"
             dir="rtl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="relative flex flex-col gap-5">
+            <div className="relative flex max-h-[70vh] min-h-[320px] flex-col px-4 pb-6 pt-14 text-right">
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="absolute end-0 top-0 flex size-9 items-center justify-center rounded-full text-[#00113A] hover:bg-black/5"
+                className="absolute start-0 top-4 flex h-9 w-9 items-center justify-center rounded-full text-[#00113A] hover:bg-black/5"
                 aria-label="סגור"
               >
-                <span className="text-xl leading-none" aria-hidden>
+                <span className="text-[40px] leading-none" aria-hidden>
                   ×
                 </span>
               </button>
 
-              <h2 id={titleId} className="pt-1 text-right text-lg font-bold leading-7 text-[#00113A]">
+              <h2 id={titleId} className="text-right mb-4 text-[24px] font-bold uppercase leading-[32px] tracking-[0.7px] text-[#00113A]">
                 קטגוריות
               </h2>
 
-              <ul className="flex list-none flex-col gap-4 pe-1">
+              <ul className="flex list-none flex-col gap-4 pe-1 text-right mb-10">
                 {CATEGORY_ROWS.map((row) => {
                   const checked = draft.has(row.id);
                   return (
                     <li key={row.id}>
-                      <label className="flex cursor-pointer items-center justify-between gap-4">
-                        <span className="min-w-0 flex-1 text-right text-base font-normal leading-6 text-[#00113A]">
-                          {row.label}
-                        </span>
+                      <label className="flex cursor-pointer items-center justify-between gap-4 text-right">
                         <span className="relative flex size-5 shrink-0 items-center justify-center">
                           <input
                             type="checkbox"
@@ -203,6 +200,9 @@ export function JobsCategoryFilter({ appliedIds, onAppliedIdsChange }: JobsCateg
                               </svg>
                             ) : null}
                           </span>
+                        </span>
+                        <span className="min-w-0 flex-1 text-right text-base font-normal leading-6 text-[#00113A]">
+                          {row.label}
                         </span>
                       </label>
                     </li>

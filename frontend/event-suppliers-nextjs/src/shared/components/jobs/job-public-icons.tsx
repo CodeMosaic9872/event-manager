@@ -4,12 +4,12 @@ type IconImgProps = Omit<ImgHTMLAttributes<HTMLImageElement>, "src" | "alt">;
 
 /** Event / date — uses `public/file.svg` (no dedicated calendar asset in repo). */
 export function JobIconDate(props: IconImgProps) {
-  return <img src="/icons/file.svg" alt="" aria-hidden {...props} />;
+  return <img src="/icons/calender.svg" alt="" aria-hidden {...props} />;
 }
 
 /** Location — uses `public/link.svg` (globe; matches “אתר” icon style in contact row). */
 export function JobIconLocation(props: IconImgProps) {
-  return <img src="/icons/link.svg" alt="" aria-hidden {...props} />;
+  return <img src="/icons/location.svg" alt="" aria-hidden {...props} />;
 }
 
 /** Close — `public/cross.svg`. */

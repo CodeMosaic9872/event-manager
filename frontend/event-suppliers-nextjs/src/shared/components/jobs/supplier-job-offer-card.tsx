@@ -115,10 +115,10 @@ export function SupplierJobOfferCard({ job }: { job: JobSummaryResponse }) {
         <div className="flex min-h-0 flex-1 flex-col items-stretch px-8 pt-5">
           <div className="min-h-0 w-full flex-1">
             <div className="flex w-full flex-col items-start gap-0">
-              <p className="w-full text-right text-[18px] font-normal leading-[28px] text-[#4721DF]">
+              <p className="w-full font-bold text-right text-[18px] leading-[28px] text-[#4721DF]">
                 {category}
               </p>
-              <h2 className="mt-2 w-full text-right text-2xl font-normal leading-8 text-black">
+              <h2 className="mt-2 w-full text-right text-2xl font-bold leading-8 text-black">
                 {job.title}
               </h2>
               {job.isRecommended && job.matchScore != null && job.matchScore > 0 ? (
@@ -142,7 +142,7 @@ export function SupplierJobOfferCard({ job }: { job: JobSummaryResponse }) {
             </div>
 
             <div className="mt-[15px] flex w-full flex-col items-start gap-3">
-              <h3 className="w-full text-right text-[20px] font-normal uppercase leading-6 tracking-[1.6px] text-black">
+              <h3 className="w-full text-right text-[20px] font-bold uppercase leading-6 tracking-[1.6px] text-black">
                 פירוט ההצעה
               </h3>
               <p className="line-clamp-4 w-full text-right text-xs font-normal leading-4 text-black">
@@ -154,29 +154,20 @@ export function SupplierJobOfferCard({ job }: { job: JobSummaryResponse }) {
           <div className="mt-7 w-full border-t border-[#F8FAFC] pt-6">
             <div className="flex w-full flex-col items-stretch gap-4 sm:flex-row sm:items-end sm:justify-between sm:gap-[18px]">
               <div className="w-full text-right sm:w-auto sm:pe-0">
-                <p className="text-xs font-normal leading-4 text-black">תקציב משוער</p>
-                <p className="text-2xl font-normal leading-8 text-[#00113A]">{budget}</p>
+                <p className="text-xs font-normal leading-4 text-black">תקציב</p>
+                <p className="text-2xl font-bold leading-8 text-[#00113A]">{budget}</p>
               </div>
               <button
                 type="button"
                 disabled={!canPrimaryAction}
                 onClick={handlePrimaryAction}
                 dir="ltr"
-                className={`inline-flex h-[39px] min-w-0 shrink-0 items-center justify-center gap-2 rounded-[99px] px-6 py-3 text-center text-base font-normal leading-6 text-white ${
+                className={`inline-flex h-[39px] min-w-0 shrink-0 items-center justify-center gap-2 rounded-[99px] px-6 py-3 text-center text-base font-bold leading-6 text-white ${
                   canPrimaryAction
                     ? "bg-[#201C44] hover:bg-[#151238]"
                     : "cursor-not-allowed bg-[#C5C8D0] text-white!"
                 }`}
               >
-                <Image
-                  src="/icons/left-arrow.svg"
-                  alt=""
-                  width={10}
-                  height={8}
-                  className="h-2.5 w-auto shrink-0 brightness-0 invert"
-                  aria-hidden
-                  unoptimized
-                />
                 <span className="text-white">{primaryLabel}</span>
               </button>
             </div>
@@ -200,7 +191,7 @@ export function SupplierJobOfferCard({ job }: { job: JobSummaryResponse }) {
                   />
                 </div>
                 <div className="flex min-w-0 flex-col items-start text-right">
-                  <p className="w-full text-right text-xs font-normal uppercase leading-4 tracking-[-0.3px] text-black">
+                  <p className="w-full text-right text-xs font-bold uppercase leading-4 tracking-[-0.3px] text-black">
                     פרטי התקשרות
                   </p>
                   <p
@@ -213,8 +204,7 @@ export function SupplierJobOfferCard({ job }: { job: JobSummaryResponse }) {
               </div>
               {canSubmitProposal ? (
                 <p className="z-1 max-w-[160px] shrink-0 text-right text-[10px] font-normal leading-3 text-[#444650]">
-                  פרטי הלקוח ישותפו איתך דרך המערכת לאחר בחירתך.
-                </p>
+הירשם כספק כדי להגיש מועמדות                </p>
               ) : (
                 <Link
                   href="/join-supplier"

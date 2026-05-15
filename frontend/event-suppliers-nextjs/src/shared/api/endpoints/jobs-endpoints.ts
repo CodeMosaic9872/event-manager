@@ -138,7 +138,7 @@ export function createJobsEndpoints(builder: JobsBuilder) {
       query: ({ jobId, message }) => ({
         url: `/v1/jobs/${encodeURIComponent(jobId)}/applications`,
         method: "POST",
-        body: message != null && message !== "" ? { message } : {},
+        body: { message: message ?? "" },
       }),
       invalidatesTags: ["Jobs"],
     }),
