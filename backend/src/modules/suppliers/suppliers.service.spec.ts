@@ -6,11 +6,14 @@ describe('SuppliersService', () => {
     const mediaStorage = { createUploadUrl: jest.fn() } as any;
     const prisma = {
       supplier: {
-        findMany: jest.fn().mockResolvedValue([
-          { id: 's1', ratingCount: 50 },
-          { id: 's2', ratingCount: 40 },
-          { id: 's3', ratingCount: 30 },
-        ]),
+        findMany: jest
+          .fn()
+          .mockResolvedValueOnce([
+            { id: 's1', ratingCount: 50 },
+            { id: 's2', ratingCount: 40 },
+            { id: 's3', ratingCount: 30 },
+          ])
+          .mockResolvedValueOnce([]),
       },
       category: {
         findUnique: jest.fn().mockResolvedValue(null),
@@ -23,9 +26,6 @@ describe('SuppliersService', () => {
         findUnique: jest.fn().mockResolvedValue(null),
       },
       supplierCategory: {
-        groupBy: jest.fn().mockResolvedValue([]),
-      },
-      supplierServiceArea: {
         groupBy: jest.fn().mockResolvedValue([]),
       },
     } as any;
@@ -51,7 +51,7 @@ describe('SuppliersService', () => {
     const mediaStorage = { createUploadUrl: jest.fn() } as any;
     const prisma = {
       supplier: {
-        findMany: jest.fn().mockResolvedValue([]),
+        findMany: jest.fn().mockResolvedValueOnce([]).mockResolvedValueOnce([]),
       },
       category: {
         findUnique: jest.fn().mockResolvedValue({ id: 'cat_1' }),
@@ -64,9 +64,6 @@ describe('SuppliersService', () => {
         findUnique: jest.fn().mockResolvedValue(null),
       },
       supplierCategory: {
-        groupBy: jest.fn().mockResolvedValue([]),
-      },
-      supplierServiceArea: {
         groupBy: jest.fn().mockResolvedValue([]),
       },
     } as any;
@@ -91,11 +88,7 @@ describe('SuppliersService', () => {
               subcategoryId: 'sub_1',
             },
           },
-          serviceAreas: {
-            some: {
-              regionCode: 'north',
-            },
-          },
+          serviceAreas: { has: 'north' },
           ratingAvg: { gte: 4.2 },
         }),
       }),
@@ -118,7 +111,6 @@ describe('SuppliersService', () => {
       subcategory: { findUnique: jest.fn().mockResolvedValue(null) },
       eventType: { findUnique: jest.fn().mockResolvedValue(null) },
       supplierCategory: { groupBy: jest.fn().mockResolvedValue([]) },
-      supplierServiceArea: { groupBy: jest.fn().mockResolvedValue([]) },
     } as any;
     const service = new SuppliersService(prisma, mediaStorage);
 

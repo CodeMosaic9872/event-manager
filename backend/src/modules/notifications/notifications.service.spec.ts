@@ -2,13 +2,26 @@ import { NotificationsService } from './notifications.service';
 
 describe('NotificationsService', () => {
   const originalMaxAttempts = process.env.NOTIFICATION_MAX_ATTEMPTS;
+  const originalSmtp = {
+    NOTIFICATION_SMTP_HOST: process.env.NOTIFICATION_SMTP_HOST,
+    NOTIFICATION_SMTP_USER: process.env.NOTIFICATION_SMTP_USER,
+    NOTIFICATION_SMTP_PASS: process.env.NOTIFICATION_SMTP_PASS,
+    NOTIFICATION_SMTP_FROM: process.env.NOTIFICATION_SMTP_FROM,
+    FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID,
+  };
 
   beforeEach(() => {
     process.env.NOTIFICATION_MAX_ATTEMPTS = '1';
+    process.env.NOTIFICATION_SMTP_HOST = '';
+    process.env.NOTIFICATION_SMTP_USER = '';
+    process.env.NOTIFICATION_SMTP_PASS = '';
+    process.env.NOTIFICATION_SMTP_FROM = '';
+    process.env.FIREBASE_PROJECT_ID = '';
   });
 
   afterEach(() => {
     process.env.NOTIFICATION_MAX_ATTEMPTS = originalMaxAttempts;
+    Object.assign(process.env, originalSmtp);
   });
 
   it('dispatchPendingEmails marks notification as SENT for active template', async () => {
@@ -18,11 +31,6 @@ describe('NotificationsService', () => {
           .fn()
           .mockResolvedValue([{ id: 'n1', templateKey: 'job.application.submitted', channel: 'EMAIL' }]),
         update: jest.fn().mockResolvedValue({ id: 'n1', status: 'SENT' }),
-      },
-      notificationTemplate: {
-        findUnique: jest
-          .fn()
-          .mockResolvedValue({ key: 'job.application.submitted', isActive: true, subjectTemplate: 'Hello', bodyTemplate: 'Body' }),
       },
     } as any;
     const service = new NotificationsService(prisma);
@@ -43,9 +51,6 @@ describe('NotificationsService', () => {
       notification: {
         findMany: jest.fn().mockResolvedValue([{ id: 'n2', templateKey: 'missing.template', channel: 'EMAIL' }]),
         update: jest.fn().mockResolvedValue({ id: 'n2', status: 'FAILED' }),
-      },
-      notificationTemplate: {
-        findUnique: jest.fn().mockResolvedValue(null),
       },
     } as any;
     const service = new NotificationsService(prisma);
@@ -71,11 +76,6 @@ describe('NotificationsService', () => {
           .fn()
           .mockRejectedValueOnce(new Error('db write failed'))
           .mockResolvedValueOnce({ id: 'n3', status: 'FAILED' }),
-      },
-      notificationTemplate: {
-        findUnique: jest
-          .fn()
-          .mockResolvedValue({ key: 'job.matching.published', isActive: true, subjectTemplate: 'Hi', bodyTemplate: 'Body' }),
       },
     } as any;
     const service = new NotificationsService(prisma);

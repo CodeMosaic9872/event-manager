@@ -70,7 +70,7 @@ export class AdminController {
   }
 
   @Get('users/unpaid')
-  @ApiOperation({ summary: 'List unpaid users based on supplier activity status' })
+  @ApiOperation({ summary: 'List supplier users without a successful (PAID) CardCom registration payment' })
   @ApiOkResponse({
     description: 'Unpaid user records',
     type: AdminUserListItemDto,

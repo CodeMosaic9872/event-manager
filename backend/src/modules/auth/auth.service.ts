@@ -1,4 +1,10 @@
-import { BadRequestException, ConflictException, Injectable, Optional, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  Optional,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { compare, hash } from 'bcryptjs';
 import { randomBytes, randomUUID } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -7,6 +13,8 @@ import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../../com
 import { AutomationService } from '../notifications/automation.service';
 import { OtpService } from './otp.service';
 import { SmsService } from '../sms/sms.service';
+import { MediaStorageService } from '../storage/media-storage.service';
+import { SuppliersService } from '../suppliers/suppliers.service';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +22,8 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly otpService: OtpService,
     private readonly smsService: SmsService,
+    private readonly mediaStorage: MediaStorageService,
+    private readonly suppliersService: SuppliersService,
     @Optional() private readonly automationService?: AutomationService,
   ) {}
 
@@ -23,11 +33,41 @@ export class AuthService {
     }
   }
 
-  private toAuthUserSummary(user: { id: string; email?: string | null; roles: { role: PlatformRole }[] }) {
+  private toAuthUserSummary(user: {
+    id: string;
+    email?: string | null;
+    avatarImageUrl?: string | null;
+    coverImageUrl?: string | null;
+    roles: { role: PlatformRole }[];
+  }) {
     return {
       id: user.id,
       email: user.email ?? '',
       roles: user.roles.map((roleRow) => roleRow.role),
+      avatarImageUrl: user.avatarImageUrl ?? null,
+      coverImageUrl: user.coverImageUrl ?? null,
+    };
+  }
+
+  private async toMeItem(
+    user: {
+      id: string;
+      email?: string | null;
+      avatarImageUrl?: string | null;
+      coverImageUrl?: string | null;
+      roles: { role: PlatformRole }[];
+    },
+  ) {
+    const base = this.toAuthUserSummary(user);
+    const isSupplier = user.roles.some((r) => r.role === 'SUPPLIER');
+    if (!isSupplier) {
+      return { ...base, businessName: null, supplier: null };
+    }
+    const supplier = await this.suppliersService.getSupplierFullForOwner(user.id);
+    return {
+      ...base,
+      businessName: supplier?.businessName ?? null,
+      supplier,
     };
   }
 
@@ -251,9 +291,86 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Invalid access token.');
     }
-    return {
-      items: [this.toAuthUserSummary(user)],
-      totalItems: 1,
-    };
+    return this.toMeItem(user);
+  }
+
+  async updateProfile(userId: string, dto: { avatarImageUrl?: string; coverImageUrl?: string }) {
+    const data: { avatarImageUrl?: string | null; coverImageUrl?: string | null } = {};
+    if (dto.avatarImageUrl !== undefined) {
+      data.avatarImageUrl = dto.avatarImageUrl.trim() ? dto.avatarImageUrl.trim() : null;
+    }
+    if (dto.coverImageUrl !== undefined) {
+      data.coverImageUrl = dto.coverImageUrl.trim() ? dto.coverImageUrl.trim() : null;
+    }
+    if (Object.keys(data).length === 0) {
+      return this.me(userId);
+    }
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data,
+      include: { roles: true },
+    });
+    return this.toMeItem(user);
+  }
+
+  createProfileMediaUploadUrl(userId: string, payload: { fileName: string; contentType: string }) {
+    return this.mediaStorage.createUserUploadUrl({
+      userId,
+      fileName: payload.fileName,
+      contentType: payload.contentType,
+    });
+  }
+
+  verifyProfileMediaUpload(userId: string, payload: { key: string }) {
+    return this.mediaStorage.verifyUserUpload({ userId, key: payload.key });
+  }
+
+  async completeProfileImageUpload(userId: string, payload: { key: string; imageKind: 'avatar' | 'cover' }) {
+    const verified = await this.mediaStorage.verifyUserUpload({ userId, key: payload.key });
+    if (payload.imageKind === 'avatar') {
+      return this.updateProfile(userId, { avatarImageUrl: verified.publicUrl });
+    }
+    return this.updateProfile(userId, { coverImageUrl: verified.publicUrl });
+  }
+
+  createTestMediaUploadUrl(payload: { fileName: string; contentType: string }) {
+    return this.mediaStorage.createTestUploadUrl(payload);
+  }
+
+  verifyTestMediaUpload(payload: { key: string }) {
+    return this.mediaStorage.verifyTestUpload(payload);
+  }
+
+  uploadTestMediaFile(file: { buffer: Buffer; originalname: string; mimetype: string; size: number }) {
+    if (!file?.buffer?.length) {
+      throw new BadRequestException('Empty file');
+    }
+    const contentType = file.mimetype?.trim() ? file.mimetype.trim() : 'application/octet-stream';
+    return this.mediaStorage.putTestObject({
+      buffer: file.buffer,
+      fileName: file.originalname || 'upload.bin',
+      contentType,
+    });
+  }
+
+  async uploadProfileImageFile(
+    userId: string,
+    file: { buffer: Buffer; originalname: string; mimetype: string; size: number },
+    imageKind: 'avatar' | 'cover',
+  ) {
+    if (!file?.buffer?.length) {
+      throw new BadRequestException('Empty file');
+    }
+    const contentType = file.mimetype?.trim() ? file.mimetype.trim() : 'application/octet-stream';
+    const uploaded = await this.mediaStorage.putUserObject({
+      userId,
+      buffer: file.buffer,
+      fileName: file.originalname || `${imageKind}.bin`,
+      contentType,
+    });
+    if (imageKind === 'avatar') {
+      return this.updateProfile(userId, { avatarImageUrl: uploaded.publicUrl });
+    }
+    return this.updateProfile(userId, { coverImageUrl: uploaded.publicUrl });
   }
 }

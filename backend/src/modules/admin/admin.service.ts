@@ -1,13 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { JobBoardService } from '../job-board/job-board.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { AutomationService } from '../notifications/automation.service';
+import { listStaticNotificationTemplateKeys } from '../notifications/notification-templates.static';
 
 @Injectable()
 export class AdminService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly jobBoardService: JobBoardService,
     private readonly notificationsService: NotificationsService,
+    private readonly automationService: AutomationService,
   ) {}
 
   private toPagination(page?: number, limit?: number) {
@@ -90,7 +95,11 @@ export class AdminService {
     const where: Prisma.UserWhereInput = {
       supplier: {
         is: {
-          isActive: false,
+          payments: {
+            none: {
+              status: 'PAID',
+            },
+          },
         },
       },
     };
@@ -132,10 +141,10 @@ export class AdminService {
     return { items, totalItems };
   }
 
-  approveSupplier(id: string, actorAdminId?: string) {
-    return this.prisma.$transaction(async (tx) => {
+  async approveSupplier(id: string, actorAdminId?: string) {
+    const updated = await this.prisma.$transaction(async (tx) => {
       const existing = await tx.supplier.findUniqueOrThrow({ where: { id } });
-      const updated = await tx.supplier.update({
+      const next = await tx.supplier.update({
         where: { id },
         data: { approvalStatus: 'APPROVED' },
       });
@@ -147,14 +156,24 @@ export class AdminService {
           actorAdminId: actorAdminId ?? null,
         },
       });
-      return updated;
+      return next;
     });
+    await this.automationService.publish({
+      eventId: `supplier_approved_${id}_${updated.updatedAt.getTime()}`,
+      type: 'supplier.approved',
+      payload: {
+        supplierId: id,
+        ownerUserId: updated.ownerUserId,
+        businessName: updated.businessName,
+      },
+    });
+    return updated;
   }
 
-  rejectSupplier(id: string, reason?: string, actorAdminId?: string) {
-    return this.prisma.$transaction(async (tx) => {
+  async rejectSupplier(id: string, reason?: string, actorAdminId?: string) {
+    const updated = await this.prisma.$transaction(async (tx) => {
       const existing = await tx.supplier.findUniqueOrThrow({ where: { id } });
-      const updated = await tx.supplier.update({
+      const next = await tx.supplier.update({
         where: { id },
         data: { approvalStatus: 'REJECTED' },
       });
@@ -167,8 +186,19 @@ export class AdminService {
           actorAdminId: actorAdminId ?? null,
         },
       });
-      return updated;
+      return next;
     });
+    await this.automationService.publish({
+      eventId: `supplier_rejected_${id}_${updated.updatedAt.getTime()}`,
+      type: 'supplier.rejected',
+      payload: {
+        supplierId: id,
+        ownerUserId: updated.ownerUserId,
+        businessName: updated.businessName,
+        reason: reason ?? '',
+      },
+    });
+    return updated;
   }
 
   aiUsage(page?: number, limit?: number) {
@@ -312,27 +342,7 @@ export class AdminService {
     reason?: string,
     actorAdminId?: string,
   ) {
-    const application = await this.prisma.jobApplication.findUnique({ where: { id: applicationId } });
-    if (!application) {
-      throw new NotFoundException('Application not found');
-    }
-    return this.prisma.$transaction(async (tx) => {
-      const updated = await tx.jobApplication.update({
-        where: { id: applicationId },
-        data: { status },
-      });
-      await tx.jobApplicationHistory.create({
-        data: {
-          jobApplicationId: applicationId,
-          fromStatus: application.status,
-          toStatus: status,
-          reason: reason ?? null,
-          actorType: 'ADMIN',
-          actorId: actorAdminId ?? null,
-        },
-      });
-      return updated;
-    });
+    return this.jobBoardService.moderateApplicationStatus(applicationId, status, reason, actorAdminId);
   }
 
   retryNotification(id: string) {
@@ -344,26 +354,20 @@ export class AdminService {
 
   async automationRules(page?: number, limit?: number) {
     const pg = this.toPagination(page, limit);
-    const [items, totalItems] = await this.prisma.$transaction([
-      this.prisma.notificationTemplate.findMany({
-        orderBy: { createdAt: 'desc' },
-        skip: pg.skip,
-        take: pg.take,
-      }),
-      this.prisma.notificationTemplate.count(),
-    ]);
+    const keys = listStaticNotificationTemplateKeys();
+    const totalItems = keys.length;
+    const items = keys.slice(pg.skip, pg.skip + pg.take).map((templateKey) => ({
+      templateKey,
+      source: 'static' as const,
+      note: 'Defined in notification-templates.static.ts',
+    }));
     return { items, totalItems };
   }
 
-  updateAutomationRule(id: string, payload: { isActive?: boolean; config?: Record<string, unknown> }) {
-    return this.prisma.notificationTemplate.update({
-      where: { id },
-      data: {
-        isActive: payload.isActive ?? undefined,
-        bodyTemplate: payload.config ? JSON.stringify(payload.config) : undefined,
-        version: { increment: 1 },
-      },
-    });
+  updateAutomationRule(_id: string, _payload: { isActive?: boolean; config?: Record<string, unknown> }) {
+    throw new BadRequestException(
+      'Notification templates are defined in code at src/modules/notifications/notification-templates.static.ts. Edit that file and redeploy.',
+    );
   }
 
   async automationRuns(page?: number, limit?: number) {

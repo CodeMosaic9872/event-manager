@@ -1,8 +1,10 @@
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { App, cert, getApps, initializeApp } from 'firebase-admin/app';
 import { getMessaging } from 'firebase-admin/messaging';
 import nodemailer, { Transporter } from 'nodemailer';
+import { emailH1, emailP, notificationEmailShell } from './email-html-layout';
+import { getStaticNotificationTemplate } from './notification-templates.static';
 import Twilio from 'twilio';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -162,15 +164,10 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
   async getNotificationPreferences(userId: string) {
     const pref = await this.prisma.notificationPreference.findUnique({ where: { userId } });
     return {
-      items: [
-        {
-          userId,
-          emailEnabled: pref?.emailEnabled ?? true,
-          pushEnabled: pref?.pushEnabled ?? true,
-          mutedTemplates: this.readMutedTemplates(pref?.mutedTemplatesJson),
-        },
-      ],
-      totalItems: 1,
+      userId,
+      emailEnabled: pref?.emailEnabled ?? true,
+      pushEnabled: pref?.pushEnabled ?? true,
+      mutedTemplates: this.readMutedTemplates(pref?.mutedTemplatesJson),
     };
   }
 
@@ -195,15 +192,10 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
       },
     });
     return {
-      items: [
-        {
-          userId: updated.userId,
-          emailEnabled: updated.emailEnabled,
-          pushEnabled: updated.pushEnabled,
-          mutedTemplates: this.readMutedTemplates(updated.mutedTemplatesJson),
-        },
-      ],
-      totalItems: 1,
+      userId: updated.userId,
+      emailEnabled: updated.emailEnabled,
+      pushEnabled: updated.pushEnabled,
+      mutedTemplates: this.readMutedTemplates(updated.mutedTemplatesJson),
     };
   }
 
@@ -229,22 +221,19 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
         const payload = this.toPayloadRecord(notification.payloadJson);
         const attempts = this.getAttemptCount(payload);
         try {
-          const template = await this.prisma.notificationTemplate.findUnique({
-            where: { key: notification.templateKey },
-          });
+          const template = getStaticNotificationTemplate(notification.templateKey, notification.channel);
           if (!template) {
             await this.failNotification(notification.id, 'TEMPLATE_NOT_FOUND', attempts, payload);
-            failed += 1;
-            continue;
-          }
-          if (!template.isActive) {
-            await this.failNotification(notification.id, 'TEMPLATE_INACTIVE', attempts, payload);
             failed += 1;
             continue;
           }
 
           const renderedSubject = this.renderTemplate(template.subjectTemplate ?? '', payload);
           const renderedBody = this.renderTemplate(template.bodyTemplate, payload);
+          const renderedHtml =
+            notification.channel === 'EMAIL' && template.bodyHtmlTemplate?.trim()
+              ? this.renderTemplate(template.bodyHtmlTemplate, payload)
+              : undefined;
           const providerMessageId = await this.sendNotificationViaProvider({
             channel:
               notification.channel === 'PUSH' ? 'PUSH' : notification.channel === 'SMS' ? 'SMS' : 'EMAIL',
@@ -252,6 +241,7 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
             templateKey: notification.templateKey,
             subject: renderedSubject,
             body: renderedBody,
+            html: renderedHtml,
             payload,
             recipientUserId: notification.recipientUserId ?? undefined,
             recipientSupplierId: notification.recipientSupplierId ?? undefined,
@@ -301,6 +291,46 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
       push: { configured: pushConfigured, mode: pushConfigured ? 'firebase' : 'mock' },
       sms: { configured: smsConfigured, mode: smsConfigured ? 'twilio' : 'mock' },
     };
+  }
+
+  async sendTestEmail(to: string): Promise<{ ok: true; messageId: string; to: string }> {
+    if (!this.isSmtpConfigured()) {
+      throw new BadRequestException(
+        'SMTP is not configured. Set NOTIFICATION_SMTP_HOST, NOTIFICATION_SMTP_USER, NOTIFICATION_SMTP_PASS, NOTIFICATION_SMTP_FROM.',
+      );
+    }
+    const host = process.env.NOTIFICATION_SMTP_HOST!;
+    const port = Number(process.env.NOTIFICATION_SMTP_PORT ?? 587);
+    const user = process.env.NOTIFICATION_SMTP_USER!;
+    const pass = process.env.NOTIFICATION_SMTP_PASS!;
+    const from = process.env.NOTIFICATION_SMTP_FROM!;
+
+    if (!this.smtpTransporter) {
+      this.smtpTransporter = nodemailer.createTransport({
+        host,
+        port,
+        secure: port === 465,
+        auth: { user, pass },
+      });
+    }
+
+    const sentAt = new Date().toISOString();
+    const textBody = `This is a test email from Event Marketplace.\nSent at ${sentAt}`;
+    const htmlBody = notificationEmailShell(
+      `${emailH1('SMTP test')}${emailP(`This is a <strong>test email</strong> from Event Marketplace.`)}${emailP(
+        `Sent at ${sentAt}`,
+      )}`,
+    );
+    const result = await this.smtpTransporter.sendMail({
+      from,
+      to,
+      subject: 'Event Marketplace — SMTP test',
+      text: textBody,
+      html: htmlBody,
+    });
+    const messageId = result.messageId ?? 'unknown';
+    this.logger.log(`notification.test_email.sent to=${to} messageId=${messageId}`);
+    return { ok: true, messageId, to };
   }
 
   private async failNotification(
@@ -365,6 +395,8 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
     templateKey: string;
     subject: string;
     body: string;
+    /** Rendered HTML for email multipart/alternative; omit for text-only. */
+    html?: string;
     payload: Record<string, unknown>;
     recipientUserId?: string;
     recipientSupplierId?: string;
@@ -398,11 +430,13 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
       });
     }
 
+    const html = payload.html?.trim();
     const result = await this.smtpTransporter.sendMail({
       from,
       to,
       subject: payload.subject || 'Event Marketplace',
       text: payload.body,
+      ...(html ? { html } : {}),
     });
     return result.messageId ?? `smtp_email_${payload.notificationId}`;
   }

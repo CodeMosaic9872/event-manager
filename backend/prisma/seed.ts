@@ -2,7 +2,6 @@ import { PrismaClient, Prisma, PlatformRole } from '@prisma/client';
 import { hash } from 'bcryptjs';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-
 const prisma = new PrismaClient();
 
 type TaxonomyRow = {
@@ -195,52 +194,6 @@ async function seedTaxonomyAndFilters() {
     });
   }
 
-  const notificationTemplates = [
-    {
-      key: 'user.welcome',
-      channel: 'EMAIL' as const,
-      subjectTemplate: 'Welcome to Event Marketplace',
-      bodyTemplate:
-        'Hi {{email}}, welcome to Event Marketplace. Start exploring suppliers and build your event plan today.',
-    },
-    {
-      key: 'supplier.onboarding.abandoned',
-      channel: 'EMAIL' as const,
-      subjectTemplate: 'Finish your supplier profile',
-      bodyTemplate:
-        'Your onboarding is {{completionPercent}}% complete at step "{{stepKey}}". Come back to complete your profile and start receiving leads.',
-    },
-    {
-      key: 'seed.sms.reminder',
-      channel: 'SMS' as const,
-      subjectTemplate: null,
-      bodyTemplate: 'Reminder: {{message}}',
-    },
-    {
-      key: 'seed.whatsapp.update',
-      channel: 'WHATSAPP' as const,
-      subjectTemplate: null,
-      bodyTemplate: 'WhatsApp update: {{message}}',
-    },
-    {
-      key: 'seed.push.alert',
-      channel: 'PUSH' as const,
-      subjectTemplate: '{{title}}',
-      bodyTemplate: '{{body}}',
-    },
-  ] as const;
-
-  for (const template of notificationTemplates) {
-    await prisma.notificationTemplate.upsert({
-      where: { key: template.key },
-      update: {
-        channel: template.channel,
-        subjectTemplate: template.subjectTemplate,
-        bodyTemplate: template.bodyTemplate,
-      },
-      create: template,
-    });
-  }
 }
 
 async function ensureUserRole(userId: string, role: PlatformRole) {
@@ -449,14 +402,10 @@ async function seedSuppliersAndRelated(users: Awaited<ReturnType<typeof seedUser
   await ensureSupplierCategory(supplier1.id);
   await ensureSupplierCategory(supplier2.id);
 
-  const serviceArea = await prisma.supplierServiceArea.findFirst({
-    where: { supplierId: supplier1.id, regionCode: 'IL-NORTH' },
+  await prisma.supplier.update({
+    where: { id: supplier1.id },
+    data: { serviceAreas: ['il-north', 'haifa'] },
   });
-  if (!serviceArea) {
-    await prisma.supplierServiceArea.create({
-      data: { supplierId: supplier1.id, regionCode: 'IL-NORTH', cityCode: 'HAIFA' },
-    });
-  }
 
   const heroMedia = await prisma.supplierMedia.findFirst({
     where: { supplierId: supplier1.id, url: 'https://example.com/seed/catering-hero.jpg' },
@@ -584,14 +533,10 @@ async function seedSuppliersAndRelated(users: Awaited<ReturnType<typeof seedUser
     },
   });
 
-  const s2area = await prisma.supplierServiceArea.findFirst({
-    where: { supplierId: supplier2.id, regionCode: 'IL-CENTER' },
+  await prisma.supplier.update({
+    where: { id: supplier2.id },
+    data: { serviceAreas: ['il-center', 'tlv'] },
   });
-  if (!s2area) {
-    await prisma.supplierServiceArea.create({
-      data: { supplierId: supplier2.id, regionCode: 'IL-CENTER', cityCode: 'TLV' },
-    });
-  }
 
   const rejectedOwner = await prisma.user.upsert({
     where: { email: 'seed.rejected@example.com' },
@@ -1140,21 +1085,6 @@ async function seedAllNotificationChannels(
     });
   }
 
-  const wa = await prisma.notification.findFirst({
-    where: { recipientUserId: users.client.id, templateKey: 'seed.whatsapp.update' },
-  });
-  if (!wa) {
-    await prisma.notification.create({
-      data: {
-        ...base,
-        channel: 'WHATSAPP',
-        templateKey: 'seed.whatsapp.update',
-        payloadJson: { message: 'Seed WhatsApp' },
-        status: 'PENDING',
-      },
-    });
-  }
-
   const push = await prisma.notification.findFirst({
     where: { recipientUserId: users.client.id, templateKey: 'seed.push.alert' },
   });
@@ -1429,6 +1359,39 @@ async function seedNotificationsAndPush(users: Awaited<ReturnType<typeof seedUse
   });
 }
 
+async function seedDemoSupplierReview(clientUserId: string, supplierId: string) {
+  const existing = await prisma.supplierReview.findFirst({
+    where: { supplierId, authorUserId: clientUserId },
+  });
+  if (existing) {
+    return;
+  }
+  await prisma.supplierReview.create({
+    data: {
+      supplierId,
+      authorUserId: clientUserId,
+      rating: 5,
+      title: 'Seed review',
+      comment: 'Great experience (demo data).',
+    },
+  });
+  const agg = await prisma.supplierReview.aggregate({
+    where: { supplierId },
+    _avg: { rating: true },
+    _count: { id: true },
+  });
+  await prisma.supplier.update({
+    where: { id: supplierId },
+    data: {
+      ratingCount: agg._count.id,
+      ratingAvg:
+        agg._count.id > 0 && agg._avg.rating != null
+          ? new Prisma.Decimal(Number(agg._avg.rating).toFixed(2))
+          : null,
+    },
+  });
+}
+
 async function main() {
   console.log('Seeding taxonomy, filters, templates…');
   await seedTaxonomyAndFilters();
@@ -1464,6 +1427,9 @@ async function main() {
     categoryId: mapping.categoryId,
     subcategoryId: mapping.subcategoryId,
   });
+
+  console.log('Seeding demo supplier review…');
+  await seedDemoSupplierReview(users.client.id, supplier1.id);
 
   console.log('Seeding anonymous session, favorites, AI, referrals, share events…');
   await seedAnonymousFavoritesAiReferrals(users, supplier1.id);

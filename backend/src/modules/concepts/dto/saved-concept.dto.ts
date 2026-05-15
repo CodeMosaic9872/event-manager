@@ -45,3 +45,16 @@ export class SavedConceptResponseDto {
   @ApiProperty()
   updatedAt!: Date;
 }
+
+export class SavedConceptListResponseDto {
+  @ApiProperty({ type: [SavedConceptResponseDto] })
+  items!: SavedConceptResponseDto[];
+
+  @ApiProperty()
+  totalItems!: number;
+}
+
+export class DeleteConceptResponseDto {
+  @ApiProperty({ example: true })
+  deleted!: true;
+}

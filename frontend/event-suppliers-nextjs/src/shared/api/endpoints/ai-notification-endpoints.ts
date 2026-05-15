@@ -5,6 +5,26 @@ import type {
   SendMessagePayload,
 } from "@/shared/api/types";
 
+function unwrapApiData<T>(raw: unknown): T {
+  if (raw && typeof raw === "object" && "data" in raw && (raw as { data: unknown }).data !== undefined) {
+    return (raw as { data: T }).data;
+  }
+  return raw as T;
+}
+
+function normalizeNotificationPreferencesPayload(raw: unknown): NotificationPreferences {
+  const inner = unwrapApiData<Record<string, unknown>>(raw);
+  const row =
+    inner &&
+    typeof inner === "object" &&
+    "items" in inner &&
+    Array.isArray((inner as { items: unknown }).items) &&
+    (inner as { items: unknown[] }).items.length > 0
+      ? (inner as { items: NotificationPreferences[] }).items[0]
+      : (inner as NotificationPreferences);
+  return row;
+}
+
 export function createAiAndNotificationEndpoints(builder: EndpointBuilder<any, any, any>) {
   return {
     createConversation: builder.mutation<CreateConversationResponse, { eventType?: string }>({
@@ -22,6 +42,7 @@ export function createAiAndNotificationEndpoints(builder: EndpointBuilder<any, a
     }),
     getNotificationPreferences: builder.query<NotificationPreferences, void>({
       query: () => ({ url: "/v1/notifications/preferences" }),
+      transformResponse: (raw: unknown) => normalizeNotificationPreferencesPayload(raw),
       providesTags: ["Notifications"],
     }),
     updateNotificationPreferences: builder.mutation<
@@ -29,6 +50,7 @@ export function createAiAndNotificationEndpoints(builder: EndpointBuilder<any, a
       Partial<NotificationPreferences>
     >({
       query: (body) => ({ url: "/v1/notifications/preferences", method: "PUT", body }),
+      transformResponse: (raw: unknown) => normalizeNotificationPreferencesPayload(raw),
       invalidatesTags: ["Notifications"],
     }),
   };

@@ -296,6 +296,9 @@ export default function SupplierDashboardPage() {
     const slug = businessName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
     try {
       await updateProfile({ businessName, slug, description }).unwrap();
+      await updateServiceAreas({
+        serviceAreas: [...selectedAreas].map((a) => ({ regionCode: a.toLowerCase().replace(/\s+/g, "_") })),
+      }).unwrap();
     } catch {
       /* silently fail */
     }

@@ -1,5 +1,5 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
-import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AiPlanningService } from './ai-planning.service';
 import { AiQuotaGuard } from './guards/ai-quota.guard';
 import { OptionalAuthGuard } from '../../common/guards/optional-auth.guard';
@@ -9,6 +9,7 @@ import { ApiAuthErrors } from '../../common/swagger/api-error-responses.decorato
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import { CreateConversationDto, SendMessageDto } from './dto/ai-planning.dto';
 import {
+  AiRecommendationLogResponseDto,
   ConversationResponseDto,
   CreateConversationResponseDto,
   SendMessageResponseDto,
@@ -21,8 +22,13 @@ export class AiPlanningController {
   constructor(private readonly aiPlanningService: AiPlanningService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create AI planning conversation for user or anonymous actor' })
-  @ApiCreatedResponse({
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Create AI planning conversation for user or anonymous actor',
+    description:
+      'HTTP status is 200 (not 201) because a global interceptor normalizes success responses to 200.',
+  })
+  @ApiOkResponse({
     description: 'Created conversation',
     type: CreateConversationResponseDto,
   })
@@ -46,9 +52,14 @@ export class AiPlanningController {
   }
 
   @Post(':id/messages')
-  @ApiOperation({ summary: 'Send AI message with quota gate enforcement' })
-  @ApiCreatedResponse({
-    description: 'Saved user and assistant messages',
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Send AI message with quota gate enforcement',
+    description:
+      'HTTP status is 200 (not 201) because a global interceptor normalizes success responses to 200.',
+  })
+  @ApiOkResponse({
+    description: 'Assistant reply and planning payload',
     type: SendMessageResponseDto,
   })
   @UseGuards(OptionalAuthGuard, AiQuotaGuard)
@@ -66,14 +77,24 @@ export class AiPlanningController {
   }
 
   @Post(':id/recommendations/:supplierId/click')
+  @HttpCode(200)
   @ApiOperation({ summary: 'Track recommendation click-through signal' })
+  @ApiOkResponse({
+    description: 'Updated recommendation log row',
+    type: AiRecommendationLogResponseDto,
+  })
   @UseGuards(OptionalAuthGuard)
   trackRecommendationClick(@Param('id') id: string, @Param('supplierId') supplierId: string) {
     return this.aiPlanningService.trackRecommendationClick(id, supplierId);
   }
 
   @Post(':id/recommendations/:supplierId/accept')
+  @HttpCode(200)
   @ApiOperation({ summary: 'Track recommendation acceptance signal' })
+  @ApiOkResponse({
+    description: 'Updated recommendation log row',
+    type: AiRecommendationLogResponseDto,
+  })
   @UseGuards(OptionalAuthGuard)
   trackRecommendationAccept(@Param('id') id: string, @Param('supplierId') supplierId: string) {
     return this.aiPlanningService.trackRecommendationAccept(id, supplierId);

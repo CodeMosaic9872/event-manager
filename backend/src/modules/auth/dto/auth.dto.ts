@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsIn, IsNotEmpty, IsOptional, IsString, Matches, ValidateIf } from 'class-validator';
+import { IsEmail, IsIn, IsNotEmpty, IsOptional, IsString, Matches, MaxLength, ValidateIf } from 'class-validator';
 
 export class RegisterDto {
   @ApiProperty({ description: 'User email', example: 'user@example.com' })
@@ -74,6 +74,26 @@ export class LinkAnonymousDto {
   @ApiProperty({ description: 'Anonymous token to link', example: 'anon_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' })
   @IsString()
   anonymousToken!: string;
+}
+
+export class UpdateUserProfileDto {
+  @ApiPropertyOptional({
+    description: 'Public URL for profile avatar (omit to leave unchanged; empty string clears)',
+    example: 'https://cdn.example.com/u/avatar.jpg',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  avatarImageUrl?: string;
+
+  @ApiPropertyOptional({
+    description: 'Public URL for profile cover image (omit to leave unchanged; empty string clears)',
+    example: 'https://cdn.example.com/u/cover.jpg',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  coverImageUrl?: string;
 }
 
 export class RequestOtpDto {

@@ -16,7 +16,7 @@ export class JobBoardService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly automationService: AutomationService,
-  ) {}
+  ) { }
 
   private toPagination(page?: number, limit?: number) {
     const safePage = Number.isFinite(page) && (page as number) > 0 ? Math.floor(page as number) : 1;
@@ -35,9 +35,16 @@ export class JobBoardService {
     return job;
   }
 
-  async listPublicJobs(page?: number, limit?: number) {
+  async listPublicJobs(page?: number, limit?: number, categoryId?: string, subcategoryId?: string) {
     const pg = this.toPagination(page, limit);
-    const where = { status: 'PUBLISHED' } as const;
+    const filterAnd: Prisma.JobPostWhereInput[] = [{ status: 'PUBLISHED' }];
+    if (categoryId) {
+      filterAnd.push({ categoryId });
+    }
+    if (subcategoryId) {
+      filterAnd.push({ subcategoryId });
+    }
+    const where: Prisma.JobPostWhereInput = { AND: filterAnd };
     const [items, totalItems] = await this.prisma.$transaction([
       this.prisma.jobPost.findMany({
         where,
@@ -169,11 +176,11 @@ export class JobBoardService {
 
     const materialChanged = Boolean(
       (patch.title && patch.title !== job.title) ||
-        (patch.description && patch.description !== job.description) ||
-        (patch.eventDate && new Date(patch.eventDate).getTime() !== (job.eventDate?.getTime() ?? 0)) ||
-        (patch.eventTypeId !== undefined && patch.eventTypeId !== job.eventTypeId) ||
-        (patch.categoryId !== undefined && patch.categoryId !== job.categoryId) ||
-        (patch.subcategoryId !== undefined && patch.subcategoryId !== job.subcategoryId),
+      (patch.description && patch.description !== job.description) ||
+      (patch.eventDate && new Date(patch.eventDate).getTime() !== (job.eventDate?.getTime() ?? 0)) ||
+      (patch.eventTypeId !== undefined && patch.eventTypeId !== job.eventTypeId) ||
+      (patch.categoryId !== undefined && patch.categoryId !== job.categoryId) ||
+      (patch.subcategoryId !== undefined && patch.subcategoryId !== job.subcategoryId),
     );
     if (materialChanged) {
       const applications = await this.prisma.jobApplication.findMany({
@@ -185,6 +192,7 @@ export class JobBoardService {
         type: 'job.material.updated',
         payload: {
           jobId: updated.id,
+          jobTitle: updated.title,
           ownerUserId: updated.ownerUserId,
           supplierIds: applications.map((item) => item.supplierId),
         },
@@ -218,11 +226,11 @@ export class JobBoardService {
       ? [updated.categoryId]
       : updated.eventTypeId
         ? (
-            await this.prisma.eventCategorySubcategoryMap.findMany({
-              where: { eventTypeId: updated.eventTypeId },
-              select: { categoryId: true },
-            })
-          ).map((item) => item.categoryId)
+          await this.prisma.eventCategorySubcategoryMap.findMany({
+            where: { eventTypeId: updated.eventTypeId },
+            select: { categoryId: true },
+          })
+        ).map((item) => item.categoryId)
         : [];
     const categoryFilter =
       updated.categoryId && updated.subcategoryId
@@ -248,6 +256,7 @@ export class JobBoardService {
         type: 'job.matching.published',
         payload: {
           jobId: updated.id,
+          jobTitle: updated.title,
           ownerUserId: updated.ownerUserId,
           supplierIds: matchingSuppliers.map((s) => s.id),
         },
@@ -387,14 +396,22 @@ export class JobBoardService {
       });
       return created;
     });
-    const job = await this.prisma.jobPost.findUnique({ where: { id: jobId } });
+    const [job, supplier] = await Promise.all([
+      this.prisma.jobPost.findUnique({ where: { id: jobId } }),
+      this.prisma.supplier.findUnique({
+        where: { id: supplierId },
+        select: { businessName: true },
+      }),
+    ]);
     await this.automationService.publish({
       eventId: `job_application_${application.id}`,
       type: 'job.application.submitted',
       payload: {
         applicationId: application.id,
         jobId,
+        jobTitle: job?.title ?? '',
         supplierId,
+        supplierName: supplier?.businessName ?? '',
         ownerUserId: job?.ownerUserId,
       },
     });
@@ -444,9 +461,12 @@ export class JobBoardService {
     });
   }
 
-  async listApplications(jobId: string, page?: number, limit?: number) {
+  async listApplications(jobId: string, page?: number, limit?: number, status?: JobApplicationStatus) {
     const pg = this.toPagination(page, limit);
-    const where = { jobPostId: jobId };
+    const where: Prisma.JobApplicationWhereInput = {
+      jobPostId: jobId,
+      ...(status ? { status } : {})
+    };
     const [items, totalItems] = await this.prisma.$transaction([
       this.prisma.jobApplication.findMany({
         where,
@@ -468,8 +488,9 @@ export class JobBoardService {
     if (!application) {
       throw new NotFoundException('Application not found');
     }
-    return this.prisma.$transaction(async (tx) => {
-      const updated = await tx.jobApplication.update({
+    const prevStatus = application.status;
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const next = await tx.jobApplication.update({
         where: { id },
         data: { status },
       });
@@ -482,8 +503,10 @@ export class JobBoardService {
           actorId: null,
         },
       });
-      return updated;
+      return next;
     });
+    await this.maybeEmitLeadForShortlistedApplication(id, application, prevStatus, status);
+    return updated;
   }
 
   async moderateApplicationStatus(
@@ -496,8 +519,9 @@ export class JobBoardService {
     if (!application) {
       throw new NotFoundException('Application not found');
     }
-    return this.prisma.$transaction(async (tx) => {
-      const updated = await tx.jobApplication.update({
+    const prevStatus = application.status;
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const next = await tx.jobApplication.update({
         where: { id },
         data: { status },
       });
@@ -511,7 +535,45 @@ export class JobBoardService {
           actorId: actorAdminId ?? null,
         },
       });
-      return updated;
+      return next;
+    });
+    await this.maybeEmitLeadForShortlistedApplication(id, application, prevStatus, status);
+    return updated;
+  }
+
+  private async maybeEmitLeadForShortlistedApplication(
+    applicationId: string,
+    application: {
+      supplierId: string;
+      jobPostId: string;
+      status: JobApplicationStatus;
+    },
+    previousStatus: JobApplicationStatus,
+    nextStatus: JobApplicationStatus,
+  ) {
+    if (nextStatus !== 'SHORTLISTED' || previousStatus === 'SHORTLISTED') {
+      return;
+    }
+    const [job, supplier] = await Promise.all([
+      this.prisma.jobPost.findUnique({
+        where: { id: application.jobPostId },
+        select: { title: true },
+      }),
+      this.prisma.supplier.findUnique({
+        where: { id: application.supplierId },
+        select: { businessName: true },
+      }),
+    ]);
+    await this.automationService.publish({
+      eventId: `lead_shortlist_${applicationId}`,
+      type: 'supplier.lead.received',
+      payload: {
+        supplierId: application.supplierId,
+        businessName: supplier?.businessName ?? '',
+        leadSource: 'shortlisted',
+        jobTitle: job?.title ?? '',
+        applicationId,
+      },
     });
   }
 
@@ -533,9 +595,9 @@ export class JobBoardService {
   async listRecommendedJobsForSupplier(supplierId: string, page?: number, limit?: number) {
     const supplier = await this.prisma.supplier.findUnique({
       where: { id: supplierId },
-      include: {
+      select: {
         categories: { select: { categoryId: true, subcategoryId: true } },
-        serviceAreas: { select: { regionCode: true, cityCode: true } },
+        serviceAreas: true,
         attributes: { select: { workingDaysJson: true } },
       },
     });
@@ -548,9 +610,9 @@ export class JobBoardService {
     );
     const mappedEventTypes = categoryIds.length
       ? await this.prisma.eventCategorySubcategoryMap.findMany({
-          where: { categoryId: { in: categoryIds } },
-          select: { eventTypeId: true, subcategoryId: true, categoryId: true },
-        })
+        where: { categoryId: { in: categoryIds } },
+        select: { eventTypeId: true, subcategoryId: true, categoryId: true },
+      })
       : [];
     const eventTypeIds = Array.from(new Set(mappedEventTypes.map((m) => m.eventTypeId)));
     const eventTypeCategoryMap = new Map<string, Set<string>>();
@@ -566,7 +628,9 @@ export class JobBoardService {
       eventTypeSubcategoryMap.get(mapping.eventTypeId)?.add(mapping.subcategoryId);
     }
 
-    const locationTerms = supplier.serviceAreas.flatMap((a) => [a.regionCode, a.cityCode].filter(Boolean) as string[]);
+    const locationTerms = supplier.serviceAreas.flatMap((a) =>
+      a.toLowerCase().split(/[\s,_-]+/).filter(Boolean),
+    );
     const workingDays = this.extractWorkingDays(supplier.attributes?.workingDaysJson);
     const taxonomyOr: Prisma.JobPostWhereInput[] = [];
     if (eventTypeIds.length) {
@@ -635,6 +699,31 @@ export class JobBoardService {
       throw new NotFoundException('Supplier profile not found for user');
     }
     return this.listRecommendedJobsForSupplier(supplier.id, page, limit);
+  }
+
+  async listSupplierAppliedJobs(userId: string, page?: number, limit?: number) {
+    const supplier = await this.prisma.supplier.findUnique({
+      where: { ownerUserId: userId },
+      select: { id: true },
+    });
+    if (!supplier) {
+      throw new NotFoundException('Supplier profile not found for user');
+    }
+    const pg = this.toPagination(page, limit);
+    const where = { supplierId: supplier.id };
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.jobApplication.findMany({
+        where,
+        include: {
+          jobPost: { include: jobPostListInclude },
+        },
+        orderBy: { submittedAt: 'desc' },
+        skip: pg.skip,
+        take: pg.take,
+      }),
+      this.prisma.jobApplication.count({ where }),
+    ]);
+    return { items, totalItems };
   }
 
   private calculateJobMatch(

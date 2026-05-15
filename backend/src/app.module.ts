@@ -10,6 +10,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { ReferralsModule } from './modules/referrals/referrals.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { ConceptsModule } from './modules/concepts/concepts.module';
+import { PaymentsModule } from './modules/payments/payments.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { ConceptsModule } from './modules/concepts/concepts.module';
     NotificationsModule,
     ReferralsModule,
     AdminModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
 })

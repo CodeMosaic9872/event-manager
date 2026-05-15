@@ -20,7 +20,7 @@ export class UpdateNotificationPreferencesDto {
   mutedTemplates?: string[];
 }
 
-class NotificationPreferencesItemDto {
+export class NotificationPreferencesResponseDto {
   @ApiProperty({ example: 'usr_1' })
   userId!: string;
 
@@ -32,12 +32,4 @@ class NotificationPreferencesItemDto {
 
   @ApiProperty({ example: ['job.matching.published'] })
   mutedTemplates!: string[];
-}
-
-export class NotificationPreferencesResponseDto {
-  @ApiProperty({ type: [NotificationPreferencesItemDto] })
-  items!: NotificationPreferencesItemDto[];
-
-  @ApiProperty({ example: 1 })
-  totalItems!: number;
 }

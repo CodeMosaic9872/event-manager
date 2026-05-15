@@ -254,11 +254,6 @@ export class OtpService {
       return result.mode;
     }
 
-    if (this.sms.isFixedMode()) {
-      this.logger.log(`otp.email.fixed target=${this.maskTarget(target)} (no provider call made)`);
-      return 'fixed';
-    }
-
     const host = process.env.NOTIFICATION_SMTP_HOST;
     const port = Number(process.env.NOTIFICATION_SMTP_PORT ?? 587);
     const user = process.env.NOTIFICATION_SMTP_USER;
@@ -266,6 +261,10 @@ export class OtpService {
     const from = process.env.OTP_EMAIL_FROM || process.env.NOTIFICATION_SMTP_FROM;
 
     if (!host || !user || !pass || !from) {
+      if (this.sms.isFixedMode()) {
+        this.logger.log(`otp.email.fixed target=${this.maskTarget(target)} (SMTP not configured)`);
+        return 'fixed';
+      }
       throw new BadRequestException(
         'SMTP is not configured for email OTP. Set NOTIFICATION_SMTP_HOST, NOTIFICATION_SMTP_USER, NOTIFICATION_SMTP_PASS and OTP_EMAIL_FROM (or NOTIFICATION_SMTP_FROM).',
       );
