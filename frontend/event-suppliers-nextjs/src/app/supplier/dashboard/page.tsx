@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, startTransition, useEffect, useMemo, useRef, useState } from "react";
 import {
   useGetRecommendedSupplierJobsQuery,
   useGetSupplierReferralLinkQuery,
@@ -242,7 +242,7 @@ export default function SupplierDashboardPage() {
   const [showUploadSuccessModal, setShowUploadSuccessModal] = useState(false);
   const [verificationFileName, setVerificationFileName] = useState<string | null>(null);
   const verificationInputRef = useRef<HTMLInputElement | null>(null);
-  const [linkEmail, setLinkEmail] = useState("");
+  const [_linkEmail, setLinkEmail] = useState("");
   const [linkPhone, setLinkPhone] = useState("");
   const [linkFacebook, setLinkFacebook] = useState("");
   const [linkInstagram, setLinkInstagram] = useState("");
@@ -255,16 +255,18 @@ export default function SupplierDashboardPage() {
   useEffect(() => {
     const mp = me?.marketplaceProfile;
     if (!mp) return;
-    setBusinessName(mp.businessName);
-    if (mp.description) setDescription(mp.description);
-    setLinkEmail(mp.email ?? "");
-    setLinkPhone(mp.phone ?? "");
-    setLinkFacebook(mp.facebook ?? "");
-    setLinkInstagram(mp.instagram ?? "");
-    setLinkYoutube(mp.socialLinks?.find((s: { platform: string }) => s.platform === "youtube")?.url ?? "");
-    setLinkTiktok(mp.socialLinks?.find((s: { platform: string }) => s.platform === "tiktok")?.url ?? "");
-    setLinkWebsite(mp.website ?? "");
-    setLinkWhatsapp(mp.whatsapp ?? "");
+    startTransition(() => {
+      setBusinessName(mp.businessName);
+      if (mp.description) setDescription(mp.description);
+      setLinkEmail(mp.email ?? "");
+      setLinkPhone(mp.phone ?? "");
+      setLinkFacebook(mp.facebook ?? "");
+      setLinkInstagram(mp.instagram ?? "");
+      setLinkYoutube(mp.socialLinks?.find((s: { platform: string }) => s.platform === "youtube")?.url ?? "");
+      setLinkTiktok(mp.socialLinks?.find((s: { platform: string }) => s.platform === "tiktok")?.url ?? "");
+      setLinkWebsite(mp.website ?? "");
+      setLinkWhatsapp(mp.whatsapp ?? "");
+    });
   }, [me?.marketplaceProfile]);
 
   const jobCards = useMemo(() => {

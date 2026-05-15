@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useId, useState } from "react";
+import { startTransition, useCallback, useEffect, useId, useState } from "react";
 
 /** Options aligned with design + existing job `category` values in demo/API. */
 export const JOB_FILTER_CATEGORY_OPTIONS = [
@@ -76,7 +76,7 @@ export function JobCategoryFilterDropdown({
 
   useEffect(() => {
     if (open) {
-      setDraft(new Set(appliedCategories));
+      startTransition(() => setDraft(new Set(appliedCategories)));
     }
   }, [open, appliedCategories]);
 

@@ -1,7 +1,7 @@
 "use client";
 import { toSlug } from "@/shared/lib/to-slug";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMeQuery, useUpdateMeMutation, useUploadUserProfileFileMutation, useGetMySupplierProfileQuery, useUpdateSupplierProfileMutation } from "@/shared/api/api";
 import { useAppSelector } from "@/store/hooks";
@@ -58,25 +58,29 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (me && !emailLoaded) {
-      setEditEmail(me.email ?? "");
-      setEditAvatarUrl(me.avatarImageUrl ?? "");
-      setEditCoverUrl(me.coverImageUrl ?? "");
-      setEmailLoaded(true);
+      startTransition(() => {
+        setEditEmail(me.email ?? "");
+        setEditAvatarUrl(me.avatarImageUrl ?? "");
+        setEditCoverUrl(me.coverImageUrl ?? "");
+        setEmailLoaded(true);
+      });
     }
   }, [me, emailLoaded]);
 
   useEffect(() => {
     if (myProfile) {
-      setBusinessName(myProfile.businessName ?? "");
-      setDescription(myProfile.description ?? "");
-      setPhone(myProfile.phone ?? "");
-      setWebsite(myProfile.website ?? "");
-      const links = myProfile.socialLinks ?? [];
-      setLinkFacebook(links.find((l) => l.platform === "facebook")?.url ?? "");
-      setLinkInstagram(links.find((l) => l.platform === "instagram")?.url ?? "");
-      setLinkTikTok(links.find((l) => l.platform === "tiktok")?.url ?? "");
-      setLinkYouTube(links.find((l) => l.platform === "youtube")?.url ?? "");
-      setLinkWhatsApp(links.find((l) => l.platform === "whatsapp")?.url ?? "");
+      startTransition(() => {
+        setBusinessName(myProfile.businessName ?? "");
+        setDescription(myProfile.description ?? "");
+        setPhone(myProfile.phone ?? "");
+        setWebsite(myProfile.website ?? "");
+        const links = myProfile.socialLinks ?? [];
+        setLinkFacebook(links.find((l) => l.platform === "facebook")?.url ?? "");
+        setLinkInstagram(links.find((l) => l.platform === "instagram")?.url ?? "");
+        setLinkTikTok(links.find((l) => l.platform === "tiktok")?.url ?? "");
+        setLinkYouTube(links.find((l) => l.platform === "youtube")?.url ?? "");
+        setLinkWhatsApp(links.find((l) => l.platform === "whatsapp")?.url ?? "");
+      });
     }
   }, [myProfile]);
 

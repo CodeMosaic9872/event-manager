@@ -77,16 +77,12 @@ export function MarketplaceView({ basePath, variant = "default" }: MarketplaceVi
   const businessTypeSlug = searchParams.get("businessType") ?? "";
 
   const [searchInput, setSearchInput] = useState(q);
-  const [selectedCategoryId, setSelectedCategoryId] = useState(categoryId);
-  const [selectedLocation, setSelectedLocation] = useState(location);
-  const [selectedRating, setSelectedRating] = useState<number | undefined>(minRating);
-  const [selectedSort, setSelectedSort] = useState(sort);
   const [locationOpen, setLocationOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [accumulatedSuppliers, setAccumulatedSuppliers] = useState<any[]>([]);
-  const [nextCursor, setNextCursor] = useState<string | null | undefined>(undefined);
+  const accumulatedRef = useRef<unknown[]>([]);
+  const lastProcessedDataRef = useRef(apiData);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const { data: eventTypes = [] } = useGetEventTypesQuery();
@@ -141,31 +137,26 @@ export function MarketplaceView({ basePath, variant = "default" }: MarketplaceVi
     { skip: !categoryId },
   );
 
-  useEffect(() => {
-    setSearchInput(q);
-    setSelectedCategoryId(categoryId);
-    setSelectedLocation(location);
-    setSelectedRating(minRating);
-    setSelectedSort(sort);
-  }, [q, categoryId, location, minRating, sort]);
 
-  useEffect(() => {
-    if (!apiData) return;
-    const cursorParam = searchParams.get("cursor");
-    if (cursorParam) {
-      setAccumulatedSuppliers((prev) => {
-        const seen = new Set(prev.map((s) => s.id));
-        const next = [...prev];
+  const accumulatedSuppliers = useMemo(() => {
+    if (!apiData) return accumulatedRef.current;
+    if (apiData !== lastProcessedDataRef.current) {
+      lastProcessedDataRef.current = apiData;
+      const cursorParam = searchParams.get("cursor");
+      if (cursorParam) {
+        const seen = new Set(accumulatedRef.current.map((s) => (s as Record<string,unknown>).id as string));
         for (const item of apiData.items) {
-          if (!seen.has(item.id)) next.push(item);
+          if (!seen.has(item.id)) accumulatedRef.current.push(item);
         }
-        return next;
-      });
-    } else {
-      setAccumulatedSuppliers(apiData.items);
+      } else {
+        accumulatedRef.current = apiData.items;
+      }
     }
-    setNextCursor(apiData.nextCursor);
+    return accumulatedRef.current;
   }, [apiData, searchParams]);
+
+  const nextCursor = apiData?.nextCursor ?? null;
+
 
   useEffect(() => {
     const raw = searchParams.get("supplierCategory");
@@ -220,9 +211,8 @@ export function MarketplaceView({ basePath, variant = "default" }: MarketplaceVi
   };
 
   const handleCategoryChange = (catId: string) => {
-    const newId = selectedCategoryId === catId ? "" : catId;
+    const newId = categoryId === catId ? "" : catId;
     const cat = categories.find((c) => c.id === newId);
-    setSelectedCategoryId(newId);
     updateParams({
       categoryId: newId || undefined,
       supplierCategory: newId && cat ? cat.name : undefined,
@@ -236,19 +226,16 @@ export function MarketplaceView({ basePath, variant = "default" }: MarketplaceVi
   };
 
   const handleLocationChange = (value: string) => {
-    setSelectedLocation(value);
     setLocationOpen(false);
     updateParams({ location: value || undefined });
   };
 
   const handleRatingChange = (value: number) => {
-    const newVal = selectedRating === value ? undefined : value;
-    setSelectedRating(newVal);
+    const newVal = minRating === value ? undefined : value;
     updateParams({ minRating: newVal ? String(newVal) : undefined });
   };
 
   const handleSortChange = (value: string) => {
-    setSelectedSort(value);
     setSortOpen(false);
     updateParams({ sort: value === "relevance" ? undefined : value });
   };
@@ -276,10 +263,6 @@ export function MarketplaceView({ basePath, variant = "default" }: MarketplaceVi
   };
 
   const handleReset = () => {
-    setSelectedCategoryId("");
-    setSelectedRating(undefined);
-    setSelectedLocation("");
-    setSelectedSort("relevance");
     setLocationOpen(false);
 
     if (variant === "vacation") {
@@ -310,7 +293,7 @@ export function MarketplaceView({ basePath, variant = "default" }: MarketplaceVi
   const countLabel = useMemo(() => {
     const totalFromApi =
       apiData?.facets && typeof apiData.facets === "object" && "totalCount" in apiData.facets
-        ? (apiData.facets as any).totalCount
+        ? (apiData.facets as Record<string,unknown>).totalCount
         : undefined;
     if (totalFromApi != null) return String(totalFromApi);
     if (Array.isArray(accumulatedSuppliers)) return accumulatedSuppliers.length;
@@ -405,7 +388,7 @@ export function MarketplaceView({ basePath, variant = "default" }: MarketplaceVi
                     onClick={() => setSortOpen((prev) => !prev)}
                   >
                     <span>{sortOpen ? "▴" : "▾"}</span>
-                    <span>{SORT_OPTIONS.find((s) => s.value === selectedSort)?.label ?? "הכי רלוונטי"}</span>
+                    <span>{SORT_OPTIONS.find((s) => s.value === sort)?.label ?? "הכי רלוונטי"}</span>
                   </button>
                   {sortOpen && (
                     <div className="absolute right-0 z-20 mt-1 w-full rounded-md border border-black/10 bg-white shadow-md">
@@ -413,7 +396,7 @@ export function MarketplaceView({ basePath, variant = "default" }: MarketplaceVi
                         <button
                           key={option.value}
                           type="button"
-                          className={`block w-full px-3 py-2 text-right text-sm hover:bg-black/5 ${option.value === selectedSort ? "font-bold text-[#4721DF]" : ""}`}
+                          className={`block w-full px-3 py-2 text-right text-sm hover:bg-black/5 ${option.value === sort ? "font-bold text-[#4721DF]" : ""}`}
                           onClick={() => handleSortChange(option.value)}
                         >
                           {option.label}
@@ -501,7 +484,7 @@ export function MarketplaceView({ basePath, variant = "default" }: MarketplaceVi
                     <label key={cat.id} className="grid cursor-pointer grid-cols-[auto_1fr] items-center gap-3">
                       <input
                         type="checkbox"
-                        checked={selectedCategoryId === cat.id}
+                        checked={categoryId === cat.id}
                         onChange={() => handleCategoryChange(cat.id)}
                         className="size-4 shrink-0 justify-self-end rounded border-black/20 accent-[#6AB7FF]"
                       />
@@ -568,7 +551,7 @@ export function MarketplaceView({ basePath, variant = "default" }: MarketplaceVi
                     }}
                   >
                     <span className="text-black/50">{locationOpen ? "▴" : "▾"}</span>
-                    <span>{LOCATIONS.find((l) => l.value === selectedLocation)?.label ?? "כל הארץ"}</span>
+                    <span>{LOCATIONS.find((l) => l.value === location)?.label ?? "כל הארץ"}</span>
                   </button>
                   {locationOpen && (
                     <div className="absolute z-20 mt-1 w-full rounded-lg border border-black/10 bg-white shadow-md">
@@ -627,7 +610,7 @@ export function MarketplaceView({ basePath, variant = "default" }: MarketplaceVi
                     <button
                       key={opt.value}
                       type="button"
-                      className={`flex flex-1 items-center justify-center gap-1 rounded px-2 py-1 ${selectedRating === opt.value ? "border border-[#6AB7FF] bg-white/30" : "border border-black/10 bg-white/20"}`}
+                      className={`flex flex-1 items-center justify-center gap-1 rounded px-2 py-1 ${minRating === opt.value ? "border border-[#6AB7FF] bg-white/30" : "border border-black/10 bg-white/20"}`}
                       onClick={() => handleRatingChange(opt.value)}
                     >
                       <span>{opt.label}</span>

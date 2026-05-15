@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, startTransition, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useGetUserJobQuery, useUpdateUserJobMutation, useGetEventTypesQuery, useGetCategoriesQuery, useGetSubcategoriesQuery } from "@/shared/api/api";
@@ -78,6 +78,7 @@ export default function EditTenderPage() {
 
   useEffect(() => {
     if (currentTender) setForm(mapJobToForm(currentTender));
+    // eslint-disable-next-line react-hooks/set-state-in-effect
   }, [currentTender]);
 
   useEffect(() => {

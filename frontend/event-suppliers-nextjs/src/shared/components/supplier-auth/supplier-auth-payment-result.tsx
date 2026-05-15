@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { SupplierJoinGlassCard } from "@/shared/components/supplier-join/supplier-join-glass-card";
 import { MarketingPageShell } from "@/shared/components/marketing-page-shell";
 import { getSafeInternalRedirectPath } from "@/shared/lib/safe-redirect-path";
@@ -90,38 +90,41 @@ function FailureGlyph() {
 }
 
 function usePurchaseSummaryLines(): SummaryLine[] {
-  const [lines, setLines] = useState<SummaryLine[]>([
-    { value: "Premium Plus", label: "סוג מנוי", icon: "plan" },
-    {
-      value: `₪ ${(1300).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      label: "סכום לתשלום",
-      icon: "amount",
-    },
-    { value: "XXXX-XXXX-XXXX", label: "מספר אישור", icon: "approval" },
-  ]);
-
-  useEffect(() => {
+  return useMemo(() => {
     const planId = parseStoredSupplierPlanId();
-    if (!planId) return;
-    const def = SUPPLIER_PLAN_CHECKOUT[planId];
-    const { total } = computeVatLineShekels(def.pretaxSubtotal);
-    const amountStr = `₪ ${total.toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}`;
-    setLines([
+    if (planId) {
+      const def = SUPPLIER_PLAN_CHECKOUT[planId];
+      if (def) {
+        const { total } = computeVatLineShekels(def.pretaxSubtotal);
+        return [
+          { value: "Premium Plus", label: "סוג מנוי", icon: "plan" },
+          {
+            value: `₪ ${total.toLocaleString("en-US", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}`,
+            label: "סכום לתשלום",
+            icon: "amount",
+          },
+          { value: "XXXX-XXXX-XXXX", label: "מספר אישור", icon: "approval" },
+        ];
+      }
+    }
+    return [
       { value: "Premium Plus", label: "סוג מנוי", icon: "plan" },
       {
-        value: amountStr,
+        value: `₪ ${(1300).toLocaleString("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}`,
         label: "סכום לתשלום",
         icon: "amount",
       },
       { value: "XXXX-XXXX-XXXX", label: "מספר אישור", icon: "approval" },
-    ]);
+    ];
   }, []);
-
-  return lines;
 }
+
 
 export type SupplierAuthPaymentResultViewProps = {
   outcome: SupplierPaymentOutcome;

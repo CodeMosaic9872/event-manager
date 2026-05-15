@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const fs = require("fs");  
 const p = "E:\\Project\\New folder\\event-manager\\frontend\\event-suppliers-nextjs\\src\\app\\supplier\\dashboard\\page.tsx";  
 let c = fs.readFileSync(p, "utf8");  
