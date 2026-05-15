@@ -157,7 +157,7 @@ export class JobBoardController {
     if (!userId || userId.startsWith('anonymous:')) {
       throw new UnauthorizedException('Authenticated supplier required');
     }
-    return this.jobBoardService.applyForUser(id, userId, body.message);
+    return this.jobBoardService.applyForUser(id, userId, body?.message);
   }
 
   @Post(':id/applications/withdraw')
