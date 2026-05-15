@@ -37,7 +37,7 @@ import {
 @ApiProtectedErrors()
 @Controller('jobs')
 export class JobBoardController {
-  constructor(private readonly jobBoardService: JobBoardService) {}
+  constructor(private readonly jobBoardService: JobBoardService) { }
 
   @Get()
   @ApiOperation({ summary: 'List public published jobs' })
@@ -187,7 +187,7 @@ export class JobBoardController {
 @Roles('ADMIN')
 @Controller('job-applications')
 export class JobApplicationController {
-  constructor(private readonly jobBoardService: JobBoardService) {}
+  constructor(private readonly jobBoardService: JobBoardService) { }
 
   @Patch(':id/status')
   @ApiOperation({ summary: 'Update job application status' })
@@ -211,7 +211,7 @@ export class JobApplicationController {
 @ApiProtectedErrors()
 @Controller()
 export class JobQueryController {
-  constructor(private readonly jobBoardService: JobBoardService) {}
+  constructor(private readonly jobBoardService: JobBoardService) { }
 
   @Get('users/me/stats')
   @ApiBearerAuth()

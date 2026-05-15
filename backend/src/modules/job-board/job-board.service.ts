@@ -16,7 +16,7 @@ export class JobBoardService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly automationService: AutomationService,
-  ) {}
+  ) { }
 
   private toPagination(page?: number, limit?: number) {
     const safePage = Number.isFinite(page) && (page as number) > 0 ? Math.floor(page as number) : 1;
@@ -176,11 +176,11 @@ export class JobBoardService {
 
     const materialChanged = Boolean(
       (patch.title && patch.title !== job.title) ||
-        (patch.description && patch.description !== job.description) ||
-        (patch.eventDate && new Date(patch.eventDate).getTime() !== (job.eventDate?.getTime() ?? 0)) ||
-        (patch.eventTypeId !== undefined && patch.eventTypeId !== job.eventTypeId) ||
-        (patch.categoryId !== undefined && patch.categoryId !== job.categoryId) ||
-        (patch.subcategoryId !== undefined && patch.subcategoryId !== job.subcategoryId),
+      (patch.description && patch.description !== job.description) ||
+      (patch.eventDate && new Date(patch.eventDate).getTime() !== (job.eventDate?.getTime() ?? 0)) ||
+      (patch.eventTypeId !== undefined && patch.eventTypeId !== job.eventTypeId) ||
+      (patch.categoryId !== undefined && patch.categoryId !== job.categoryId) ||
+      (patch.subcategoryId !== undefined && patch.subcategoryId !== job.subcategoryId),
     );
     if (materialChanged) {
       const applications = await this.prisma.jobApplication.findMany({
@@ -226,11 +226,11 @@ export class JobBoardService {
       ? [updated.categoryId]
       : updated.eventTypeId
         ? (
-            await this.prisma.eventCategorySubcategoryMap.findMany({
-              where: { eventTypeId: updated.eventTypeId },
-              select: { categoryId: true },
-            })
-          ).map((item) => item.categoryId)
+          await this.prisma.eventCategorySubcategoryMap.findMany({
+            where: { eventTypeId: updated.eventTypeId },
+            select: { categoryId: true },
+          })
+        ).map((item) => item.categoryId)
         : [];
     const categoryFilter =
       updated.categoryId && updated.subcategoryId
@@ -610,9 +610,9 @@ export class JobBoardService {
     );
     const mappedEventTypes = categoryIds.length
       ? await this.prisma.eventCategorySubcategoryMap.findMany({
-          where: { categoryId: { in: categoryIds } },
-          select: { eventTypeId: true, subcategoryId: true, categoryId: true },
-        })
+        where: { categoryId: { in: categoryIds } },
+        select: { eventTypeId: true, subcategoryId: true, categoryId: true },
+      })
       : [];
     const eventTypeIds = Array.from(new Set(mappedEventTypes.map((m) => m.eventTypeId)));
     const eventTypeCategoryMap = new Map<string, Set<string>>();
