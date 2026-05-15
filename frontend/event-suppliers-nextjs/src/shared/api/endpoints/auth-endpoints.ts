@@ -39,6 +39,40 @@ export function createAuthEndpoints(builder: EndpointBuilder<any, any, any>) {
         const r = response as any;
         const data = r?.data;
         const item = data?.items?.[0] || data;
+        const s = item?.supplier;
+        const rawSocialLinks: { platform: string; url: string }[] = Array.isArray(s?.socialLinks) ? s.socialLinks : [];
+        const findLink = (platform: string) => rawSocialLinks.find((l) => l.platform === platform)?.url ?? null;
+        const marketplaceProfile = s
+          ? {
+              id: s.id ?? "",
+              slug: s.slug ?? "",
+              businessName: s.businessName ?? "",
+              description: s.description ?? "",
+              email: s.contactEmail ?? null,
+              category: s.categories?.[0]?.name ?? null,
+              subcategory: s.categories?.[0]?.subcategory?.name ?? null,
+              city: null,
+              ratingAvg: s.ratingAvg ?? null,
+              reviewCount: s._count?.reviews ?? 0,
+              phone: s.publicPhone ?? null,
+              whatsapp: s.whatsappUrl ?? null,
+              website: s.websiteUrl ?? null,
+              instagram: findLink("instagram"),
+              facebook: findLink("facebook"),
+              avatarImageUrl: s.avatarImageUrl ?? null,
+              coverImageUrl: s.coverImageUrl ?? null,
+              gallery: Array.isArray(s.media) ? s.media.map((m: any) => m.url) : [],
+              kosher: s.attributes?.kosherOptions ?? null,
+              form3010: s.form3010 ?? null,
+              socialLinks: rawSocialLinks,
+              subcategories: s.categories?.map((c: any) => c.subcategory?.name).filter(Boolean) ?? [],
+              serviceAreas: Array.isArray(s.serviceAreas) ? s.serviceAreas : [],
+              labelsRules: Array.isArray(s.attributes?.labelsRulesJson) ? s.attributes.labelsRulesJson : [],
+              labelsNiche: Array.isArray(s.attributes?.labelsNicheJson) ? s.attributes.labelsNicheJson : [],
+              address: s.address ?? null,
+              extraLanguage: s.extraLanguage ?? null,
+            }
+          : null;
         return {
           id: item?.id ?? "",
           email: item?.email ?? "",
@@ -46,7 +80,7 @@ export function createAuthEndpoints(builder: EndpointBuilder<any, any, any>) {
           avatarImageUrl: item?.avatarImageUrl ?? null,
           coverImageUrl: item?.coverImageUrl ?? null,
           supplier: item?.supplier ?? null,
-          marketplaceProfile: item?.supplier?.marketplaceProfile ?? null,
+          marketplaceProfile,
         } as AuthUser;
       },
       providesTags: ["Auth"],

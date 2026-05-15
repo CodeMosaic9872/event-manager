@@ -15,10 +15,6 @@ export function EventConceptArticleView({ article }: { article: EventConceptArti
       <EventConceptArticleHero hero={article.hero} />
 
       <div className="mx-auto flex w-full max-w-[1120px] flex-col-reverse gap-8 lg:flex-row lg:items-start lg:gap-10 xl:gap-12">
-        <aside className="flex w-full shrink-0 flex-col gap-8 lg:max-w-[341px] lg:gap-10">
-          <EventConceptArticleSpecsCard specs={article.specs} />
-        </aside>
-
         <div className="flex min-w-0 flex-1 flex-col gap-8 sm:gap-10 lg:gap-12">
           <section className="flex flex-col gap-4 text-right sm:gap-6">
             <h2 className="text-xl font-bold leading-7 text-[#201C44] sm:text-2xl sm:leading-8">
@@ -33,9 +29,13 @@ export function EventConceptArticleView({ article }: { article: EventConceptArti
               {article.quote}
             </blockquote>
           </section>
-
-          <section className="flex flex-col gap-6 sm:gap-8" aria-labelledby="concept-team-heading">
-            <h2 id="concept-team-heading" className="text-end text-xl font-bold leading-7 text-[#0F172A] sm:text-2xl sm:leading-8">
+        </div>
+          <aside className="flex w-full shrink-0 flex-col gap-8 lg:max-w-[341px] lg:gap-10">
+          <EventConceptArticleSpecsCard specs={article.specs} />
+        </aside>
+      </div>
+      <section className="flex flex-col gap-6 sm:gap-8" aria-labelledby="concept-team-heading">
+            <h2 id="concept-team-heading" className="text-xl font-bold leading-7 text-[#0F172A] sm:text-2xl sm:leading-8">
               {article.teamTitle}
             </h2>
             <div
@@ -52,8 +52,6 @@ export function EventConceptArticleView({ article }: { article: EventConceptArti
               </div>
             </div>
           </section>
-        </div>
-      </div>
 
       <section
         className="mx-auto w-full max-w-[1120px] border-y border-[#E2E8F0] py-8 sm:py-10 lg:py-12"

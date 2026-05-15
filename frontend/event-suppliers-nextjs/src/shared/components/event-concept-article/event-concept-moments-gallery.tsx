@@ -26,7 +26,7 @@ export function EventConceptMomentsGallery({
     <div className="flex w-full flex-col gap-5 sm:gap-6 lg:gap-8">
       <h2
         id="moments-gallery-heading"
-        className="w-full text-end text-xl font-bold leading-7 text-[#0F172A] sm:text-2xl sm:leading-8"
+        className="w-full text-xl font-bold leading-7 text-[#0F172A] sm:text-2xl sm:leading-8"
       >
         {title}
       </h2>

@@ -640,14 +640,14 @@ export default function SupplierDashboardPage() {
                       ...(linkFacebook ? [{ platform: "facebook", url: linkFacebook }] : []),
                       ...(linkYoutube ? [{ platform: "youtube", url: linkYoutube }] : []),
                       ...(linkTiktok ? [{ platform: "tiktok", url: linkTiktok }] : []),
-                      ...(linkWhatsapp ? [{ platform: "whatsapp", url: linkWhatsapp }] : []),
-                      ...(linkWebsite ? [{ platform: "website", url: linkWebsite }] : []),
+                      ...(linkWhatsapp ? [{ platform: "whatsapp", url: linkWhatsapp }] : [])
                     ];
                     await updateProfile({
                       businessName,
                       slug: businessName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
                       description,
                       phone: linkPhone || undefined,
+                      website: linkWebsite || undefined,
                       socialLinks: socialLinks.length > 0 ? socialLinks : undefined,
                     }).unwrap();
                   } catch {

@@ -82,7 +82,7 @@ export function MarketplaceView({ basePath, variant = "default" }: MarketplaceVi
   const [sortOpen, setSortOpen] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const accumulatedRef = useRef<unknown[]>([]);
-  const lastProcessedDataRef = useRef(apiData);
+  const lastProcessedDataRef = useRef<unknown>(undefined);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const { data: eventTypes = [] } = useGetEventTypesQuery();
