@@ -2,26 +2,48 @@
 
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import * as request from 'supertest';
-import { AdminController } from './admin.controller';
-import { AdminService } from './admin.service';
+import request from 'supertest';
 import { AuthGuard } from '../../common/guards/auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
+import { AdminAutomationsController } from './automations/admin-automations.controller';
+import { AdminAutomationsService } from './automations/admin-automations.service';
+import { AdminJobsController } from './jobs/admin-jobs.controller';
+import { AdminJobsService } from './jobs/admin-jobs.service';
+import { AdminNotificationsController } from './notifications/admin-notifications.controller';
+import { AdminNotificationsService } from './notifications/admin-notifications.service';
+import { AdminUsersController } from './users/admin-users.controller';
+import { AdminUsersService } from './users/admin-users.service';
 
 describe('AdminController (contract)', () => {
   let app: INestApplication;
-  const adminServiceMock = {
+  const adminJobsServiceMock = {
     moderateJobApplication: jest.fn(),
+  };
+  const adminAutomationsServiceMock = {
     updateAutomationRule: jest.fn(),
     processAutomationRuns: jest.fn(),
+  };
+  const adminUsersServiceMock = {
     listUsers: jest.fn(),
+  };
+  const adminNotificationsServiceMock = {
     notificationProvidersHealth: jest.fn(),
   };
 
   beforeAll(async () => {
     const moduleBuilder = Test.createTestingModule({
-      controllers: [AdminController],
-      providers: [{ provide: AdminService, useValue: adminServiceMock }],
+      controllers: [
+        AdminJobsController,
+        AdminAutomationsController,
+        AdminUsersController,
+        AdminNotificationsController,
+      ],
+      providers: [
+        { provide: AdminJobsService, useValue: adminJobsServiceMock },
+        { provide: AdminAutomationsService, useValue: adminAutomationsServiceMock },
+        { provide: AdminUsersService, useValue: adminUsersServiceMock },
+        { provide: AdminNotificationsService, useValue: adminNotificationsServiceMock },
+      ],
     });
     moduleBuilder.overrideGuard(AuthGuard).useValue({ canActivate: () => true });
     moduleBuilder.overrideGuard(RolesGuard).useValue({ canActivate: () => true });
@@ -37,7 +59,7 @@ describe('AdminController (contract)', () => {
   });
 
   it('POST /v1/admin/jobs/applications/:id/status forwards status and reason', async () => {
-    adminServiceMock.moderateJobApplication.mockResolvedValueOnce({
+    adminJobsServiceMock.moderateJobApplication.mockResolvedValueOnce({
       id: 'app_1',
       status: 'REJECTED',
     });
@@ -56,7 +78,7 @@ describe('AdminController (contract)', () => {
         status: 'REJECTED',
       }),
     );
-    expect(adminServiceMock.moderateJobApplication).toHaveBeenCalledWith(
+    expect(adminJobsServiceMock.moderateJobApplication).toHaveBeenCalledWith(
       'app_1',
       'REJECTED',
       'Missing required availability details',
@@ -64,7 +86,7 @@ describe('AdminController (contract)', () => {
   });
 
   it('PATCH /v1/admin/automations/rules/:id updates automation rule config', async () => {
-    adminServiceMock.updateAutomationRule.mockResolvedValueOnce({
+    adminAutomationsServiceMock.updateAutomationRule.mockResolvedValueOnce({
       id: 'tmpl_1',
       isActive: false,
     });
@@ -77,14 +99,14 @@ describe('AdminController (contract)', () => {
       })
       .expect(200);
 
-    expect(adminServiceMock.updateAutomationRule).toHaveBeenCalledWith('tmpl_1', {
+    expect(adminAutomationsServiceMock.updateAutomationRule).toHaveBeenCalledWith('tmpl_1', {
       isActive: false,
       config: { digest: 'daily' },
     });
   });
 
   it('POST /v1/admin/automations/runs/process forwards parsed limit', async () => {
-    adminServiceMock.processAutomationRuns.mockResolvedValueOnce({
+    adminAutomationsServiceMock.processAutomationRuns.mockResolvedValueOnce({
       attempted: 3,
       sent: 2,
       failed: 1,
@@ -95,11 +117,11 @@ describe('AdminController (contract)', () => {
       .query({ limit: '25' })
       .expect(201);
 
-    expect(adminServiceMock.processAutomationRuns).toHaveBeenCalledWith(25);
+    expect(adminAutomationsServiceMock.processAutomationRuns).toHaveBeenCalledWith(25);
   });
 
   it('GET /v1/admin/users returns user list', async () => {
-    adminServiceMock.listUsers.mockResolvedValueOnce([
+    adminUsersServiceMock.listUsers.mockResolvedValueOnce([
       { id: 'usr_1', email: 'planner@example.com', status: 'ACTIVE', roles: [{ role: 'USER' }] },
     ]);
 
@@ -108,11 +130,11 @@ describe('AdminController (contract)', () => {
     expect(response.body).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: 'usr_1', email: 'planner@example.com' })]),
     );
-    expect(adminServiceMock.listUsers).toHaveBeenCalledTimes(1);
+    expect(adminUsersServiceMock.listUsers).toHaveBeenCalledTimes(1);
   });
 
   it('GET /v1/admin/notifications/providers/health returns channel provider health', async () => {
-    adminServiceMock.notificationProvidersHealth.mockResolvedValueOnce({
+    adminNotificationsServiceMock.notificationProvidersHealth.mockResolvedValueOnce({
       email: { configured: true, mode: 'smtp' },
       push: { configured: true, mode: 'firebase' },
       sms: { configured: true, mode: 'twilio' },
@@ -127,6 +149,6 @@ describe('AdminController (contract)', () => {
         sms: expect.objectContaining({ mode: 'twilio' }),
       }),
     );
-    expect(adminServiceMock.notificationProvidersHealth).toHaveBeenCalledTimes(1);
+    expect(adminNotificationsServiceMock.notificationProvidersHealth).toHaveBeenCalledTimes(1);
   });
 });

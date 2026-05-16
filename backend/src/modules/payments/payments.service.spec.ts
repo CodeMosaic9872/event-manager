@@ -57,11 +57,17 @@ describe('PaymentsService', () => {
       ...(overrides?.cardcom ?? {}),
     } as any;
 
+    const plansService = {
+      resolvePlanForCheckout: jest.fn().mockResolvedValue(null),
+      billingAmountFromPlan: jest.fn(),
+    };
+
     return {
-      service: new PaymentsService(prisma, cardcom as CardcomClient),
+      service: new PaymentsService(prisma, cardcom as CardcomClient, plansService as any),
       prisma,
       cardcom,
       supplierPayment,
+      plansService,
     };
   }
 

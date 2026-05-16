@@ -19,6 +19,7 @@ import {
   requireEnv,
 } from './cardcom.config';
 import type { CreateCardcomSessionDto } from './dto/create-cardcom-session.dto';
+import { PlansService } from '../plans/plans.service';
 
 function flattenParams(query: Record<string, unknown>, body: unknown): Record<string, string> {
   const out: Record<string, string> = {};
@@ -115,6 +116,7 @@ export class PaymentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cardcom: CardcomClient,
+    private readonly plansService: PlansService,
   ) {}
 
   async createCardcomSession(userId: string, dto: CreateCardcomSessionDto) {
@@ -134,8 +136,22 @@ export class PaymentsService {
     const errorRedirectUrl = dto.errorRedirectUrl ?? defaults.error;
     const cancelUrl = dto.cancelUrl ?? defaults.cancel;
 
-    const amountDecimal = new Prisma.Decimal(dto.amount);
-    const currency = (dto.currency ?? 'ILS').toUpperCase();
+    const plan = await this.plansService.resolvePlanForCheckout({
+      planId: dto.planId,
+      planKey: dto.planKey,
+    });
+    const chargeAmount =
+      plan !== null
+        ? Number(this.plansService.billingAmountFromPlan(plan))
+        : dto.amount;
+    if (chargeAmount === undefined || chargeAmount === null || chargeAmount <= 0) {
+      throw new BadRequestException('Provide amount or a valid planKey / planId');
+    }
+
+    const amountDecimal = new Prisma.Decimal(chargeAmount);
+    const currency = (dto.currency ?? plan?.currency ?? 'ILS').toUpperCase();
+    const planKey = plan?.key ?? dto.planKey ?? null;
+    const planId = plan?.id ?? null;
 
     const paymentId = randomUUID();
     const payment = await this.prisma.supplierPayment.create({
@@ -143,16 +159,17 @@ export class PaymentsService {
         id: paymentId,
         supplierId: supplier.id,
         userId,
+        planId,
         amount: amountDecimal,
         currency,
-        planKey: dto.planKey ?? null,
-        description: dto.description ?? null,
+        planKey,
+        description: dto.description ?? plan?.name ?? null,
         returnValue: paymentId,
         status: 'PENDING',
       },
     });
 
-    const sumToBill = dto.amount.toFixed(2);
+    const sumToBill = chargeAmount.toFixed(2);
     const language = optionalEnv('CARDCOM_CHECKOUT_LANGUAGE') ?? 'he';
 
     try {
@@ -442,8 +459,13 @@ export class PaymentsService {
     if (!payment || payment.status !== 'PAID' || !payment.cardcomToken) {
       return;
     }
-    const interval = inferIntervalFromPlanKey(payment.planKey);
-    const months = intervalToMonths(interval);
+    const plan = payment.planId
+      ? await this.prisma.subscriptionPlan.findUnique({ where: { id: payment.planId } })
+      : payment.planKey
+        ? await this.prisma.subscriptionPlan.findUnique({ where: { key: payment.planKey } })
+        : null;
+    const interval = plan?.interval ?? inferIntervalFromPlanKey(payment.planKey);
+    const months = plan?.billingMonths ?? intervalToMonths(interval);
     const nextBillingAt = addMonths(payment.paidAt ?? new Date(), months);
 
     const existing = await this.prisma.supplierSubscription.findUnique({
@@ -453,9 +475,10 @@ export class PaymentsService {
       const created = await this.prisma.supplierSubscription.create({
         data: {
           supplierId: payment.supplierId,
+          planId: plan?.id ?? payment.planId ?? null,
           status: 'ACTIVE',
           interval,
-          planKey: payment.planKey ?? null,
+          planKey: plan?.key ?? payment.planKey ?? null,
           amount: payment.amount,
           currency: payment.currency,
           cardcomToken: payment.cardcomToken,
@@ -476,7 +499,9 @@ export class PaymentsService {
       where: { id: existing.id },
       data: {
         status: 'ACTIVE',
-        planKey: payment.planKey ?? existing.planKey,
+        planId: plan?.id ?? payment.planId ?? existing.planId,
+        planKey: plan?.key ?? payment.planKey ?? existing.planKey,
+        interval,
         amount: payment.amount,
         currency: payment.currency,
         cardcomToken: payment.cardcomToken,

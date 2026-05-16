@@ -1447,7 +1447,93 @@ async function main() {
   await seedNotificationsAndPush(users, supplier1.id);
   await seedExtraPushTokens(users, supplier2.id);
 
+  console.log('Seeding subscription plans…');
+  await seedSubscriptionPlans();
+
   console.log('Seed completed.');
+}
+
+async function seedSubscriptionPlans() {
+  const features = [
+    'חשיפה בתוצאות החיפוש',
+    'שימוש וקידום אקטיביים ע״י המפיק AI ללידים מדויקים',
+    'קבלת סמס בזמן אמת על הצעות עבודה רלוונטיות',
+  ];
+
+  const plans = [
+    {
+      key: 'two_year',
+      name: 'Two years - partners in fire and water',
+      summaryTitle: 'מנוי לשנתיים (שנתיים)',
+      totalPeriodNote: 'למשך שנתיים',
+      interval: 'BIENNIAL' as const,
+      pretaxAmount: new Prisma.Decimal(1990),
+      billingMonths: 24,
+      badge: 'THE MOST AFFORDABLE',
+      isFeatured: false,
+      sortOrder: 0,
+      features,
+    },
+    {
+      key: 'annual',
+      name: 'A year - partners on the journey',
+      summaryTitle: 'מנוי שנתי (Annual)',
+      totalPeriodNote: 'לשנה אחת',
+      interval: 'ANNUAL' as const,
+      pretaxAmount: new Prisma.Decimal(1390),
+      billingMonths: 12,
+      badge: 'THE MOST CHOSEN',
+      isFeatured: true,
+      sortOrder: 1,
+      features,
+    },
+    {
+      key: 'six_month',
+      name: 'Six months - no obligation relationship',
+      summaryTitle: 'מנוי לחצי שנה',
+      totalPeriodNote: 'למשך חצי שנה',
+      interval: 'SEMI_ANNUAL' as const,
+      pretaxAmount: new Prisma.Decimal(790),
+      billingMonths: 6,
+      badge: null,
+      isFeatured: false,
+      sortOrder: 2,
+      features,
+    },
+  ];
+
+  for (const plan of plans) {
+    await prisma.subscriptionPlan.upsert({
+      where: { key: plan.key },
+      update: {
+        name: plan.name,
+        summaryTitle: plan.summaryTitle,
+        totalPeriodNote: plan.totalPeriodNote,
+        interval: plan.interval,
+        pretaxAmount: plan.pretaxAmount,
+        billingMonths: plan.billingMonths,
+        badge: plan.badge,
+        isFeatured: plan.isFeatured,
+        sortOrder: plan.sortOrder,
+        isActive: true,
+        features: plan.features,
+      },
+      create: {
+        key: plan.key,
+        name: plan.name,
+        summaryTitle: plan.summaryTitle,
+        totalPeriodNote: plan.totalPeriodNote,
+        interval: plan.interval,
+        pretaxAmount: plan.pretaxAmount,
+        billingMonths: plan.billingMonths,
+        badge: plan.badge,
+        isFeatured: plan.isFeatured,
+        sortOrder: plan.sortOrder,
+        isActive: true,
+        features: plan.features,
+      },
+    });
+  }
 }
 
 main()

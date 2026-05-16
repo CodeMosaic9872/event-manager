@@ -9,13 +9,16 @@ import { JobBoardModule } from './modules/job-board/job-board.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ReferralsModule } from './modules/referrals/referrals.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { AdminBootstrapModule } from './modules/bootstrap/admin-bootstrap.module';
 import { ConceptsModule } from './modules/concepts/concepts.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { PlansModule } from './modules/plans/plans.module';
 
 @Module({
   imports: [
     PrismaModule,
     AuthModule,
+    PlansModule,
     TaxonomyModule,
     SuppliersModule,
     ConceptsModule,
@@ -24,6 +27,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
     NotificationsModule,
     ReferralsModule,
     AdminModule,
+    AdminBootstrapModule,
     PaymentsModule,
   ],
   controllers: [AppController],

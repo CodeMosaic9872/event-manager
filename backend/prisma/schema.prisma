@@ -249,11 +249,36 @@ model SupplierApprovalHistory {
   supplier     Supplier               @relation(fields: [supplierId], references: [id], onDelete: Cascade)
 }
 
+model SubscriptionPlan {
+  id              String          @id @default(cuid())
+  key             String          @unique
+  name            String
+  summaryTitle    String?
+  totalPeriodNote String?
+  interval        BillingInterval
+  pretaxAmount    Decimal         @db.Decimal(12, 2)
+  currency        String          @default("ILS")
+  billingMonths   Int
+  badge           String?
+  isFeatured      Boolean         @default(false)
+  sortOrder       Int             @default(0)
+  isActive        Boolean         @default(true)
+  features        String[]        @default([])
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  subscriptions   SupplierSubscription[]
+  payments        SupplierPayment[]
+
+  @@index([isActive, sortOrder])
+}
+
 model SupplierPayment {
   id                         String          @id @default(cuid())
   supplierId                 String
   userId                     String?
   subscriptionId             String?
+  planId                     String?
   provider                   PaymentProvider @default(CARDCOM)
   status                     PaymentStatus   @default(PENDING)
   amount                     Decimal         @db.Decimal(12, 2)
@@ -277,8 +302,10 @@ model SupplierPayment {
   supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
   user     User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   subscription SupplierSubscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  plan     SubscriptionPlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
 
   @@index([supplierId, createdAt])
+  @@index([planId])
   @@index([cardcomLowProfileId])
   @@index([status])
   @@index([subscriptionId, createdAt])
@@ -287,6 +314,7 @@ model SupplierPayment {
 model SupplierSubscription {
   id                         String             @id @default(cuid())
   supplierId                 String             @unique
+  planId                     String?
   status                     SubscriptionStatus @default(ACTIVE)
   interval                   BillingInterval
   planKey                    String?
@@ -302,9 +330,11 @@ model SupplierSubscription {
   updatedAt                  DateTime           @updatedAt
 
   supplier                   Supplier           @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  plan                       SubscriptionPlan?  @relation(fields: [planId], references: [id], onDelete: SetNull)
   payments                   SupplierPayment[]
 
   @@index([status, nextBillingAt])
+  @@index([planId])
 }
 
 model EventType {

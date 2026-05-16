@@ -3,11 +3,21 @@ import { Type } from 'class-transformer';
 import { IsNumber, IsOptional, IsString, IsUrl, MaxLength, Min, MinLength } from 'class-validator';
 
 export class CreateCardcomSessionDto {
-  @ApiPropertyOptional({ description: 'Charge amount (major currency units, e.g. ILS)', example: 499 })
+  @ApiPropertyOptional({
+    description: 'Charge amount (major currency units, e.g. ILS). Omit when planKey or planId is set.',
+    example: 1626,
+  })
+  @IsOptional()
   @Type(() => Number)
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0.01)
-  amount!: number;
+  amount?: number;
+
+  @ApiPropertyOptional({ description: 'Subscription plan id from GET /v1/plans' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  planId?: string;
 
   @ApiPropertyOptional({ default: 'ILS' })
   @IsOptional()
