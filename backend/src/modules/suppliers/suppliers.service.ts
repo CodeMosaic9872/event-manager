@@ -12,7 +12,7 @@ import { ListSuppliersQueryDto } from './dto/list-suppliers-query.dto';
 import { MediaStorageService } from '../storage/media-storage.service';
 import { AutomationService } from '../notifications/automation.service';
 import type { UpsertSupplierProfileDto } from './dto/upsert-supplier-profile.dto';
-
+import { randomBytes } from 'crypto';
 const SUPPLIER_PUBLIC_INCLUDE = {
   media: { orderBy: { sortOrder: 'asc' } },
   socialLinks: true,
@@ -858,6 +858,13 @@ export class SuppliersService {
           ...contactFields,
         },
       });
+      
+      const code = `REF-${randomBytes(4).toString('hex').toUpperCase()}`;
+      const baseUrl = process.env.REFERRAL_BASE_URL ?? 'https://event-marketplace.example/ref';
+      await tx.referralLink.create({
+        data: { supplierId: created.id, code, url: `${baseUrl}/${code}` },
+      });
+
       return finalize(tx, created.id);
     });
   }

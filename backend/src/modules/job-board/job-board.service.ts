@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { JobApplicationStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AutomationService } from '../notifications/automation.service';
@@ -377,6 +377,15 @@ export class JobBoardService {
   }
 
   async apply(jobId: string, supplierId: string, message?: string) {
+    const existing = await this.prisma.jobApplication.findUnique({
+      where: {
+        jobPostId_supplierId: { jobPostId: jobId, supplierId },
+      },
+    });
+    if (existing) {
+      throw new ConflictException('Supplier already applied for this job');
+    }
+
     const application = await this.prisma.$transaction(async (tx) => {
       const created = await tx.jobApplication.create({
         data: {
