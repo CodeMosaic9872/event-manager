@@ -11,6 +11,7 @@ import {
   mapJobPostsArray,
   mapPaginatedJobApplications,
   mapRecommendedJobsArray,
+  mapAppliedJobsArray,
   unwrapApiPayload,
 } from "@/shared/api/job-mapper";
 
@@ -36,11 +37,17 @@ const defaultPageLimit = { page: 1, limit: 100 };
 
 export function createJobsEndpoints(builder: JobsBuilder) {
   return {
-    getJobs: builder.query<JobSummaryResponse[], { page?: number; limit?: number } | void>({
+    getJobs: builder.query<JobSummaryResponse[], { page?: number; limit?: number; categoryId?: string | string[]; subcategoryId?: string } | void>({
       query: (params) => {
-        const page = params && typeof params === "object" && "page" in params ? params.page : defaultPageLimit.page;
-        const limit = params && typeof params === "object" && "limit" in params ? params.limit : defaultPageLimit.limit;
-        return { url: "/v1/jobs", params: { page, limit } };
+        const p = params && typeof params === "object" ? params : {};
+        const page = "page" in p ? p.page : defaultPageLimit.page;
+        const limit = "limit" in p ? p.limit : defaultPageLimit.limit;
+        const extra: Record<string, unknown> = {};
+        if ("categoryId" in p && p.categoryId && (Array.isArray(p.categoryId) ? p.categoryId.length > 0 : true)) {
+          extra.categoryId = p.categoryId;
+        }
+        if ("subcategoryId" in p && p.subcategoryId) extra.subcategoryId = p.subcategoryId;
+        return { url: "/v1/jobs", params: { page, limit, ...extra } };
       },
       transformResponse: (response: unknown) => {
         const mapped = mapJobPostsArray(response);
@@ -87,6 +94,18 @@ export function createJobsEndpoints(builder: JobsBuilder) {
             .filter((x): x is JobSummaryResponse => x != null);
         }
         return [];
+      },
+      transformErrorResponse: () => [],
+      providesTags: ["Jobs"],
+    }),
+    getAppliedSupplierJobs: builder.query<JobSummaryResponse[], { page?: number; limit?: number } | void>({
+      query: (params) => {
+        const page = params && typeof params === "object" && "page" in params ? params.page : 1;
+        const limit = params && typeof params === "object" && "limit" in params ? params.limit : 50;
+        return { url: "/v1/supplier/jobs/applied", params: { page, limit } };
+      },
+      transformResponse: (response: unknown) => {
+        return mapAppliedJobsArray(response);
       },
       transformErrorResponse: () => [],
       providesTags: ["Jobs"],

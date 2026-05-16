@@ -14,6 +14,25 @@ import type {
   CompleteMediaUploadResponse,
 } from "@/shared/api/types";
 
+export interface GalleryMediaItem {
+  id: string;
+  supplierId: string;
+  mediaType: string;
+  url: string;
+  sortOrder: number;
+  metadataJson: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface UploadGalleryResponse {
+  items: GalleryMediaItem[];
+}
+
+export interface DeleteGalleryBatchResponse {
+  deleted: number;
+  ids: string[];
+}
+
 export function createSuppliersEndpoints(builder: EndpointBuilder<any, any, any>) {
   return {
     getSuppliers: builder.query<SuppliersListResponse, SuppliersQuery>({
@@ -103,6 +122,30 @@ export function createSuppliersEndpoints(builder: EndpointBuilder<any, any, any>
         if (r?.data) return r.data as CompleteMediaUploadResponse;
         return response as CompleteMediaUploadResponse;
       },
+    }),
+    uploadGalleryFiles: builder.mutation<UploadGalleryResponse, { files: File[]; sortOrder?: number }>({
+      query: ({ files, sortOrder }) => {
+        const formData = new FormData();
+        files.forEach((file) => formData.append("files", file));
+        if (sortOrder !== undefined) formData.append("sortOrder", String(sortOrder));
+        return { url: "/v1/supplier/media/upload/gallery", method: "POST", body: formData };
+      },
+      transformResponse: (response: unknown) => {
+        const r = response as any;
+        if (r?.data?.items) return r.data as UploadGalleryResponse;
+        if (r?.items) return r as UploadGalleryResponse;
+        return { items: [] };
+      },
+      invalidatesTags: ["Suppliers"],
+    }),
+    deleteGalleryItems: builder.mutation<DeleteGalleryBatchResponse, { ids: string[] }>({
+      query: (body) => ({ url: "/v1/supplier/media/delete-batch", method: "POST", body }),
+      transformResponse: (response: unknown) => {
+        const r = response as any;
+        if (r?.data) return r.data as DeleteGalleryBatchResponse;
+        return response as DeleteGalleryBatchResponse;
+      },
+      invalidatesTags: ["Suppliers"],
     }),
   };
 }

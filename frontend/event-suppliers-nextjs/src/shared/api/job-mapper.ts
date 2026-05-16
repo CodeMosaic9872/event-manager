@@ -160,3 +160,20 @@ export function mapRecommendedJobsArray(response: unknown): JobSummaryResponse[]
   }
   return out;
 }
+
+/** `GET /v1/supplier/jobs/applied` returns a list of applications. */
+export function mapAppliedJobsArray(response: unknown): JobSummaryResponse[] {
+  const root = unwrapApiPayload(response);
+  const obj = asRecord(root);
+  if (!obj) return [];
+  const items = obj.items;
+  if (!Array.isArray(items)) return [];
+  const out: JobSummaryResponse[] = [];
+  for (const row of items) {
+    const app = asRecord(row);
+    if (!app || !app.jobPost) continue;
+    const base = mapJobPostToSummary(app.jobPost);
+    if (base) out.push(base);
+  }
+  return out;
+}

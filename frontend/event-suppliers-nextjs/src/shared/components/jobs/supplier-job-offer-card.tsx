@@ -47,7 +47,7 @@ function MetadataChip({
   );
 }
 
-export function SupplierJobOfferCard({ job }: { job: JobSummaryResponse }) {
+export function SupplierJobOfferCard({ job, isApplied = false }: { job: JobSummaryResponse; isApplied?: boolean }) {
   const router = useRouter();
   const [proposalOpen, setProposalOpen] = useState(false);
   const sessionUser = useAppSelector((state) => state.auth.user);
@@ -91,7 +91,7 @@ export function SupplierJobOfferCard({ job }: { job: JobSummaryResponse }) {
     setProposalOpen(true);
   };
 
-  const primaryLabel = isOwner ? "ניהול ההצעה" : "הגשת הצעה";
+  const primaryLabel = isOwner ? "ניהול ההצעה" : isApplied ? "הגשתי הצעה" : "הגשת הצעה";
 
   return (
     <>
@@ -159,13 +159,15 @@ export function SupplierJobOfferCard({ job }: { job: JobSummaryResponse }) {
               </div>
               <button
                 type="button"
-                disabled={!canPrimaryAction}
-                onClick={handlePrimaryAction}
+                disabled={!canPrimaryAction || isApplied}
+                onClick={isApplied ? undefined : handlePrimaryAction}
                 dir="ltr"
                 className={`inline-flex h-[39px] min-w-0 shrink-0 items-center justify-center gap-2 rounded-[99px] px-6 py-3 text-center text-base font-bold leading-6 text-white ${
-                  canPrimaryAction
+                  isApplied
+                    ? "cursor-not-allowed bg-[#94A3B8] !text-white"
+                    : canPrimaryAction
                     ? "bg-[#201C44] hover:bg-[#151238]"
-                    : "cursor-not-allowed bg-[#C5C8D0] text-white!"
+                    : "cursor-not-allowed bg-[#C5C8D0] !text-white"
                 }`}
               >
                 <span className="text-white">{primaryLabel}</span>

@@ -8,8 +8,10 @@ import {
   useGetSupplierReferralLinkQuery,
   useUpdateSupplierProfileMutation,
   useMeQuery,
-  useUploadUserProfileFileMutation,
+  useUploadGalleryFilesMutation,
+  useDeleteGalleryItemsMutation,
 } from "@/shared/api/api";
+import type { GalleryMediaItem } from "@/shared/api/endpoints/suppliers-endpoints";
 import { ProtectedRoute } from "@/shared/components/protected-route";
 import { SupplierDashboardSectionCard } from "@/shared/components/supplier-dashboard/supplier-dashboard-section-card";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
@@ -19,51 +21,51 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 const SERVICE_AREAS = [
   "Eilat and the Arava",
   "Jerusalem",
-  "The whole country",
+  "כל הארץ",
   "Sharon",
-  "south",
-  "coordinator",
-  "north",
+  "דרום",
+  "מרכז",
+  "צפון",
 ] as const;
 
 const SPECIALTIES = [
-  "vegan",
-  "Envelope",
-  "kashrut",
-  "Reservist",
-  "Ministry of Defense Supplier",
+  "טבעוני",
+  "עוטף",
+  "כשרות",
+  "מילואימניק",
+  "ספק משרד הביטחון",
 ] as const;
 
 const DEMO_JOB_CARDS = [
   {
-    timeLabel: "2 hours ago",
+    timeLabel: "לפני שעתיים",
     badge: "new" as const,
-    meta: "Location: Tel Aviv | Budget: 12,000-15,000 ₪",
-    title: "Small wedding for 50 people",
+    meta: "מיקום: תל אביב | תקציב: 12,000-15,000 ₪",
+    title: "חתונה קטנה ל-50 איש",
   },
   {
-    timeLabel: "yesterday",
+    timeLabel: "אתמול",
     badge: "relevant" as const,
-    meta: "Location: Herzliya Pituach | Budget: 8,000-12,000 ₪",
-    title: "Corporate evening event",
+    meta: "מיקום: הרצליה פיתוח | תקציב: 8,000-12,000 ₪",
+    title: "אירוע ערב חברה",
   },
 ];
 
 const DASHBOARD_NOTIFICATIONS = [
   {
-    title: "Price change",
-    body: "Please note that the price of the job offer has changed by 1,000 ₪.",
-    actionLabel: "To view a job offer",
+    title: "שינוי מחיר",
+    body: "שימו לב שמחיר הצעת העבודה השתנה ב-1,000 ₪.",
+    actionLabel: "לצפייה בהצעת עבודה",
   },
   {
-    title: "New message",
-    body: "Please note that the price of the job offer has changed by 1,000 ₪.",
-    actionLabel: "To view a job offer",
+    title: "הודעה חדשה",
+    body: "שימו לב שמחיר הצעת העבודה השתנה ב-1,000 ₪.",
+    actionLabel: "לצפייה בהצעת עבודה",
   },
   {
-    title: "New tender",
-    body: "A new and suitable job offer for your business has been published.",
-    actionLabel: "To view a job offer",
+    title: "מכרז חדש",
+    body: "פורסמה הצעת עבודה חדשה ומתאימה לעסק שלך.",
+    actionLabel: "לצפייה בהצעת עבודה",
   },
 ] as const;
 
@@ -88,7 +90,7 @@ function SectionHeaderIcon({
 }) {
   return (
     <div className="relative flex w-full flex-row-reverse items-center justify-end gap-2">
-      <h3 className="text-right text-xl font-normal leading-7 text-[#1E1B4B]">{title}</h3>
+      <h3 className="text-right text-xl font-bold leading-7 text-[#1E1B4B]">{title}</h3>
       <Image
         src={iconSrc}
         alt=""
@@ -131,26 +133,19 @@ function ReferFriendBlock({
             <button
               type="button"
               onClick={onCopy}
-              className="shrink-0 bg-[#3B82F6] px-4 py-2.5 text-base font-normal leading-6 text-white transition hover:opacity-95"
+              className="shrink-0 bg-[#3B82F6] px-4 py-2.5 text-base font-bold leading-6 text-white transition hover:opacity-95"
             >
-              {copied ? "Copied" : "copy"}
+              {copied ? "הועתק" : "העתק"}
             </button>
             <div className="flex min-h-[42px] min-w-0 flex-1 items-center px-4 py-2">
               <p className="w-full truncate text-left text-sm leading-5 text-[#1E293B]" dir="ltr">
                 {referralUrl}
               </p>
             </div>
-            <button
-              type="button"
-              onClick={onCopy}
-              className="flex h-[42px] shrink-0 items-center justify-center bg-[#3B82F6] px-4 text-base font-normal leading-6 text-white transition hover:opacity-95"
-            >
-              {copied ? "הועתק" : "העתק"}
-            </button>
           </div>
           <div className="flex max-w-md flex-col gap-1 text-right sm:shrink-0 sm:pl-2">
-            <p className="text-base font-normal leading-6 text-[#1E1B4B]">{shareTitle}</p>
-            <p className="text-sm font-normal leading-5 text-[#64748B]">{shareHint}</p>
+            <p className="text-base font-bold leading-6 text-[#1E1B4B]">{shareTitle}</p>
+            <p className="text-sm font-normal leading-5 text-[#64748B] font-bold">{shareHint}</p>
           </div>
         </div>
       </SupplierDashboardSectionCard.InnerWell>
@@ -159,16 +154,16 @@ function ReferFriendBlock({
 }
 
 function JobBadge({ kind }: { kind: "new" | "relevant" }) {
-  if (kind === "new") {
+  if (kind === "חדש") {
     return (
       <span className="rounded-full bg-[#DCFCE7] px-2 py-0.5 text-[10px] font-normal uppercase leading-[15px] text-[#15803D]">
-        new
+        חדש
       </span>
     );
   }
   return (
     <span className="rounded-full bg-[#DBEAFE] px-2 py-0.5 text-[10px] font-normal uppercase leading-[15px] text-[#1D4ED8]">
-      Relevant
+      רלוונטי
     </span>
   );
 }
@@ -186,7 +181,7 @@ function ChipToggle({
     <button
       type="button"
       onClick={onToggle}
-      className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-normal leading-5 transition ${
+      className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold leading-5 transition ${
         selected
           ? "border-[#3B82F6] bg-[#3B82F6] text-black"
           : "border-[#BFDBFE] bg-white text-black"
@@ -210,7 +205,8 @@ export default function SupplierDashboardPage() {
     skip: shouldSkipProtectedQueries,
   });
   const [updateProfile, { isLoading: isSavingProfile }] = useUpdateSupplierProfileMutation();
-  const [uploadFile, { isLoading: isUploadingFile }] = useUploadUserProfileFileMutation();
+  const [uploadGalleryFiles] = useUploadGalleryFilesMutation();
+  const [deleteGalleryItems] = useDeleteGalleryItemsMutation();
   const { data: recommendedJobs = [] } = useGetRecommendedSupplierJobsQuery(undefined, {
     skip: shouldSkipProtectedQueries,
   });
@@ -223,19 +219,19 @@ export default function SupplierDashboardPage() {
   const [copiedReferral, setCopiedReferral] = useState(false);
   const [copiedRating, setCopiedRating] = useState(false);
   const [businessName, setBusinessName] = useState(draft.businessName || "Sharon Halls");
-  const [category, setCategory] = useState("Event halls");
+  const [category, setCategory] = useState("אולמות אירועים");
   const [description, setDescription] = useState(
     "A prestigious event hall in the heart of Sharon, offering an exceptional culinary experience and spectacular modern design for all types of events.",
   );
   const [address, setAddress] = useState("");
 
   const [selectedAreas, setSelectedAreas] = useState<Set<string>>(
-    () => new Set(["coordinator", "north"]),
+    () => new Set(["מרכז", "צפון"]),
   );
   const [selectedSpecialties, setSelectedSpecialties] = useState<Set<string>>(
-    () => new Set(["Reservist", "Ministry of Defense Supplier"]),
+    () => new Set(["מילואימניק", "ספק משרד הביטחון"]),
   );
-  const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
+  const [galleryItems, setGalleryItems] = useState<GalleryMediaItem[]>([]);
   const galleryInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploadingGallery, setIsUploadingGallery] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
@@ -317,18 +313,26 @@ export default function SupplierDashboardPage() {
     const files = Array.from(event.target.files ?? []);
     if (!files.length) return;
     setIsUploadingGallery(true);
-    const newUrls: string[] = [];
-    for (const file of files) {
-      try {
-        const result = await uploadFile({ file, imageKind: "gallery" }).unwrap();
-        if (result.url) newUrls.push(result.url);
-      } catch {
-        /* silently fail */
+    try {
+      const result = await uploadGalleryFiles({ files, sortOrder: galleryItems.length }).unwrap();
+      if (result.items?.length) {
+        setGalleryItems((prev) => [...prev, ...result.items].slice(0, 24));
       }
+    } catch {
+      /* silently fail */
+    } finally {
+      setIsUploadingGallery(false);
+      event.target.value = "";
     }
-    setGalleryUrls((prev) => [...prev, ...newUrls].slice(0, 12));
-    setIsUploadingGallery(false);
-    event.target.value = "";
+  };
+
+  const onDeleteGalleryItem = async (id: string) => {
+    try {
+      await deleteGalleryItems({ ids: [id] }).unwrap();
+      setGalleryItems((prev) => prev.filter((item) => item.id !== id));
+    } catch {
+      /* silently fail */
+    }
   };
 
   const onPickVerificationFile = (event: ChangeEvent<HTMLInputElement>) => {
@@ -364,48 +368,48 @@ export default function SupplierDashboardPage() {
           type="button"
           className="absolute -left-4 top-24 z-20 flex size-[60px] items-center justify-center rounded-full text-[#040606] transition sm:left-14 sm:top-28"
           onClick={() => setShowMessages(true)}
-          aria-label="Open messages"
+          aria-label="פתח הודעות"
         >
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden>
             <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z" />
           </svg>
         </button>
           <header className="flex flex-col items-center justify-center gap-2 text-center">
-            <h1 className="text-[40px] font-normal leading-9 text-[#1E1B4B]">
-              Welcome, {displayName}
+            <h1 className="text-[40px] font-bold leading-9 text-[#1E1B4B]">
+              ברוך הבא, {displayName}
             </h1>
-            <p className="max-w-xl text-base font-normal leading-6 text-[#64748B]">
-              Here you can edit your business details, see job offers, and more...
+            <p className="max-w-xl text-base font-normal leading-6 text-[#64748B] font-bold">
+              כאן אפשר לערוך את הפרטים של העסק, לראות הצעות עבודה ועוד...
             </p>
           </header>
 
           {me?.marketplaceProfile && (me.marketplaceProfile.extraLanguage == null || me.marketplaceProfile.kosher == null) && (
             <div className="w-full rounded-2xl border border-[#6AB7FF] bg-[#EEF5FF] p-5 text-right" dir="rtl">
-              <h3 className="text-lg text-[#201C44]">Complete your profile</h3>
-              <p className="mt-1 text-sm text-[#444650]">Complete these steps to get more job offers.</p>
+              <h3 className="text-lg text-[#201C44] font-bold">השלם את הפרופיל שלך</h3>
+              <p className="mt-1 text-sm text-[#444650]">השלימי את הצעדים לקבלת יותר הצעות עבודה.</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {me.marketplaceProfile.extraLanguage == null ? (
-                  <Link href="/join-supplier/step-2" className="rounded-full border border-[#201C44] px-4 py-1.5 text-sm text-[#201C44] hover:bg-[#201C44] hover:text-white!">Description & social links</Link>
+                  <Link href="/join-supplier/step-2" className="rounded-full border border-[#201C44] px-4 py-1.5 text-sm font-bold text-[#201C44] hover:bg-[#201C44] hover:text-white!">תיאור וקישורים</Link>
                 ) : me.marketplaceProfile.kosher == null && (
-                  <Link href="/join-supplier/step-3" className="rounded-full border border-[#201C44] px-4 py-1.5 text-sm text-[#201C44] hover:bg-[#201C44] hover:text-white!">Media upload</Link>
+                  <Link href="/join-supplier/step-3" className="rounded-full border border-[#201C44] px-4 py-1.5 text-sm font-bold text-[#201C44] hover:bg-[#201C44] hover:text-white!">העלאת מדיה</Link>
                 )}
               </div>
             </div>
           )}
 
           <ReferFriendBlock
-            title="Friend brings friend"
-            shareTitle="Share your link"
-            shareHint="And receive a bonus for every vendor who signs up through your link."
+            title="חבר מביא חבר"
+            shareTitle="שתפו את הקישור שלכם"
+            shareHint="וקבלו הטבה על כל ספק שנרשם דרך הקישור שלכם"
             referralUrl={referralUrl}
             onCopy={() => copyLink(referralUrl, "referral")}
             copied={copiedReferral}
           />
 
           <ReferFriendBlock
-            title="Send a link to a friend for the rating"
-            shareTitle="Share your link"
-            shareHint="And get a ranking for your page."
+            title="שלח לינק לחבר לדירוג"
+            shareTitle="שתפו את הקישור שלכם"
+            shareHint="וקבלו דירוג לעמוד שלכם."
             referralUrl={referralUrl}
             onCopy={() => copyLink(referralUrl, "rating")}
             copied={copiedRating}
@@ -414,8 +418,8 @@ export default function SupplierDashboardPage() {
           <SupplierDashboardSectionCard dir="rtl">
             <div className="relative flex w-full flex-row items-center justify-between gap-4">
               <div className="flex flex-row items-center gap-2">
-                <h3 className="text-right text-xl font-normal leading-7 text-[#1E1B4B]">
-                  New job offers in your niche
+                <h3 className="text-right text-xl font-bold leading-7 text-[#1E1B4B]">
+                  הצעות עבודה חדשות בנישה שלך
                 </h3>
                 <Image
                   src="/icons/job-offer.svg"
@@ -430,7 +434,7 @@ export default function SupplierDashboardPage() {
                 href="/jobs"
                 className="shrink-0 text-base font-bold leading-5 text-[#3B82F6]! hover:text-[#3B82F6]! transition hover:underline"
               >
-                View all
+                צפה בהכל
               </Link>
             </div>
 
@@ -444,25 +448,25 @@ export default function SupplierDashboardPage() {
                     <span className="text-xs leading-4 text-[#94A3B8]">{card.timeLabel}</span>
                     <JobBadge kind={card.badge} />
                   </div>
-                  <h4 className="mt-3 text-base font-normal leading-6 text-[#1E1B4B]">{card.title}</h4>
-                  <p className="mt-2 text-xs leading-4 text-[#64748B]">{card.meta}</p>
+                  <h4 className="mt-3 text-base font-bold leading-6 text-[#1E1B4B]">{card.title}</h4>
+                  <p className="mt-2 text-xs leading-4 text-[#64748B] font-bold">{card.meta}</p>
                 </article>
               ))}
             </div>
 
-            <div className="relative mt-8 flex justify-start">
+            <div className="relative mt-8 flex justify-end">
               <Link
                 href="/jobs"
-                className="inline-flex h-12 items-center justify-center rounded-[99px] bg-[#201C44] px-10 text-base font-normal leading-6 text-white! shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),0px_2px_4px_-2px_rgba(0,0,0,0.1)] transition hover:opacity-95"
+                className="inline-flex h-12 items-center justify-center rounded-[99px] bg-[#201C44] px-10 text-base font-bold leading-6 text-white! shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),0px_2px_4px_-2px_rgba(0,0,0,0.1)] transition hover:opacity-95"
               >
-                Go to the auctions page
+                עבור לעמוד המכרזים
               </Link>
             </div>
           </SupplierDashboardSectionCard>
 
           <SupplierDashboardSectionCard as="form" onSubmit={onSave} dir="rtl">
             <SectionHeaderIcon
-              title="Business details"
+              title="פרטי העסק"
               iconSrc="/icons/business-detail.svg"
               iconSizeClass="h-[22px] w-5"
             />
@@ -470,7 +474,7 @@ export default function SupplierDashboardPage() {
             <div className="relative grid gap-6 md:grid-cols-2 md:gap-8">
               <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-2">
-                  <label className="text-right text-xs leading-4 text-[#64748B]">Business name</label>
+                  <label className="text-right text-xs leading-4 text-[#64748B] font-bold">שם העסק</label>
                   <input
                     value={businessName}
                     onChange={(e) => setBusinessName(e.target.value)}
@@ -478,16 +482,16 @@ export default function SupplierDashboardPage() {
                   />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-right text-xs leading-4 text-[#64748B]">category</label>
+                  <label className="text-right text-xs leading-4 text-[#64748B] font-bold">קטגוריה</label>
                   <div className="relative">
                     <select
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
                       className="h-[50px] w-full appearance-none rounded-xl border border-[#E2E8F0] bg-white py-3 pl-10 pr-4 text-right text-base leading-6 text-[#1E293B] outline-none focus:ring-2 focus:ring-[#3B82F6]/30"
                     >
-                      <option>Event halls</option>
-                      <option>DJ &amp; Music</option>
-                      <option>Photography</option>
+                      <option>אולמות אירועים</option>
+                      <option>דיג׳יי ומוזיקה</option>
+                      <option>צילום</option>
                     </select>
                     <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]" aria-hidden>
                       ▾
@@ -496,7 +500,7 @@ export default function SupplierDashboardPage() {
                 </div>
               </div>
               <div className="flex flex-col gap-2">
-                <label className="text-right text-xs leading-4 text-[#64748B]">Business description</label>
+                <label className="text-right text-xs leading-4 text-[#64748B] font-bold">תיאור העסק</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -507,7 +511,7 @@ export default function SupplierDashboardPage() {
             </div>
 
             <div className="relative mt-8">
-              <p className="mb-3 text-right text-base leading-5 text-black">Service area</p>
+              <p className="mb-3 text-right text-base leading-5 text-black">אזור מתן שירות</p>
               <div className="flex flex-row-reverse flex-wrap justify-end gap-3">
                 {SERVICE_AREAS.map((a) => (
                   <ChipToggle
@@ -522,14 +526,14 @@ export default function SupplierDashboardPage() {
 
             <div className="relative mt-8 flex flex-col gap-2">
               <div className="flex flex-row items-center gap-2">
-                <span className="rounded-lg bg-black/10 px-2 py-0.5 text-[10px] leading-5 text-black">Optional</span>
-                <span className="text-base leading-5 text-black">Business address</span>
+                <span className="rounded-lg bg-black/10 px-2 py-0.5 text-[10px] leading-5 text-black">אופציונלי</span>
+                <span className="text-base leading-5 text-black">כתובת העסק</span>
               </div>
               <div className="relative">
                 <input
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
-                  placeholder="Street, city, house number"
+                  placeholder="רחוב, עיר, מספר בית"
                   className="h-[50px] w-full rounded-2xl border border-black/10 bg-white py-3 pl-4 pr-12 text-right text-base text-black outline-none placeholder:text-black/40 focus:ring-2 focus:ring-[#3B82F6]/30"
                 />
                 <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-black/70" aria-hidden>
@@ -549,7 +553,7 @@ export default function SupplierDashboardPage() {
             </div>
 
             <div className="relative mt-8">
-              <p className="mb-3 text-right text-base leading-5 text-black">Specialties</p>
+              <p className="mb-3 text-right text-base leading-5 text-black">התמחויות</p>
               <div className="flex flex-row-reverse flex-wrap justify-end gap-3">
                 {SPECIALTIES.map((s) => (
                   <ChipToggle
@@ -558,7 +562,7 @@ export default function SupplierDashboardPage() {
                     selected={selectedSpecialties.has(s)}
                     onToggle={() => {
                       toggleInSet(selectedSpecialties, s, setSelectedSpecialties);
-                      if (s === "kashrut") setShowVerificationModal(true);
+                      if (s === "כשרות") setShowVerificationModal(true);
                     }}
                   />
                 ))}
@@ -573,7 +577,7 @@ export default function SupplierDashboardPage() {
                   isSaving ? "cursor-not-allowed bg-[#201C44] opacity-60" : "cursor-pointer bg-[#201C44] hover:opacity-95"
                 }`}
               >
-                {isSaving ? "Saving..." : "Save changes"}
+                {isSaving ? "שומר..." : "שמור שינויים"}
                 <Image
                   src="/icons/save.svg"
                   alt=""
@@ -588,33 +592,33 @@ export default function SupplierDashboardPage() {
           </SupplierDashboardSectionCard>
 
           <SupplierDashboardSectionCard dir="rtl">
-            <SectionHeaderIcon title="Links" iconSrc="/icons/linking.svg" iconSizeClass="h-6 w-[30px]" />
+            <SectionHeaderIcon title="קישורים" iconSrc="/icons/linking.svg" iconSizeClass="h-6 w-[30px]" />
 
             <div className="relative flex flex-col gap-8">
               {(() => {
                 const rows = [
                   [
-                    { label: "Email", value: me?.email ?? "", setter: setLinkEmail, placeholder: "name@gmail.com", disabled: true },
-                    { label: "Phone number", value: linkPhone, setter: setLinkPhone, placeholder: "050-0000000" },
+                    { label: "אימייל", value: me?.email ?? "", setter: setLinkEmail, placeholder: "name@gmail.com", disabled: true },
+                    { label: "מספר טלפון", value: linkPhone, setter: setLinkPhone, placeholder: "050-0000000" },
                   ],
                   [
-                    { label: "Facebook", value: linkFacebook, setter: setLinkFacebook, placeholder: "facebook.com/yourpage" },
-                    { label: "Instagram", value: linkInstagram, setter: setLinkInstagram, placeholder: "instagram.com/username" },
+                    { label: "דף פייסבוק", value: linkFacebook, setter: setLinkFacebook, placeholder: "facebook.com/yourpage" },
+                    { label: "חשבון אינסטגרם", value: linkInstagram, setter: setLinkInstagram, placeholder: "instagram.com/username" },
                   ],
                   [
-                    { label: "YouTube", value: linkYoutube, setter: setLinkYoutube, placeholder: "youtube.com/@channel" },
-                    { label: "TikTok", value: linkTiktok, setter: setLinkTiktok, placeholder: "tiktok.com/@username" },
+                    { label: "עמוד יוטיוב", value: linkYoutube, setter: setLinkYoutube, placeholder: "youtube.com/@channel" },
+                    { label: "עמוד טיקטוק", value: linkTiktok, setter: setLinkTiktok, placeholder: "tiktok.com/@username" },
                   ],
                   [
-                    { label: "Website", value: linkWebsite, setter: setLinkWebsite, placeholder: "www.example.com" },
-                    { label: "WhatsApp", value: linkWhatsapp, setter: setLinkWhatsapp, placeholder: "050-0000000" },
+                    { label: "אתר אינטרנט", value: linkWebsite, setter: setLinkWebsite, placeholder: "www.example.com" },
+                    { label: "וואטסאפ", value: linkWhatsapp, setter: setLinkWhatsapp, placeholder: "050-0000000" },
                   ],
                 ];
                 return rows.map((pair, rowIdx) => (
                   <div key={rowIdx} className="grid gap-8 md:grid-cols-2">
                     {pair.map((row) => (
                       <div key={row.label} className="flex flex-col gap-2">
-                        <label className="text-right text-xs leading-4 text-[#64748B]">{row.label}</label>
+                        <label className="text-right text-xs leading-4 text-[#64748B] font-bold">{row.label}</label>
                         <input
                           value={row.value}
                           onChange={(e) => row.setter(e.target.value)}
@@ -660,7 +664,7 @@ export default function SupplierDashboardPage() {
                   }
                 }}
               >
-                {isSavingLinks ? "Saving..." : "Update links"}
+                {isSavingLinks ? "שומר..." : "עדכן קישורים"}
                 <Image
                   src="/icons/upload.svg"
                   alt=""
@@ -675,7 +679,7 @@ export default function SupplierDashboardPage() {
           </SupplierDashboardSectionCard>
 
           <SupplierDashboardSectionCard dir="rtl">
-            <SectionHeaderIcon title="Gallery management" iconSrc="/icons/gallery.svg" iconSizeClass="h-7 w-7" />
+            <SectionHeaderIcon title="ניהול גלריה" iconSrc="/icons/gallery.svg" iconSizeClass="h-7 w-7" />
             <input
               ref={galleryInputRef}
               type="file"
@@ -705,17 +709,36 @@ export default function SupplierDashboardPage() {
                     <path d="M12 5v14M5 12h14" stroke="#94A3B8" strokeWidth="2.67" strokeLinecap="round" />
                   </svg>
                 )}
-                <span className="text-sm leading-5">{isUploadingGallery ? "Uploading..." : "Add a photo"}</span>
+                <span className="text-sm leading-5">{isUploadingGallery ? "מעלה..." : "הוסף תמונה"}</span>
               </button>
               {(() => {
                 const mp = me?.marketplaceProfile;
-                const allImages = [...(mp?.gallery ?? []), ...galleryUrls];
-                return allImages.map((src) => (
+                const apiImages: { id: string; url: string }[] = (mp?.gallery ?? []).map((url: string, i: number) => ({
+                  id: `api-${i}-${url}`,
+                  url,
+                }));
+                const allItems: { id: string; url: string; isNew?: boolean }[] = [
+                  ...apiImages,
+                  ...galleryItems.map((item) => ({ id: item.id, url: item.url, isNew: true })),
+                ];
+                return allItems.map((item) => (
                   <div
-                    key={src}
-                    className="relative min-h-[184px] overflow-hidden rounded-2xl border border-[#F1F5F9] bg-slate-100"
+                    key={item.id}
+                    className="group relative min-h-[184px] overflow-hidden rounded-2xl border border-[#F1F5F9] bg-slate-100"
                   >
-                    <Image src={src} alt="" fill className="object-cover" sizes="200px" unoptimized />
+                    <Image src={item.url} alt="" fill className="object-cover" sizes="200px" unoptimized />
+                    {item.isNew && (
+                      <button
+                        type="button"
+                        onClick={() => onDeleteGalleryItem(item.id)}
+                        aria-label="מחק תמונה"
+                        className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-red-500/90 text-white opacity-0 shadow transition hover:bg-red-600 group-hover:opacity-100"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
+                          <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                        </svg>
+                      </button>
+                    )}
                   </div>
                 ));
               })()}
@@ -730,7 +753,7 @@ export default function SupplierDashboardPage() {
                     unoptimized
                   />
                   <span className="absolute right-3 top-3 rounded-lg bg-[#3B82F6] px-2 py-1 text-[10px] font-bold leading-[15px] text-white">
-                    Profile picture
+                    תמונת פרופיל
                   </span>
                 </div>
               )}
@@ -743,15 +766,15 @@ export default function SupplierDashboardPage() {
             <button
               type="button"
               className="absolute inset-0 bg-[rgba(15,23,42,0.45)]"
-              aria-label="Close messages"
+              aria-label="סגור הודעות"
               onClick={() => setShowMessages(false)}
             />
             <div className="absolute left-6 top-[7.75rem] z-1 w-[min(460px,calc(100vw-48px))] rounded-2xl border border-[#CFE3FF] bg-[#EAF3FF] p-5 shadow-[0px_24px_50px_rgba(15,23,42,0.25)] sm:left-14 sm:top-[8.75rem]">
               <button
                 type="button"
-                className="text-2xl leading-none text-[#64748B] hover:text-[#1E1B4B]"
+                className="text-2xl leading-none text-[#64748B] font-bold hover:text-[#1E1B4B]"
                 onClick={() => setShowMessages(false)}
-                aria-label="Close"
+                aria-label="סגור"
               >
                 ×
               </button>
@@ -759,7 +782,7 @@ export default function SupplierDashboardPage() {
                 {DASHBOARD_NOTIFICATIONS.map((item) => (
                   <article key={item.title} className="rounded-xl border border-[#E2E8F0] bg-white px-4 py-3 text-right">
                     <p className="text-xs font-semibold leading-4 text-[#1E1B4B]">{item.title}</p>
-                    <p className="mt-1 text-xs leading-4 text-[#64748B]">{item.body}</p>
+                    <p className="mt-1 text-xs leading-4 text-[#64748B] font-bold">{item.body}</p>
                     <button type="button" className="mt-1 inline-flex items-center gap-1 text-[11px] leading-4 text-[#3B82F6] hover:underline">
                       {item.actionLabel}
                       <span className="text-sm leading-none text-[#3B82F6]" aria-hidden>
@@ -778,7 +801,7 @@ export default function SupplierDashboardPage() {
             <button
               type="button"
               className="absolute inset-0 bg-[rgba(15,23,42,0.45)]"
-              aria-label="Close verification modal"
+              aria-label="סגור חלון אימות"
               onClick={() => setShowVerificationModal(false)}
             />
             <div className="relative z-1 w-full max-w-[500px] rounded-2xl border border-[#CFE3FF] bg-[#EAF3FF] px-8 py-7 text-center shadow-[0px_24px_50px_rgba(15,23,42,0.25)]">
@@ -786,16 +809,16 @@ export default function SupplierDashboardPage() {
                 type="button"
                 className="absolute right-4 top-3 text-xl leading-none text-[#94A3B8] hover:text-[#1E1B4B]"
                 onClick={() => setShowVerificationModal(false)}
-                aria-label="Close"
+                aria-label="סגור"
               >
                 ×
               </button>
 
               <h3 className="mx-auto max-w-[280px] text-[34px] font-normal leading-10 text-[#1E1B4B]">
-                Label Verification: Kosher Certificate
+                אימות תווית: תעודת כשרות
               </h3>
               <p className="mx-auto mt-5 max-w-[320px] text-sm leading-[23px] text-[#4B5563]">
-                Once approved, your file will appear in your business profile with a kosher certificate icon.
+                לאחר האישור, הקובץ יופיע בפרופיל העסקי שלך עם אייקון תעודת כשרות.
               </p>
 
               <input
@@ -810,15 +833,15 @@ export default function SupplierDashboardPage() {
                 onClick={() => verificationInputRef.current?.click()}
                 className="mx-auto mt-8 inline-flex h-12 min-w-[205px] items-center justify-center rounded-[99px] bg-[#201C44] px-8 text-base font-normal leading-6 text-white transition hover:opacity-95"
               >
-                Attach a file
+                צרף קובץ
               </button>
 
               {verificationFileName ? (
-                <p className="mt-4 text-xs leading-5 text-[#1E1B4B]">Attached: {verificationFileName}</p>
+                <p className="mt-4 text-xs leading-5 text-[#1E1B4B]">צורף: {verificationFileName}</p>
               ) : null}
 
               <p className="mt-4 text-xs leading-5 text-[#6B7280]">
-                Need help? <span className="text-[#3B82F6]">Contact support</span>.
+                צריך עזרה? <span className="text-[#3B82F6]">צור קשר עם התמיכה</span>.
               </p>
             </div>
           </div>
@@ -829,7 +852,7 @@ export default function SupplierDashboardPage() {
             <button
               type="button"
               className="absolute inset-0 bg-[rgba(15,23,42,0.45)]"
-              aria-label="Close upload success modal"
+              aria-label="סגור חלון העלאה"
               onClick={() => setShowUploadSuccessModal(false)}
             />
             <div className="relative z-1 w-full max-w-[560px] rounded-2xl border border-[#CFE3FF] bg-[#EAF3FF] px-7 pb-8 pt-7 text-center shadow-[0px_24px_50px_rgba(15,23,42,0.25)] sm:px-8 sm:pb-10 sm:pt-8">
@@ -837,7 +860,7 @@ export default function SupplierDashboardPage() {
                 type="button"
                 className="absolute right-4 top-3 text-xl leading-none text-[#A3A3A3] hover:text-[#1E1B4B]"
                 onClick={() => setShowUploadSuccessModal(false)}
-                aria-label="Close"
+                aria-label="סגור"
               >
                 ×
               </button>
@@ -855,19 +878,19 @@ export default function SupplierDashboardPage() {
                   </svg>
                 </span>
                 <p className="text-balance text-xl font-normal leading-6 text-[#201C44]">
-                  The file was successfully downloaded!
+                  הקובץ הורד בהצלחה!
                 </p>
               </div>
 
               <p className="mt-8 text-4xl font-normal leading-[1.1] text-[#1C1C1C] sm:text-[42px]">
-                Thank you for your cooperation!
+                תודה על שיתוף הפעולה!
               </p>
 
               <Link
                 href="/"
                 className="mx-auto mt-10 inline-flex h-14 w-full max-w-[380px] items-center justify-center gap-2 rounded-[99px] bg-[#201C44] px-8 text-xl font-normal leading-none text-white! transition hover:opacity-95"
               >
-                Back to main page
+                חזרה לעמוד הראשי
                 <Image
                   src="/icons/left-arrow.svg"
                   alt=""

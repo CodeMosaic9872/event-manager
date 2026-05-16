@@ -44,7 +44,7 @@ export function MarketingHeader() {
       lang="he"
       className="absolute left-0 top-0 z-50 w-full bg-transparent"
     >
-      <nav className="relative mx-auto hidden h-[84px] w-full max-w-[1440px] px-4 lg:block lg:px-6">
+      <nav className="relative mx-auto hidden h-[84px] w-full max-w-[1440px] px-4 md:block lg:px-6">
         <div className="relative mx-auto flex h-20 max-w-[1395px] items-center">
           <Link
             href="/"
@@ -53,7 +53,7 @@ export function MarketingHeader() {
             לוגו
           </Link>
 
-          <div className="absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 flex-wrap items-center justify-center gap-x-5 gap-y-1 text-[15px] leading-snug text-[#101426] md:gap-x-7 md:text-[17px]">
+          <div className="flex flex-1 items-center justify-center gap-x-3 gap-y-1 text-[14px] leading-snug text-[#101426] min-w-0 px-2 lg:gap-x-7 lg:text-[17px]">
             {DESKTOP_LINKS.map((item) => (
               <Link
                 key={item.href}
@@ -112,7 +112,7 @@ export function MarketingHeader() {
         </div>
       </nav>
 
-      <nav className="mx-auto flex w-full max-w-[1440px] items-center justify-between gap-2 px-4 py-2 lg:hidden">
+      <nav className="mx-auto flex w-full max-w-[1440px] items-center justify-between gap-2 px-4 py-2 md:hidden">
         <Link
           href="/"
           className={`text-base font-semibold tracking-wide ${navLinkClass(pathname === "/")}`}
