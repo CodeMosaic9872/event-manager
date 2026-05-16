@@ -17,6 +17,36 @@ class SupplierListItemDto {
   coverImageUrl!: string | null;
 }
 
+export class SupplierSuggestionItemDto {
+  @ApiProperty({ example: 'sup_1' })
+  id!: string;
+
+  @ApiProperty({ example: 'Skyline Events DJ' })
+  label!: string;
+
+  @ApiProperty({ example: 'supplier' })
+  type!: string;
+
+  @ApiProperty({ example: 'skyline-events-dj' })
+  value!: string;
+}
+
+export class SupplierSuggestionsListResponseDto {
+  @ApiProperty({ type: [SupplierSuggestionItemDto] })
+  items!: SupplierSuggestionItemDto[];
+
+  @ApiProperty()
+  totalItems!: number;
+}
+
+export class PaginatedFavoriteSuppliersResponseDto {
+  @ApiProperty({ type: 'array', items: { type: 'object' } })
+  items!: Record<string, unknown>[];
+
+  @ApiProperty()
+  totalItems!: number;
+}
+
 export class SuppliersListResponseDto {
   @ApiProperty({ type: [SupplierListItemDto] })
   items!: SupplierListItemDto[];

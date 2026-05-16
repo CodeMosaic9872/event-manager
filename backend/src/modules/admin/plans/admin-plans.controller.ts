@@ -1,9 +1,14 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiOkEnvelopeData,
+  ApiOkEnvelopePaginatedItems,
+} from '../../../common/swagger/api-response.decorators';
 import { AdminControllerAuth } from '../common/admin-controller.decorator';
 import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
 import { CreateSubscriptionPlanDto, UpdateSubscriptionPlanDto } from '../../plans/dto/plan.dto';
 import { SubscriptionPlanDto } from '../../plans/dto/plan-response.dto';
+import { AdminDeletePlanResponseDto } from '../dto/admin-swagger-responses.dto';
 import { AdminPlansService } from './admin-plans.service';
 
 @AdminControllerAuth()
@@ -13,7 +18,7 @@ export class AdminPlansController {
 
   @Get('plans')
   @ApiOperation({ summary: 'List subscription plans (admin)' })
-  @ApiOkResponse({ type: SubscriptionPlanDto, isArray: true })
+  @ApiOkEnvelopePaginatedItems(SubscriptionPlanDto)
   listPlans(@Query() query: PaginationQueryDto, @Query('activeOnly') activeOnly?: string) {
     const filter =
       activeOnly === 'true' ? true : activeOnly === 'false' ? false : undefined;
@@ -29,7 +34,7 @@ export class AdminPlansController {
 
   @Get('plans/:id')
   @ApiOperation({ summary: 'Get subscription plan by id (admin)' })
-  @ApiOkResponse({ type: SubscriptionPlanDto })
+  @ApiOkEnvelopeData(SubscriptionPlanDto)
   getPlan(@Param('id') id: string) {
     return this.adminPlansService.getPlan(id);
   }
@@ -43,6 +48,7 @@ export class AdminPlansController {
 
   @Delete('plans/:id')
   @ApiOperation({ summary: 'Delete subscription plan (admin)' })
+  @ApiOkResponse({ type: AdminDeletePlanResponseDto })
   deletePlan(@Param('id') id: string) {
     return this.adminPlansService.deletePlan(id);
   }

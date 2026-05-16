@@ -1,5 +1,6 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiOkEnvelopePaginated } from '../../common/swagger/api-response.decorators';
 import { TaxonomyService } from './taxonomy.service';
 import { TaxonomyMappingQueryDto } from './dto/taxonomy-mapping-query.dto';
 import {
@@ -20,21 +21,21 @@ export class TaxonomyController {
 
   @Get('event-types')
   @ApiOperation({ summary: 'List active event types' })
-  @ApiOkResponse({ type: PaginatedEventTypesResponseDto })
+  @ApiOkEnvelopePaginated(PaginatedEventTypesResponseDto)
   eventTypes(@Query() query: PaginationQueryDto) {
     return this.taxonomyService.getEventTypes(query.page, query.limit);
   }
 
   @Get('categories')
   @ApiOperation({ summary: 'List active marketplace categories' })
-  @ApiOkResponse({ type: PaginatedCategoriesResponseDto })
+  @ApiOkEnvelopePaginated(PaginatedCategoriesResponseDto)
   categories(@Query() query: PaginationQueryDto) {
     return this.taxonomyService.getCategories(query.page, query.limit);
   }
 
   @Get('categories/:id/subcategories')
   @ApiOperation({ summary: 'List active subcategories for category' })
-  @ApiOkResponse({ type: PaginatedSubcategoriesResponseDto })
+  @ApiOkEnvelopePaginated(PaginatedSubcategoriesResponseDto)
   subcategories(@Param('id') categoryId: string, @Query() query: PaginationQueryDto) {
     return this.taxonomyService.getSubcategories(categoryId, query.page, query.limit);
   }
@@ -46,7 +47,7 @@ export class TaxonomyController {
     required: false,
     description: 'When set, includes CATEGORY-scoped definitions for this category plus GLOBAL scope',
   })
-  @ApiOkResponse({ type: PaginatedFilterDefinitionsResponseDto })
+  @ApiOkEnvelopePaginated(PaginatedFilterDefinitionsResponseDto)
   filterDefinitions(
     @Query('categoryId') categoryId: string | undefined,
     @Query() pagination: PaginationQueryDto,
@@ -56,7 +57,7 @@ export class TaxonomyController {
 
   @Get('mapping')
   @ApiOperation({ summary: 'Get eventType-category-subcategory mapping data' })
-  @ApiOkResponse({ type: TaxonomyMappingListResponseDto })
+  @ApiOkEnvelopePaginated(TaxonomyMappingListResponseDto)
   mapping(@Query() query: TaxonomyMappingQueryDto & PaginationQueryDto) {
     return this.taxonomyService.getMapping(query, query.page, query.limit);
   }

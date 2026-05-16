@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import { ApiOkEnvelopeData, ApiOkEnvelopePaginatedItems } from '../../../common/swagger/api-response.decorators';
 import { AdminControllerAuth } from '../common/admin-controller.decorator';
 import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
 import {
@@ -9,6 +10,10 @@ import {
   UpdateAdminSupplierDto,
 } from '../dto/admin.dto';
 import { AdminApproveSupplierResponseDto, AdminSupplierCrudDto } from '../dto/admin-response.dto';
+import {
+  AdminFeatureSupplierResponseDto,
+  AdminSupplierDraftIncompleteItemDto,
+} from '../dto/admin-swagger-responses.dto';
 import { AdminSuppliersService } from './admin-suppliers.service';
 
 @AdminControllerAuth()
@@ -18,10 +23,8 @@ export class AdminSuppliersController {
 
   @Get('suppliers')
   @ApiOperation({ summary: 'List suppliers (admin CRUD)' })
-  @ApiOkResponse({
+  @ApiOkEnvelopePaginatedItems(AdminSupplierCrudDto, {
     description: 'Paginated supplier records with owner and subscription summary',
-    type: AdminSupplierCrudDto,
-    isArray: true,
   })
   suppliers(@Query() query: PaginationQueryDto) {
     return this.adminSuppliersService.listSuppliers(query.page, query.limit);
@@ -29,6 +32,9 @@ export class AdminSuppliersController {
 
   @Get('suppliers/incomplete')
   @ApiOperation({ summary: 'List incomplete supplier onboarding records' })
+  @ApiOkEnvelopePaginatedItems(AdminSupplierDraftIncompleteItemDto, {
+    description: 'Incomplete supplier onboarding drafts',
+  })
   incompleteSuppliers(@Query() query: PaginationQueryDto) {
     return this.adminSuppliersService.listIncompleteSuppliers(query.page, query.limit);
   }
@@ -42,7 +48,7 @@ export class AdminSuppliersController {
 
   @Get('suppliers/:id')
   @ApiOperation({ summary: 'Get supplier by id (admin)' })
-  @ApiOkResponse({ type: AdminSupplierCrudDto })
+  @ApiOkEnvelopeData(AdminSupplierCrudDto)
   getSupplier(@Param('id') id: string) {
     return this.adminSuppliersService.getSupplier(id);
   }
@@ -63,21 +69,21 @@ export class AdminSuppliersController {
 
   @Post('suppliers/:id/approve')
   @ApiOperation({ summary: 'Approve supplier profile' })
-  @ApiOkResponse({
-    description: 'Approved supplier',
-    type: AdminApproveSupplierResponseDto,
-  })
+  @ApiOkResponse({ type: AdminApproveSupplierResponseDto })
   approve(@Param('id') id: string, @Body() body: ApproveSupplierDto) {
     return this.adminSuppliersService.approveSupplier(id, body.adminUserId);
   }
 
   @Post('suppliers/:id/reject')
   @ApiOperation({ summary: 'Reject supplier profile with optional reason' })
+  @ApiOkResponse({ type: AdminApproveSupplierResponseDto })
   reject(@Param('id') id: string, @Body() body: RejectSupplierDto) {
     return this.adminSuppliersService.rejectSupplier(id, body.reason, body.adminUserId);
   }
 
   @Post('suppliers/:id/feature')
+  @ApiOperation({ summary: 'Mark supplier as featured (stub)' })
+  @ApiOkResponse({ type: AdminFeatureSupplierResponseDto })
   feature(@Param('id') id: string) {
     return { id, featured: true };
   }

@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOkEnvelopeData } from '../../common/swagger/api-response.decorators';
 import { AuthGuard } from '../../common/guards/auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { AuthUser } from '../../common/interfaces/auth-user.interface';
@@ -26,7 +27,7 @@ export class PaymentsController {
 
   @Get('sessions/:sessionId')
   @ApiOperation({ summary: 'Get payment session status for current supplier' })
-  @ApiOkResponse({ description: 'Payment session', type: PaymentSessionResponseDto })
+  @ApiOkEnvelopeData(PaymentSessionResponseDto, { description: 'Payment session' })
   getSession(@CurrentUser() user: AuthUser, @Param('sessionId') sessionId: string) {
     return this.payments.getSessionForUser(user.id, sessionId);
   }

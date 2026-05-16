@@ -39,6 +39,10 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import { SupplierOnlyGuard } from '../job-board/guards/supplier-only.guard';
 import { ApiProtectedErrors } from '../../common/swagger/api-error-responses.decorator';
+import {
+  ApiOkEnvelopeData,
+  ApiOkEnvelopePaginated,
+} from '../../common/swagger/api-response.decorators';
 import { ListSuppliersQueryDto } from './dto/list-suppliers-query.dto';
 import { SupplierSuggestionsQueryDto } from './dto/supplier-suggestions-query.dto';
 import { UpsertSupplierProfileDto } from './dto/upsert-supplier-profile.dto';
@@ -67,6 +71,8 @@ import {
   SupplierMediaResponseDto,
   SupplierMediaVerifyUploadResponseDto,
   SupplierProfileResponseDto,
+  PaginatedFavoriteSuppliersResponseDto,
+  SupplierSuggestionsListResponseDto,
   SuppliersListResponseDto,
 } from './dto/suppliers-response.dto';
 import {
@@ -87,9 +93,8 @@ export class SuppliersController {
 
   @Get('suppliers')
   @ApiOperation({ summary: 'List marketplace suppliers with layered filters' })
-  @ApiOkResponse({
+  @ApiOkEnvelopePaginated(SuppliersListResponseDto, {
     description: 'Paginated supplier list with facets',
-    type: SuppliersListResponseDto,
   })
   listSuppliers(@Query() query: ListSuppliersQueryDto) {
     return this.suppliersService.list(query);
@@ -97,7 +102,7 @@ export class SuppliersController {
 
   @Get('suppliers/:slugOrId/reviews')
   @ApiOperation({ summary: 'List reviews for an approved supplier' })
-  @ApiOkResponse({ type: SupplierReviewListResponseDto })
+  @ApiOkEnvelopePaginated(SupplierReviewListResponseDto)
   listSupplierReviews(@Param('slugOrId') slugOrId: string, @Query() query: PaginationQueryDto) {
     return this.suppliersService.listSupplierReviews(slugOrId, query.page, query.limit);
   }
@@ -151,16 +156,14 @@ export class SuppliersController {
 
   @Get('suppliers/:slugOrId')
   @ApiOperation({ summary: 'Get public supplier profile by id or slug' })
-  @ApiOkResponse({
-    description: 'Public supplier profile',
-    type: SupplierProfileResponseDto,
-  })
+  @ApiOkEnvelopeData(SupplierProfileResponseDto, { description: 'Public supplier profile' })
   getSupplier(@Param('slugOrId') slugOrId: string) {
     return this.suppliersService.getByIdOrSlug(slugOrId);
   }
 
   @Get('search/suggestions')
   @ApiOperation({ summary: 'Get supplier/category/subcategory typeahead suggestions' })
+  @ApiOkEnvelopePaginated(SupplierSuggestionsListResponseDto)
   async suggestions(@Query() query: SupplierSuggestionsQueryDto) {
     const q = query.q ?? '';
     if (!q) {
@@ -493,6 +496,7 @@ export class SuppliersController {
 
   @Get('users/me/favorites')
   @ApiOperation({ summary: 'List current actor favorite suppliers' })
+  @ApiOkEnvelopePaginated(PaginatedFavoriteSuppliersResponseDto)
   async listFavorites(@Headers('authorization') authorization?: string, @Query() query?: PaginationQueryDto) {
     const { userId, anonymousSessionId } = await this.resolveActor(authorization);
     return this.suppliersService.listFavorites(userId, anonymousSessionId, query?.page, query?.limit);
@@ -514,7 +518,7 @@ export class SuppliersController {
   @Get('supplier/draft/me')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current supplier onboarding draft' })
-  @ApiOkResponse({ description: 'Current supplier draft', type: SupplierDraftResponseDto })
+  @ApiOkEnvelopeData(SupplierDraftResponseDto, { description: 'Current supplier draft' })
   @UseGuards(AuthGuard, SupplierOnlyGuard)
   getDraft(@CurrentUser() user: AuthUser | undefined) {
     const userId = user?.id;
@@ -527,7 +531,7 @@ export class SuppliersController {
   @Get('supplier/draft/:supplierId')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Legacy: Get supplier draft by id (owner-only)' })
-  @ApiOkResponse({ description: 'Current supplier draft', type: SupplierDraftResponseDto })
+  @ApiOkEnvelopeData(SupplierDraftResponseDto, { description: 'Current supplier draft' })
   @UseGuards(AuthGuard, SupplierOnlyGuard)
   async getDraftLegacy(@CurrentUser() user: AuthUser | undefined, @Param('supplierId') supplierId: string) {
     const userId = user?.id;

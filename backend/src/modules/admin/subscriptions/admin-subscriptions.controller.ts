@@ -1,5 +1,9 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiOkEnvelopeData,
+  ApiOkEnvelopePaginatedItems,
+} from '../../../common/swagger/api-response.decorators';
 import { AdminControllerAuth } from '../common/admin-controller.decorator';
 import {
   AdminSubscriptionListQueryDto,
@@ -16,7 +20,7 @@ export class AdminSubscriptionsController {
 
   @Get('subscriptions')
   @ApiOperation({ summary: 'List supplier subscriptions (admin)' })
-  @ApiOkResponse({ type: AdminSubscriptionCrudDto, isArray: true })
+  @ApiOkEnvelopePaginatedItems(AdminSubscriptionCrudDto)
   subscriptions(@Query() query: AdminSubscriptionListQueryDto) {
     return this.adminSubscriptionsService.listSubscriptions(query.page, query.limit, query.supplierId);
   }
@@ -30,7 +34,7 @@ export class AdminSubscriptionsController {
 
   @Get('subscriptions/:id')
   @ApiOperation({ summary: 'Get subscription by id (admin)' })
-  @ApiOkResponse({ type: AdminSubscriptionCrudDto })
+  @ApiOkEnvelopeData(AdminSubscriptionCrudDto)
   getSubscription(@Param('id') id: string) {
     return this.adminSubscriptionsService.getSubscription(id);
   }

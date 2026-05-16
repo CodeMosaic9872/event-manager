@@ -11,6 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiOkEnvelopeData, ApiOkEnvelopePaginated } from '../../common/swagger/api-response.decorators';
 import { JobBoardService } from './job-board.service';
 import { JobPublishGuard } from './guards/job-publish.guard';
 import { SupplierOnlyGuard } from './guards/supplier-only.guard';
@@ -41,9 +42,8 @@ export class JobBoardController {
 
   @Get()
   @ApiOperation({ summary: 'List public published jobs' })
-  @ApiOkResponse({
+  @ApiOkEnvelopePaginated(PaginatedJobPostsResponseDto, {
     description: 'Published jobs with taxonomy relations',
-    type: PaginatedJobPostsResponseDto,
   })
   listPublicJobs(@Query() query: PublicJobsQueryDto) {
     return this.jobBoardService.listPublicJobs(query.page, query.limit, query.categoryId, query.subcategoryId);
@@ -55,7 +55,7 @@ export class JobBoardController {
     description:
       'Unauthenticated access is allowed. Treat job ids as opaque; only users with the link can open drafts.',
   })
-  @ApiOkResponse({ type: JobDetailResponseDto })
+  @ApiOkEnvelopeData(JobDetailResponseDto)
   getJobById(@Param('id') id: string) {
     return this.jobBoardService.getJobById(id);
   }
@@ -175,6 +175,7 @@ export class JobBoardController {
 
   @Get(':id/applications')
   @ApiOperation({ summary: 'List applications for a specific job' })
+  @ApiOkEnvelopePaginated(PaginatedJobApplicationsResponseDto)
   applications(@Param('id') id: string, @Query() query: JobApplicationListQueryDto) {
     return this.jobBoardService.listApplications(id, query.page, query.limit, query.status);
   }
@@ -201,7 +202,7 @@ export class JobApplicationController {
 
   @Get(':id/history')
   @ApiOperation({ summary: 'Get status timeline/history for a job application' })
-  @ApiOkResponse({ type: PaginatedJobApplicationHistoryResponseDto })
+  @ApiOkEnvelopePaginated(PaginatedJobApplicationHistoryResponseDto)
   history(@Param('id') id: string, @Query() query: PaginationQueryDto) {
     return this.jobBoardService.listApplicationHistory(id, query.page, query.limit);
   }
@@ -218,7 +219,7 @@ export class JobQueryController {
   @ApiOperation({
     summary: 'Dashboard counters for the current user (jobs, pending applications, favorites, saved concepts)',
   })
-  @ApiOkResponse({ type: UserMeStatsResponseDto })
+  @ApiOkEnvelopeData(UserMeStatsResponseDto)
   @UseGuards(AuthGuard)
   userMeStats(@CurrentUser() user: AuthUser | undefined) {
     const userId = user?.id;
@@ -239,7 +240,7 @@ export class JobQueryController {
     description: 'Comma-separated statuses: SUBMITTED,SHORTLISTED,REJECTED,WITHDRAWN (default SUBMITTED)',
     example: 'SUBMITTED',
   })
-  @ApiOkResponse({ type: JobApplicationsCountResponseDto })
+  @ApiOkEnvelopeData(JobApplicationsCountResponseDto)
   @UseGuards(AuthGuard)
   jobApplicationsCount(
     @CurrentUser() user: AuthUser | undefined,
@@ -256,9 +257,8 @@ export class JobQueryController {
   @Get('users/me/jobs')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'List current user owned jobs' })
-  @ApiOkResponse({
+  @ApiOkEnvelopePaginated(PaginatedJobPostsResponseDto, {
     description: 'Owned jobs with taxonomy relations',
-    type: PaginatedJobPostsResponseDto,
   })
   @UseGuards(AuthGuard)
   userJobs(@CurrentUser() user: AuthUser | undefined, @Query() query: PaginationQueryDto) {
@@ -272,9 +272,8 @@ export class JobQueryController {
   @Get('supplier/jobs/recommended')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'List recommended jobs for supplier dashboard' })
-  @ApiOkResponse({
+  @ApiOkEnvelopePaginated(PaginatedRecommendedJobsResponseDto, {
     description: 'Recommended jobs sorted by match score (paginated)',
-    type: PaginatedRecommendedJobsResponseDto,
   })
   @UseGuards(AuthGuard, SupplierOnlyGuard)
   supplierRecommendedJobs(@CurrentUser() user: AuthUser | undefined, @Query() query: PaginationQueryDto) {
@@ -288,6 +287,7 @@ export class JobQueryController {
   @Get('supplier/jobs/applied')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'List jobs the current supplier has applied to' })
+  @ApiOkEnvelopePaginated(PaginatedJobApplicationsResponseDto)
   @UseGuards(AuthGuard, SupplierOnlyGuard)
   supplierAppliedJobs(@CurrentUser() user: AuthUser | undefined, @Query() query: PaginationQueryDto) {
     const userId = user?.id;

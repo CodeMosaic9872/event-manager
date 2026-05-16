@@ -13,6 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiHeader, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOkEnvelopeData } from '../../common/swagger/api-response.decorators';
 import { AuthGuard } from '../../common/guards/auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthUser } from '../../common/interfaces/auth-user.interface';
@@ -89,7 +90,7 @@ export class NotificationsController {
   @Get('preferences')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user notification preferences' })
-  @ApiOkResponse({ type: NotificationPreferencesResponseDto })
+  @ApiOkEnvelopeData(NotificationPreferencesResponseDto)
   @UseGuards(AuthGuard)
   getPreferences(@CurrentUser() user: AuthUser | undefined) {
     const userId = user?.id;

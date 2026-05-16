@@ -43,7 +43,9 @@ async function bootstrap() {
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Event Marketplace Backend API')
-    .setDescription('Backend APIs for supplier marketplace, AI planning, jobs, and admin operations.')
+    .setDescription(
+      'Backend APIs for supplier marketplace, AI planning, jobs, and admin operations. GET responses use `{ success, data, pagination? }`; mutating methods return the resource body directly (HTTP 200).',
+    )
     .setVersion('1.0')
     .addBearerAuth()
     .build();

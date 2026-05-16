@@ -1,5 +1,5 @@
 import { Body, Controller, Param, Patch, Post } from '@nestjs/common';
-import { ApiCreatedResponse } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { AdminControllerAuth } from '../common/admin-controller.decorator';
 import {
   CreateCategoryDto,
@@ -12,6 +12,12 @@ import {
   UpdateSubcategoryDto,
 } from '../dto/admin.dto';
 import { AdminEventTypeResponseDto } from '../dto/admin-response.dto';
+import {
+  CategoryRowDto,
+  EventTypeRowDto,
+  FilterDefinitionRowDto,
+  SubcategoryRowDto,
+} from '../../taxonomy/dto/taxonomy-response.dto';
 import { AdminTaxonomyService } from './admin-taxonomy.service';
 
 @AdminControllerAuth()
@@ -20,10 +26,8 @@ export class AdminTaxonomyController {
   constructor(private readonly adminTaxonomyService: AdminTaxonomyService) {}
 
   @Post('taxonomy/event-types')
-  @ApiCreatedResponse({
-    description: 'Created event type',
-    type: AdminEventTypeResponseDto,
-  })
+  @ApiOperation({ summary: 'Create event type' })
+  @ApiCreatedResponse({ type: AdminEventTypeResponseDto })
   createEventType(@Body() body: CreateEventTypeDto) {
     return this.adminTaxonomyService.createEventType({
       key: body.key,
@@ -33,6 +37,8 @@ export class AdminTaxonomyController {
   }
 
   @Patch('taxonomy/event-types/:id')
+  @ApiOperation({ summary: 'Update event type' })
+  @ApiOkResponse({ type: EventTypeRowDto })
   updateEventType(@Param('id') id: string, @Body() body: UpdateEventTypeDto) {
     return this.adminTaxonomyService.updateEventType(id, {
       key: body.key,
@@ -42,11 +48,15 @@ export class AdminTaxonomyController {
   }
 
   @Post('taxonomy/event-types/:id/delete')
+  @ApiOperation({ summary: 'Delete event type' })
+  @ApiOkResponse({ type: EventTypeRowDto })
   deleteEventType(@Param('id') id: string) {
     return this.adminTaxonomyService.deleteEventType(id);
   }
 
   @Post('taxonomy/categories')
+  @ApiOperation({ summary: 'Create category' })
+  @ApiCreatedResponse({ type: CategoryRowDto })
   createCategory(@Body() body: CreateCategoryDto) {
     return this.adminTaxonomyService.createCategory({
       key: body.key,
@@ -57,6 +67,8 @@ export class AdminTaxonomyController {
   }
 
   @Patch('taxonomy/categories/:id')
+  @ApiOperation({ summary: 'Update category' })
+  @ApiOkResponse({ type: CategoryRowDto })
   updateCategory(@Param('id') id: string, @Body() body: UpdateCategoryDto) {
     return this.adminTaxonomyService.updateCategory(id, {
       key: body.key,
@@ -67,11 +79,15 @@ export class AdminTaxonomyController {
   }
 
   @Post('taxonomy/categories/:id/delete')
+  @ApiOperation({ summary: 'Delete category' })
+  @ApiOkResponse({ type: CategoryRowDto })
   deleteCategory(@Param('id') id: string) {
     return this.adminTaxonomyService.deleteCategory(id);
   }
 
   @Post('taxonomy/subcategories')
+  @ApiOperation({ summary: 'Create subcategory' })
+  @ApiCreatedResponse({ type: SubcategoryRowDto })
   createSubcategory(@Body() body: CreateSubcategoryDto) {
     return this.adminTaxonomyService.createSubcategory({
       categoryId: body.categoryId,
@@ -83,6 +99,8 @@ export class AdminTaxonomyController {
   }
 
   @Patch('taxonomy/subcategories/:id')
+  @ApiOperation({ summary: 'Update subcategory' })
+  @ApiOkResponse({ type: SubcategoryRowDto })
   updateSubcategory(@Param('id') id: string, @Body() body: UpdateSubcategoryDto) {
     return this.adminTaxonomyService.updateSubcategory(id, {
       categoryId: body.categoryId,
@@ -94,11 +112,15 @@ export class AdminTaxonomyController {
   }
 
   @Post('taxonomy/subcategories/:id/delete')
+  @ApiOperation({ summary: 'Delete subcategory' })
+  @ApiOkResponse({ type: SubcategoryRowDto })
   deleteSubcategory(@Param('id') id: string) {
     return this.adminTaxonomyService.deleteSubcategory(id);
   }
 
   @Post('taxonomy/filter-definitions')
+  @ApiOperation({ summary: 'Create filter definition' })
+  @ApiCreatedResponse({ type: FilterDefinitionRowDto })
   createFilterDefinition(@Body() body: CreateFilterDefinitionDto) {
     return this.adminTaxonomyService.createFilterDefinition({
       scope: body.scope,
@@ -113,6 +135,8 @@ export class AdminTaxonomyController {
   }
 
   @Patch('taxonomy/filter-definitions/:id')
+  @ApiOperation({ summary: 'Update filter definition' })
+  @ApiOkResponse({ type: FilterDefinitionRowDto })
   updateFilterDefinition(@Param('id') id: string, @Body() body: UpdateFilterDefinitionDto) {
     return this.adminTaxonomyService.updateFilterDefinition(id, {
       scope: body.scope,
@@ -127,6 +151,8 @@ export class AdminTaxonomyController {
   }
 
   @Post('taxonomy/filter-definitions/:id/delete')
+  @ApiOperation({ summary: 'Delete filter definition' })
+  @ApiOkResponse({ type: FilterDefinitionRowDto })
   deleteFilterDefinition(@Param('id') id: string) {
     return this.adminTaxonomyService.deleteFilterDefinition(id);
   }

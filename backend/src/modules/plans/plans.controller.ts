@@ -1,5 +1,6 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOkEnvelopeArray, ApiOkEnvelopeData } from '../../common/swagger/api-response.decorators';
 import { PlansService } from './plans.service';
 import { SubscriptionPlanDto } from './dto/plan-response.dto';
 
@@ -10,14 +11,14 @@ export class PlansController {
 
   @Get()
   @ApiOperation({ summary: 'List active supplier subscription plans (public)' })
-  @ApiOkResponse({ type: SubscriptionPlanDto, isArray: true })
+  @ApiOkEnvelopeArray(SubscriptionPlanDto, { description: 'Active subscription plans' })
   listActive() {
     return this.plansService.listActivePlans();
   }
 
   @Get(':key')
   @ApiOperation({ summary: 'Get active subscription plan by key (public)' })
-  @ApiOkResponse({ type: SubscriptionPlanDto })
+  @ApiOkEnvelopeData(SubscriptionPlanDto)
   getByKey(@Param('key') key: string) {
     return this.plansService.getByKey(key);
   }

@@ -27,6 +27,7 @@ import { AuthGuard } from '../../common/guards/auth.guard';
 import { AuthUser } from '../../common/interfaces/auth-user.interface';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { ApiAuthErrors } from '../../common/swagger/api-error-responses.decorator';
+import { ApiOkEnvelopeData } from '../../common/swagger/api-response.decorators';
 import {
   AnonymousSessionDto,
   LinkAnonymousDto,
@@ -184,9 +185,8 @@ export class AuthController {
     description:
       'When `roles` includes `SUPPLIER`, `businessName` mirrors the supplier display name and `supplier` contains the full supplier record (profile, media, categories, service areas, attributes, draft, subscription summary without payment token, approval history, counts). Otherwise `businessName` and `supplier` are `null`. Response body is `{ success, data }` with **no** `pagination` field.',
   })
-  @ApiOkResponse({
+  @ApiOkEnvelopeData(AuthMeItemDto, {
     description: 'Current user profile (single object in `data`, no pagination)',
-    type: AuthMeItemDto,
   })
   @UseGuards(AuthGuard)
   me(@CurrentUser() user?: AuthUser) {

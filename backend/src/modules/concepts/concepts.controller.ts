@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Post, Query, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOkEnvelopePaginated } from '../../common/swagger/api-response.decorators';
 import { AuthGuard } from '../../common/guards/auth.guard';
 import { AuthUser } from '../../common/interfaces/auth-user.interface';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -23,10 +24,7 @@ export class ConceptsController {
 
   @Get()
   @ApiOperation({ summary: 'List saved / liked event concepts for the current user' })
-  @ApiOkResponse({
-    description: 'Paginated saved concepts',
-    type: SavedConceptListResponseDto,
-  })
+  @ApiOkEnvelopePaginated(SavedConceptListResponseDto, { description: 'Paginated saved concepts' })
   list(@CurrentUser() user: AuthUser | undefined, @Query() query: PaginationQueryDto) {
     const userId = user?.id;
     if (!userId || userId.startsWith('anonymous:')) {
