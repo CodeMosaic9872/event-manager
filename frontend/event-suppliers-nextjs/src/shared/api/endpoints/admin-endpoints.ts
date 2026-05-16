@@ -6,10 +6,70 @@ export type AdminListQueryParams = {
   limit?: number;
 };
 
-export type AdminSupplierItem = {
+export type AdminSupplierListQueryParams = AdminListQueryParams & {
+  q?: string;
+  status?: "all" | "approved" | "pending" | "waiting" | "rejected" | "draft";
+  categoryId?: string;
+  categoryKey?: string;
+  serviceArea?: string;
+};
+
+export type AdminSupplierCategoryTag = {
   id: string;
+  key: string;
+  name: string;
+  nameEn: string | null;
+  subcategoryId?: string | null;
+  subcategoryKey?: string | null;
+  subcategoryName?: string | null;
+};
+
+export type AdminSupplierListItem = {
+  id: string;
+  ownerUserId: string;
   businessName: string;
+  slug: string;
   approvalStatus: string;
+  isActive: boolean;
+  isVerified: boolean;
+  city: string | null;
+  description: string | null;
+  contactEmail: string | null;
+  publicPhone: string | null;
+  address: string | null;
+  websiteUrl: string | null;
+  serviceAreas: string[];
+  categories: AdminSupplierCategoryTag[];
+  socialLinks: { platform: string; url: string }[];
+  labels: string[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+/** @deprecated Use AdminSupplierListItem */
+export type AdminSupplierItem = Pick<AdminSupplierListItem, "id" | "businessName" | "approvalStatus">;
+
+export type AdminSuppliersListResponse = {
+  items: AdminSupplierListItem[];
+  totalItems: number;
+};
+
+export type AdminSupplierStats = {
+  activeSuppliers: number;
+  pendingApproval: number;
+  totalSuppliers: number;
+};
+
+export type AdminSupplierFilterOptions = {
+  categories: Array<{ id: string; key: string; name: string; nameEn: string | null }>;
+  serviceAreas: string[];
+};
+
+export type AdminSupplierExportResult = {
+  filename: string;
+  contentType: string;
+  csv: string;
+  rowCount: number;
 };
 
 export type AdminUserItem = {
@@ -58,6 +118,57 @@ export type AdminAutomationMetrics = {
   recentRuns?: number;
 };
 
+export type AdminDashboardKpiMetric = {
+  value: number;
+  changePercent?: number;
+  periodLabel?: string;
+  currency?: string;
+};
+
+export type AdminDashboardResponse = {
+  period: { year: number; month: number; label: string };
+  kpis: {
+    totalSuppliers: AdminDashboardKpiMetric;
+    totalRevenue: AdminDashboardKpiMetric;
+    pendingApprovals: AdminDashboardKpiMetric;
+    activeUsers: AdminDashboardKpiMetric;
+  };
+  supplierEngagement: {
+    phoneClicks: number;
+    messagesSent: number;
+    profileViews: number;
+    closedJobOffers: { count: number; revenueAmount: number; currency: string };
+  };
+  platformGrowth: {
+    months: Array<{
+      year: number;
+      month: number;
+      label: string;
+      newSuppliers: number;
+      newUsers: number;
+      paidEvents: number;
+    }>;
+    totals: { newSuppliers: number; newUsers: number; paidEvents: number };
+  };
+  pendingApprovals: {
+    items: Array<{
+      id: string;
+      businessName: string;
+      categoryName: string | null;
+      joinedAt: string;
+    }>;
+    totalItems: number;
+  };
+};
+
+export type AdminDashboardQueryParams = {
+  year?: number;
+  month?: number;
+  supplierSearch?: string;
+  pendingLimit?: number;
+  growthMonths?: number;
+};
+
 function unwrapDataArray<T>(response: unknown): T[] {
   if (Array.isArray(response)) return response;
   if (response && typeof response === "object") {
@@ -99,6 +210,34 @@ function unwrapReferralsResponse(response: unknown): AdminReferralsResponse {
   return { items: [], totalItems: 0 };
 }
 
+function unwrapPaginatedList<T>(response: unknown): { items: T[]; totalItems: number } {
+  if (response && typeof response === "object") {
+    const r = response as Record<string, unknown>;
+    const inner = (r.data ?? r) as Record<string, unknown>;
+    const items = Array.isArray(inner.items) ? (inner.items as T[]) : [];
+    const total = typeof inner.totalItems === "number" ? inner.totalItems : items.length;
+    return { items, totalItems: total };
+  }
+  return { items: [], totalItems: 0 };
+}
+
+function unwrapData<T>(response: unknown): T | null {
+  if (response && typeof response === "object") {
+    const r = response as Record<string, unknown>;
+    return (r.data ?? r) as T;
+  }
+  return null;
+}
+
+function unwrapDashboard(response: unknown): AdminDashboardResponse | null {
+  if (response && typeof response === "object") {
+    const r = response as Record<string, unknown>;
+    const inner = (r.data ?? r) as AdminDashboardResponse;
+    if (inner && typeof inner === "object" && inner.kpis) return inner;
+  }
+  return null;
+}
+
 function unwrapAutomationMetrics(response: unknown): AdminAutomationMetrics {
   if (response && typeof response === "object") {
     const r = response as Record<string, unknown>;
@@ -115,13 +254,39 @@ function unwrapAutomationMetrics(response: unknown): AdminAutomationMetrics {
 
 export function createAdminEndpoints(builder: EndpointBuilder<any, any, any>) {
   return {
-    getAdminSuppliers: builder.query<AdminSupplierItem[], AdminListQueryParams | void>({
+    getAdminSuppliers: builder.query<AdminSuppliersListResponse, AdminSupplierListQueryParams | void>({
       query: (params) => ({
         url: "/v1/admin/suppliers",
         params: { page: 1, limit: 50, ...(params ?? {}) },
       }),
-      transformResponse: (response: unknown) => unwrapDataArray<AdminSupplierItem>(response),
+      transformResponse: (response: unknown) => unwrapPaginatedList<AdminSupplierListItem>(response),
       providesTags: ["AdminSuppliers"],
+    }),
+    getAdminSupplierStats: builder.query<AdminSupplierStats | null, void>({
+      query: () => ({ url: "/v1/admin/suppliers/stats" }),
+      transformResponse: (response: unknown) => unwrapData<AdminSupplierStats>(response),
+      providesTags: ["AdminSuppliers"],
+    }),
+    getAdminSupplierFilterOptions: builder.query<AdminSupplierFilterOptions | null, void>({
+      query: () => ({ url: "/v1/admin/suppliers/filter-options" }),
+      transformResponse: (response: unknown) => unwrapData<AdminSupplierFilterOptions>(response),
+      providesTags: ["AdminSuppliers"],
+    }),
+    getAdminSuppliersExport: builder.query<AdminSupplierExportResult | null, AdminSupplierListQueryParams | void>({
+      query: (params) => ({
+        url: "/v1/admin/suppliers/export",
+        params: params ?? {},
+      }),
+      transformResponse: (response: unknown) => unwrapData<AdminSupplierExportResult>(response),
+    }),
+    getAdminSupplierById: builder.query<AdminSupplierListItem | null, string>({
+      query: (id) => ({ url: `/v1/admin/suppliers/${id}` }),
+      transformResponse: (response: unknown) => unwrapData<AdminSupplierListItem>(response),
+      providesTags: (_r, _e, id) => [{ type: "AdminSuppliers", id }],
+    }),
+    deleteAdminSupplier: builder.mutation<void, string>({
+      query: (id) => ({ url: `/v1/admin/suppliers/${id}`, method: "DELETE" }),
+      invalidatesTags: ["AdminSuppliers", "AdminDashboard"],
     }),
     getAdminIncompleteSuppliers: builder.query<AdminSupplierItem[], AdminListQueryParams | void>({
       query: (params) => ({
@@ -133,7 +298,7 @@ export function createAdminEndpoints(builder: EndpointBuilder<any, any, any>) {
     }),
     approveSupplier: builder.mutation<void, string>({
       query: (id) => ({ url: `/v1/admin/suppliers/${id}/approve`, method: "POST" }),
-      invalidatesTags: ["AdminSuppliers"],
+      invalidatesTags: ["AdminSuppliers", "AdminDashboard"],
     }),
     rejectSupplier: builder.mutation<void, { id: string; reason?: string; adminUserId?: string }>({
       query: ({ id, reason, adminUserId }) => ({
@@ -141,7 +306,7 @@ export function createAdminEndpoints(builder: EndpointBuilder<any, any, any>) {
         method: "POST",
         body: { reason, ...(adminUserId ? { adminUserId } : {}) },
       }),
-      invalidatesTags: ["AdminSuppliers"],
+      invalidatesTags: ["AdminSuppliers", "AdminDashboard"],
     }),
     featureSupplier: builder.mutation<void, string>({
       query: (id) => ({ url: `/v1/admin/suppliers/${id}/feature`, method: "POST" }),
@@ -212,6 +377,14 @@ export function createAdminEndpoints(builder: EndpointBuilder<any, any, any>) {
       query: () => ({ url: "/v1/admin/automations/metrics" }),
       transformResponse: (response: unknown) => unwrapAutomationMetrics(response),
       providesTags: ["AdminAutomations"],
+    }),
+    getAdminDashboard: builder.query<AdminDashboardResponse | null, AdminDashboardQueryParams | void>({
+      query: (params) => ({
+        url: "/v1/admin/dashboard",
+        params: params ?? {},
+      }),
+      transformResponse: (response: unknown) => unwrapDashboard(response),
+      providesTags: ["AdminDashboard"],
     }),
   };
 }

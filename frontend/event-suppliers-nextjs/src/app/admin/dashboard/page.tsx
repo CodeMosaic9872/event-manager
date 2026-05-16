@@ -46,10 +46,11 @@ export default function AdminDashboardPage() {
   const [rejectReason, setRejectReason] = useState("");
   const [rejectingId, setRejectingId] = useState<string | null>(null);
 
-  const { data: suppliers = [], isLoading: loadingSuppliers } = useGetAdminSuppliersQuery(
+  const { data: suppliersPage, isLoading: loadingSuppliers } = useGetAdminSuppliersQuery(
     { page: 1, limit: 200 },
     { skip: shouldSkip },
   );
+  const suppliers = suppliersPage?.items ?? [];
   const { data: users = [], isLoading: loadingUsers } = useGetAdminUsersQuery({ page: 1, limit: 200 }, { skip: shouldSkip });
   const { data: jobs = [], isLoading: loadingJobs } = useGetAdminJobsQuery({ page: 1, limit: 200 }, { skip: shouldSkip });
   const { data: referrals } = useGetAdminReferralsQuery(undefined, { skip: shouldSkip });

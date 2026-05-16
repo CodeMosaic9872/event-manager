@@ -14,6 +14,7 @@ import {
   IsString,
   Length,
   Matches,
+  Max,
   MaxLength,
   Min,
 } from 'class-validator';
@@ -560,4 +561,86 @@ export class ModerateJobApplicationDto {
   @IsString()
   @MaxLength(1000)
   reason?: string;
+}
+
+export class AdminDashboardQueryDto {
+  @ApiPropertyOptional({ description: 'Calendar year for supplier engagement metrics (UTC)', example: 2026 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(2000)
+  @Max(2100)
+  year?: number;
+
+  @ApiPropertyOptional({ description: 'Calendar month 1–12 for supplier engagement metrics (UTC)', example: 6 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(12)
+  month?: number;
+
+  @ApiPropertyOptional({
+    description: 'Filter supplier engagement metrics by business name or slug (case-insensitive)',
+    example: 'roy',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  supplierSearch?: string;
+
+  @ApiPropertyOptional({ description: 'Max pending approval rows to return', example: 10, default: 10 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(50)
+  pendingLimit?: number;
+
+  @ApiPropertyOptional({ description: 'Months of platform growth history (max 12)', example: 5, default: 5 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(12)
+  growthMonths?: number;
+}
+
+/** Query params for `GET /admin/suppliers` (supplier management table). */
+export class AdminListSuppliersQueryDto extends PaginationQueryDto {
+  @ApiPropertyOptional({ description: 'Search business name, slug, email, phone, or address', example: 'taam' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  q?: string;
+
+  @ApiPropertyOptional({
+    description: 'Approval filter',
+    enum: ['all', 'approved', 'pending', 'waiting', 'rejected', 'draft'],
+    example: 'all',
+  })
+  @IsOptional()
+  @IsString()
+  @IsIn(['all', 'approved', 'pending', 'waiting', 'rejected', 'draft'])
+  status?: 'all' | 'approved' | 'pending' | 'waiting' | 'rejected' | 'draft';
+
+  @ApiPropertyOptional({ description: 'Filter by category id', example: 'cat_123' })
+  @IsOptional()
+  @IsString()
+  categoryId?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by category key', example: 'catering' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  categoryKey?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filter by service area / region token (stored lowercase on supplier)',
+    example: 'north',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  serviceArea?: string;
 }

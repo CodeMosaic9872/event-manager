@@ -5,14 +5,22 @@ import { AdminControllerAuth } from '../common/admin-controller.decorator';
 import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
 import {
   ApproveSupplierDto,
+  AdminListSuppliersQueryDto,
   CreateAdminSupplierDto,
   RejectSupplierDto,
   UpdateAdminSupplierDto,
 } from '../dto/admin.dto';
-import { AdminApproveSupplierResponseDto, AdminSupplierCrudDto } from '../dto/admin-response.dto';
+import {
+  AdminApproveSupplierResponseDto,
+  AdminSupplierCrudDto,
+  AdminSupplierListItemDto,
+} from '../dto/admin-response.dto';
 import {
   AdminFeatureSupplierResponseDto,
   AdminSupplierDraftIncompleteItemDto,
+  AdminSupplierExportDto,
+  AdminSupplierFilterOptionsDto,
+  AdminSupplierStatsDto,
 } from '../dto/admin-swagger-responses.dto';
 import { AdminSuppliersService } from './admin-suppliers.service';
 
@@ -22,12 +30,35 @@ export class AdminSuppliersController {
   constructor(private readonly adminSuppliersService: AdminSuppliersService) {}
 
   @Get('suppliers')
-  @ApiOperation({ summary: 'List suppliers (admin CRUD)' })
-  @ApiOkEnvelopePaginatedItems(AdminSupplierCrudDto, {
-    description: 'Paginated supplier records with owner and subscription summary',
+  @ApiOperation({
+    summary: 'List suppliers for admin management (search, status, category, region filters)',
   })
-  suppliers(@Query() query: PaginationQueryDto) {
-    return this.adminSuppliersService.listSuppliers(query.page, query.limit);
+  @ApiOkEnvelopePaginatedItems(AdminSupplierListItemDto, {
+    description: 'Paginated supplier rows with categories, contact, labels, and social links',
+  })
+  suppliers(@Query() query: AdminListSuppliersQueryDto) {
+    return this.adminSuppliersService.listSuppliers(query);
+  }
+
+  @Get('suppliers/stats')
+  @ApiOperation({ summary: 'Summary counts for supplier management header cards' })
+  @ApiOkEnvelopeData(AdminSupplierStatsDto)
+  supplierStats() {
+    return this.adminSuppliersService.getSupplierStats();
+  }
+
+  @Get('suppliers/filter-options')
+  @ApiOperation({ summary: 'Category and service-area options for supplier management filters' })
+  @ApiOkEnvelopeData(AdminSupplierFilterOptionsDto)
+  supplierFilterOptions() {
+    return this.adminSuppliersService.getFilterOptions();
+  }
+
+  @Get('suppliers/export')
+  @ApiOperation({ summary: 'Export filtered suppliers as CSV (UTF-8 with BOM for Excel)' })
+  @ApiOkEnvelopeData(AdminSupplierExportDto)
+  exportSuppliers(@Query() query: AdminListSuppliersQueryDto) {
+    return this.adminSuppliersService.exportSuppliersCsv(query);
   }
 
   @Get('suppliers/incomplete')
@@ -47,8 +78,8 @@ export class AdminSuppliersController {
   }
 
   @Get('suppliers/:id')
-  @ApiOperation({ summary: 'Get supplier by id (admin)' })
-  @ApiOkEnvelopeData(AdminSupplierCrudDto)
+  @ApiOperation({ summary: 'Get supplier by id (admin, full management row)' })
+  @ApiOkEnvelopeData(AdminSupplierListItemDto)
   getSupplier(@Param('id') id: string) {
     return this.adminSuppliersService.getSupplier(id);
   }

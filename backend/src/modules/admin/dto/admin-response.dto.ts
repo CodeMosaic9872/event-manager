@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class AdminSupplierOwnerSummaryDto {
   @ApiProperty({ example: 'usr_123' })
@@ -32,6 +32,103 @@ export class AdminSupplierSubscriptionSummaryDto {
 
   @ApiProperty({ example: '2026-06-01T00:00:00.000Z' })
   nextBillingAt!: string;
+}
+
+export class AdminSupplierCategoryTagDto {
+  @ApiProperty({ example: 'cat_1' })
+  id!: string;
+
+  @ApiProperty({ example: 'catering' })
+  key!: string;
+
+  @ApiProperty({ example: 'קייטרינג' })
+  name!: string;
+
+  @ApiProperty({ example: 'Catering', nullable: true })
+  nameEn!: string | null;
+
+  @ApiPropertyOptional({ example: 'sub_1', nullable: true })
+  subcategoryId?: string | null;
+
+  @ApiPropertyOptional({ example: 'buffet', nullable: true })
+  subcategoryKey?: string | null;
+
+  @ApiPropertyOptional({ example: 'בופה', nullable: true })
+  subcategoryName?: string | null;
+}
+
+export class AdminSupplierSocialLinkDto {
+  @ApiProperty({ example: 'instagram' })
+  platform!: string;
+
+  @ApiProperty({ example: 'https://instagram.com/acme' })
+  url!: string;
+}
+
+/** Rich supplier row for admin management table. */
+export class AdminSupplierListItemDto {
+  @ApiProperty({ example: 'sup_1' })
+  id!: string;
+
+  @ApiProperty({ example: 'usr_owner' })
+  ownerUserId!: string;
+
+  @ApiProperty({ example: 'Taam VeTzeva' })
+  businessName!: string;
+
+  @ApiProperty({ example: 'taam-vetzeva' })
+  slug!: string;
+
+  @ApiProperty({ example: 'APPROVED' })
+  approvalStatus!: string;
+
+  @ApiProperty({ example: true })
+  isActive!: boolean;
+
+  @ApiProperty({ example: false })
+  isVerified!: boolean;
+
+  @ApiProperty({ example: 'Tel Aviv', nullable: true, description: 'Derived from address or first service area' })
+  city!: string | null;
+
+  @ApiProperty({ example: 'Full-service catering in Tel Aviv.', nullable: true })
+  description!: string | null;
+
+  @ApiProperty({ example: 'hello@taam.co.il', nullable: true })
+  contactEmail!: string | null;
+
+  @ApiProperty({ example: '0501234567', nullable: true })
+  publicPhone!: string | null;
+
+  @ApiProperty({ example: 'Dizengoff 100, Tel Aviv', nullable: true })
+  address!: string | null;
+
+  @ApiProperty({ example: 'https://taam.co.il', nullable: true })
+  websiteUrl!: string | null;
+
+  @ApiProperty({ example: ['center', 'north'] })
+  serviceAreas!: string[];
+
+  @ApiProperty({ type: [AdminSupplierCategoryTagDto] })
+  categories!: AdminSupplierCategoryTagDto[];
+
+  @ApiProperty({ type: [AdminSupplierSocialLinkDto] })
+  socialLinks!: AdminSupplierSocialLinkDto[];
+
+  @ApiProperty({ example: ['Kosher', 'Premium'], description: 'Display labels from attributes and subscription' })
+  labels!: string[];
+
+  @ApiProperty({ example: '2026-04-29T10:00:00.000Z' })
+  createdAt!: string;
+
+  @ApiProperty({ example: '2026-04-29T10:00:00.000Z' })
+  updatedAt!: string;
+
+  @ApiProperty({ type: AdminSupplierOwnerSummaryDto, nullable: true })
+  owner?: AdminSupplierOwnerSummaryDto | null;
+
+  @ApiProperty({ type: AdminSupplierSubscriptionSummaryDto, nullable: true })
+  subscription?: AdminSupplierSubscriptionSummaryDto | null;
 }
 
 export class AdminSupplierCrudDto {

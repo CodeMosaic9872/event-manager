@@ -9,6 +9,7 @@ import { AdminSuppliersModule } from './suppliers/admin-suppliers.module';
 import { AdminTaxonomyModule } from './taxonomy/admin-taxonomy.module';
 import { AdminUsersModule } from './users/admin-users.module';
 import { AdminPlansModule } from './plans/admin-plans.module';
+import { AdminDashboardModule } from './dashboard/admin-dashboard.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { AdminPlansModule } from './plans/admin-plans.module';
     AdminNotificationsModule,
     AdminAutomationsModule,
     AdminTaxonomyModule,
+    AdminDashboardModule,
   ],
 })
 export class AdminModule {}

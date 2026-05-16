@@ -99,7 +99,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 export const api = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Suppliers", "Jobs", "Notifications", "Auth", "AdminSuppliers", "AdminJobs", "AdminUsers", "AdminReferrals", "AdminNotifications", "AdminAutomations"],
+  tagTypes: ["Suppliers", "Jobs", "Notifications", "Auth", "AdminSuppliers", "AdminJobs", "AdminUsers", "AdminReferrals", "AdminNotifications", "AdminAutomations", "AdminDashboard"],
   keepUnusedDataFor: 60,
   refetchOnReconnect: true,
   endpoints: (builder) => ({
@@ -158,6 +158,11 @@ export const {
   useUploadGalleryFilesMutation,
   useDeleteGalleryItemsMutation,
   useGetAdminSuppliersQuery,
+  useGetAdminSupplierStatsQuery,
+  useGetAdminSupplierFilterOptionsQuery,
+  useLazyGetAdminSuppliersExportQuery,
+  useGetAdminSupplierByIdQuery,
+  useDeleteAdminSupplierMutation,
   useGetAdminIncompleteSuppliersQuery,
   useApproveSupplierMutation,
   useRejectSupplierMutation,
@@ -171,6 +176,7 @@ export const {
   useGetAdminReferralsQuery,
   useGetAdminNotificationsQuery,
   useGetAdminAutomationMetricsQuery,
+  useGetAdminDashboardQuery,
   useGetEventTypesQuery,
   useGetCategoriesQuery,
   useGetSubcategoriesQuery,
