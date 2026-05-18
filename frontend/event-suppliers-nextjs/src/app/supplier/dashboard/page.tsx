@@ -7,6 +7,7 @@ import {
   useGetRecommendedSupplierJobsQuery,
   useGetSupplierReferralLinkQuery,
   useUpdateSupplierProfileMutation,
+  useUpdateSupplierServiceAreasMutation,
   useMeQuery,
   useUploadGalleryFilesMutation,
   useDeleteGalleryItemsMutation,
@@ -154,7 +155,7 @@ function ReferFriendBlock({
 }
 
 function JobBadge({ kind }: { kind: "new" | "relevant" }) {
-  if (kind === "חדש") {
+  if (kind === "new") {
     return (
       <span className="rounded-full bg-[#DCFCE7] px-2 py-0.5 text-[10px] font-normal uppercase leading-[15px] text-[#15803D]">
         חדש
@@ -205,6 +206,7 @@ export default function SupplierDashboardPage() {
     skip: shouldSkipProtectedQueries,
   });
   const [updateProfile, { isLoading: isSavingProfile }] = useUpdateSupplierProfileMutation();
+  const [updateServiceAreas] = useUpdateSupplierServiceAreasMutation();
   const [uploadGalleryFiles] = useUploadGalleryFilesMutation();
   const [deleteGalleryItems] = useDeleteGalleryItemsMutation();
   const { data: recommendedJobs = [] } = useGetRecommendedSupplierJobsQuery(undefined, {

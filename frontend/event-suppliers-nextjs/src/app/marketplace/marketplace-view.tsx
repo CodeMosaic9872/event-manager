@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGetSuppliersQuery, useGetCategoriesQuery, useGetSubcategoriesQuery, useGetEventTypesQuery } from "@/shared/api/api";
 import type { SuppliersQuery } from "@/shared/api/types";
+import type { SuppliersListResponse } from "@/shared/types";
 import { mergeSearchParamsToHref } from "@/shared/lib/search-params-merge";
 import { labelForEventProductionSlug } from "@/shared/data/event-production-event-types";
 import { labelForBusinessSubtypeSlug } from "@/shared/data/event-production-business-subtypes";
@@ -81,8 +82,8 @@ export function MarketplaceView({ basePath, variant = "default" }: MarketplaceVi
   const [langOpen, setLangOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const accumulatedRef = useRef<unknown[]>([]);
-  const lastProcessedDataRef = useRef<unknown>(undefined);
+  const accumulatedRef = useRef<SuppliersListResponse["items"][number][]>([]);
+  const lastProcessedDataRef = useRef<SuppliersListResponse | undefined>(undefined);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const { data: eventTypes = [] } = useGetEventTypesQuery();
@@ -431,12 +432,12 @@ export function MarketplaceView({ basePath, variant = "default" }: MarketplaceVi
                     <SupplierGlassCard
                       key={supplier.id}
                       href={`/suppliers/${supplier.id}`}
-                      name={supplier.businessName ?? supplier.name ?? ""}
-                      subtitle={supplier.category ?? ""}
-                      description={supplier.description ?? ""}
-                      location={supplier.city ?? ""}
-                      rating={supplier.ratingAvg ?? supplier.rating ?? 0}
-                      imageUrl={supplier.imageUrl ?? undefined}
+                      name={(supplier as any).businessName ?? (supplier as any).name ?? ""}
+                      subtitle={(supplier as any).category ?? ""}
+                      description={(supplier as any).description ?? ""}
+                      location={(supplier as any).city ?? ""}
+                      rating={(supplier as any).ratingAvg ?? (supplier as any).rating ?? 0}
+                      imageUrl={(supplier as any).imageUrl ?? undefined}
                     />
                   ))}
                 </div>

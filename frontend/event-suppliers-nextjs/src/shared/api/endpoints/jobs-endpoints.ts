@@ -27,15 +27,9 @@ type ApiTag =
   | "AdminNotifications"
   | "AdminAutomations";
 
-type JobsBuilder = EndpointBuilder<
-  BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError>,
-  ApiTag,
-  "api"
->;
-
 const defaultPageLimit = { page: 1, limit: 100 };
 
-export function createJobsEndpoints(builder: JobsBuilder) {
+export function createJobsEndpoints(builder: EndpointBuilder<any, any, any>) {
   return {
     getJobs: builder.query<JobSummaryResponse[], { page?: number; limit?: number; categoryId?: string | string[]; subcategoryId?: string } | void>({
       query: (params) => {

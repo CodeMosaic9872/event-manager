@@ -1,7 +1,9 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { ProtectedRoute } from "@/shared/components/protected-route";
 import {
   useGetAdminSuppliersQuery,
@@ -50,21 +52,22 @@ export default function AdminDashboardPage() {
   const { data: me } = useMeQuery(undefined, { skip: shouldSkip });
 
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const initialTab = (searchParams.get("tab") as Tab) || "suppliers";
+  const initialTab = (typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("tab") : null) as Tab | null;
 
-  const [tab, setTab] = useState<Tab>(initialTab);
+  const [tab, setTab] = useState<Tab>(initialTab ?? "suppliers");
   const [rejectReason, setRejectReason] = useState("");
   const [rejectingId, setRejectingId] = useState<string | null>(null);
 
   useEffect(() => {
-    const t = searchParams.get("tab") as Tab;
+    if (typeof window === "undefined") return;
+    const t = new URLSearchParams(window.location.search).get("tab") as Tab | null;
     if (t && t !== tab) setTab(t);
-  }, [searchParams]);
+  }, [tab]);
 
   const handleTabChange = (newTab: Tab) => {
     setTab(newTab);
-    const params = new URLSearchParams(searchParams.toString());
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
     params.set("tab", newTab);
     router.push(`?${params.toString()}`, { scroll: false });
   };

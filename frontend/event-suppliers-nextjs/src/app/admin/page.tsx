@@ -66,7 +66,7 @@ export default function AdminPage() {
   const isAuthHydrated = useAppSelector((s) => s.auth.isHydrated);
   const skip = !isAuthHydrated || !sessionUser;
 
-  const { data: allSuppliers = [] } = useGetAdminSuppliersQuery({ page: 1, limit: 1000 }, { skip });
+  const { data: allSuppliers } = useGetAdminSuppliersQuery({ page: 1, limit: 1000 }, { skip });
   const { data: allUsers = [] } = useGetAdminUsersQuery({ page: 1, limit: 1000 }, { skip });
   const { data: allJobs = [] } = useGetAdminJobsQuery({ page: 1, limit: 1000 }, { skip });
   const { data: pendingSuppliers = [], isLoading: loadingPending } = useGetAdminIncompleteSuppliersQuery({ page: 1, limit: 10 }, { skip });
@@ -80,7 +80,7 @@ export default function AdminPage() {
   const KPI_CARDS = [
     {
       title: "Total suppliers",
-      value: allSuppliers.length.toLocaleString(),
+      value: (allSuppliers?.items?.length ?? 0).toLocaleString(),
       delta: "Active records",
       action: "To view the supplier table",
       icon: "/icons/total-suppliers.svg",
