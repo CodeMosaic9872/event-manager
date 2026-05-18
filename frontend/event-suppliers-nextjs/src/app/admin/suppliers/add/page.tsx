@@ -7,6 +7,13 @@ import { MarketingModal } from "@/shared/components/marketing-modal";
 import { ProtectedRoute } from "@/shared/components/protected-route";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
 
+import {
+  useGetCategoriesQuery,
+  useGetSubcategoriesQuery,
+  useUploadGalleryFilesMutation,
+} from "@/shared/api/api";
+import { useAppSelector } from "@/store/hooks";
+
 function SuccessBadgeCheckIcon() {
   return (
     <span className="flex size-[29px] shrink-0 items-center justify-center rounded-full bg-[#1E1E3F]" aria-hidden>
@@ -91,16 +98,20 @@ function toggleInSet(set: Set<string>, key: string, setter: (next: Set<string>) 
 export default function AdminAddSupplierPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const { data: categoriesData = [] } = useGetCategoriesQuery();
+  const [uploadGallery] = useUploadGalleryFilesMutation();
 
   const [businessName, setBusinessName] = useState("");
-  const [category, setCategory] = useState("Event halls");
+  const [categoryId, setCategoryId] = useState("");
   const [centralLocation, setCentralLocation] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [description, setDescription] = useState("");
 
+  const { data: subcategoriesData = [] } = useGetSubcategoriesQuery(categoryId, { skip: !categoryId });
+
   const [selectedAreas, setSelectedAreas] = useState<Set<string>>(() => new Set());
-  const [selectedSpecialties, setSelectedSpecialties] = useState<Set<string>>(() => new Set());
+  const [selectedSubcategoryIds, setSelectedSubcategoryIds] = useState<Set<string>>(() => new Set());
   const [selectedRules, setSelectedRules] = useState<Set<string>>(
     () => new Set(["Reservist", "Ministry of Defense supplier"]),
   );
@@ -134,11 +145,18 @@ export default function AdminAddSupplierPage() {
   const textareaClass =
     "min-h-[140px] w-full resize-y rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-right text-base leading-6 text-[#1E293B] outline-none focus:ring-2 focus:ring-[#3B82F6]/30";
 
-  const galleryPick = (e: ChangeEvent<HTMLInputElement>) => {
+  const galleryPick = async (e: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
-    const nextUrls = files.map((f) => URL.createObjectURL(f));
-    setUploadedGalleryImages((prev) => [...prev, ...nextUrls].slice(0, 12));
+    
+    try {
+      const response = await uploadGallery({ files }).unwrap();
+      const nextUrls = response.items.map((item) => item.url);
+      setUploadedGalleryImages((prev) => [...prev, ...nextUrls].slice(0, 12));
+    } catch (err) {
+      console.error("Gallery upload failed:", err);
+    }
+    
     e.target.value = "";
   };
 
@@ -208,14 +226,16 @@ export default function AdminAddSupplierPage() {
                 <label className="text-right text-xs font-normal leading-4 text-black">CATEGORY</label>
                 <div className="relative w-full">
                   <select
-                    value={category}
-                    onChange={(ev) => setCategory(ev.target.value)}
+                    value={categoryId}
+                    onChange={(ev) => setCategoryId(ev.target.value)}
                     className="h-[50px] w-full appearance-none rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-right text-base leading-6 text-[#1E293B] outline-none focus:ring-2 focus:ring-[#3B82F6]/30"
                   >
-                    <option>Event halls</option>
-                    <option>DJ &amp; Music</option>
-                    <option>Photography</option>
-                    <option>Catering</option>
+                    <option value="">Select Category</option>
+                    {categoriesData.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
                   </select>
                   <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]" aria-hidden>
                     ▾
@@ -276,14 +296,20 @@ export default function AdminAddSupplierPage() {
               <div className="flex flex-col gap-3">
                 <p className="text-right text-base leading-5 text-black">Subcategory</p>
                 <div className="flex flex-wrap justify-end gap-3">
-                  {["Dairy catering", "Workshops", "Lectures", "Wellness", "Wine bar"].map((a) => (
-                    <ChipToggle
-                      key={a}
-                      label={a}
-                      selected={selectedSpecialties.has(a)}
-                      onToggle={() => toggleInSet(selectedSpecialties, a, setSelectedSpecialties)}
-                    />
-                  ))}
+                  {!categoryId ? (
+                    <p className="text-sm text-[#94A3B8]">Select a category first</p>
+                  ) : subcategoriesData.length === 0 ? (
+                    <p className="text-sm text-[#94A3B8]">No subcategories found</p>
+                  ) : (
+                    subcategoriesData.map((s) => (
+                      <ChipToggle
+                        key={s.id}
+                        label={s.name}
+                        selected={selectedSubcategoryIds.has(s.id)}
+                        onToggle={() => toggleInSet(selectedSubcategoryIds, s.id, setSelectedSubcategoryIds)}
+                      />
+                    ))
+                  )}
                 </div>
               </div>
 

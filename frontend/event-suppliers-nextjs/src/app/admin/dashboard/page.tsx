@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ProtectedRoute } from "@/shared/components/protected-route";
 import {
   useGetAdminSuppliersQuery,
@@ -11,11 +12,17 @@ import {
   useRejectSupplierMutation,
   useArchiveJobMutation,
   useGetAdminAutomationMetricsQuery,
+  useGetAdminAiUsageQuery,
+  useGetAdminAiFailuresQuery,
+  useGetAdminMatchingRunsQuery,
+  useGetCategoriesQuery,
+  useGetSubcategoriesQuery,
+  useTriggerMatchingMutation,
   useMeQuery,
 } from "@/shared/api/api";
 import { useAppSelector } from "@/store/hooks";
 
-type Tab = "suppliers" | "users" | "jobs" | "referrals";
+type Tab = "suppliers" | "users" | "jobs" | "referrals" | "ai" | "taxonomy";
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
@@ -42,9 +49,25 @@ export default function AdminDashboardPage() {
   const shouldSkip = !isAuthHydrated || !sessionUser;
   const { data: me } = useMeQuery(undefined, { skip: shouldSkip });
 
-  const [tab, setTab] = useState<Tab>("suppliers");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialTab = (searchParams.get("tab") as Tab) || "suppliers";
+
+  const [tab, setTab] = useState<Tab>(initialTab);
   const [rejectReason, setRejectReason] = useState("");
   const [rejectingId, setRejectingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const t = searchParams.get("tab") as Tab;
+    if (t && t !== tab) setTab(t);
+  }, [searchParams]);
+
+  const handleTabChange = (newTab: Tab) => {
+    setTab(newTab);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", newTab);
+    router.push(`?${params.toString()}`, { scroll: false });
+  };
 
   const { data: suppliersPage, isLoading: loadingSuppliers } = useGetAdminSuppliersQuery(
     { page: 1, limit: 200 },
@@ -55,10 +78,15 @@ export default function AdminDashboardPage() {
   const { data: jobs = [], isLoading: loadingJobs } = useGetAdminJobsQuery({ page: 1, limit: 200 }, { skip: shouldSkip });
   const { data: referrals } = useGetAdminReferralsQuery(undefined, { skip: shouldSkip });
   const { data: metrics } = useGetAdminAutomationMetricsQuery(undefined, { skip: shouldSkip });
+  const { data: aiUsage } = useGetAdminAiUsageQuery(undefined, { skip: shouldSkip });
+  const { data: aiFailures = [] } = useGetAdminAiFailuresQuery(undefined, { skip: shouldSkip });
+  const { data: matchingRuns = [] } = useGetAdminMatchingRunsQuery(undefined, { skip: shouldSkip });
+  const { data: categories = [] } = useGetCategoriesQuery(undefined, { skip: shouldSkip });
 
   const [approveSupplier] = useApproveSupplierMutation();
   const [rejectSupplier] = useRejectSupplierMutation();
   const [archiveJob] = useArchiveJobMutation();
+  const [triggerMatching] = useTriggerMatchingMutation();
 
   return (
     <ProtectedRoute roles={["admin"]}>
@@ -78,12 +106,12 @@ export default function AdminDashboardPage() {
             <StatCard label="Referrals" value={referrals?.totalItems ?? 0} />
           </div>
 
-          <div className="mb-6 flex gap-2 rounded-xl bg-white p-1 shadow-sm">
-            {(["suppliers", "users", "jobs", "referrals"] as Tab[]).map((t) => (
+          <div className="mb-6 flex gap-2 rounded-xl bg-white p-1 shadow-sm overflow-x-auto">
+            {(["suppliers", "users", "jobs", "referrals", "ai", "taxonomy"] as Tab[]).map((t) => (
               <button
                 key={t}
-                onClick={() => setTab(t)}
-                className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium capitalize transition ${tab === t ? "bg-[#201C44] text-white" : "text-[#64748B] hover:bg-[#F1F5F9]"}`}
+                onClick={() => handleTabChange(t)}
+                className={`min-w-[100px] rounded-lg px-4 py-2 text-sm font-medium capitalize transition ${tab === t ? "bg-[#201C44] text-white" : "text-[#64748B] hover:bg-[#F1F5F9]"}`}
               >
                 {t}
               </button>
@@ -207,6 +235,89 @@ export default function AdminDashboardPage() {
               )}
             </div>
           )}
+
+          {tab === "ai" && (
+            <div className="space-y-6">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-xl border border-[#BFDBFE] bg-white p-6 shadow-sm">
+                  <h3 className="text-sm font-semibold text-[#1E1B4B]">AI Usage</h3>
+                  <div className="mt-4 space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-[#64748B]">Total Requests</span>
+                      <span className="font-medium">{aiUsage?.totalRequests ?? 0}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-[#64748B]">Tokens Used</span>
+                      <span className="font-medium">{aiUsage?.tokensUsed ?? 0}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-[#BFDBFE] bg-white p-6 shadow-sm">
+                  <h3 className="text-sm font-semibold text-[#1E1B4B]">Matching</h3>
+                  <button
+                    onClick={() => triggerMatching({})}
+                    className="mt-4 w-full rounded-lg bg-[#201C44] py-2 text-sm text-white transition hover:bg-[#151238]"
+                  >
+                    Trigger Manual Matching
+                  </button>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-[#BFDBFE] bg-white shadow-sm">
+                <div className="border-b border-[#E2E8F0] px-6 py-4">
+                  <h2 className="text-lg font-semibold text-[#1E1B4B]">Matching Runs</h2>
+                </div>
+                <div className="divide-y divide-[#F1F5F9]">
+                  {matchingRuns.map((run) => (
+                    <div key={run.id} className="flex items-center justify-between px-6 py-4">
+                      <div>
+                        <p className="text-sm font-medium text-[#1E1B4B]">Run {run.id.slice(-6)}</p>
+                        <p className="text-xs text-[#94A3B8]">Status: {run.status} · Job: {run.jobId}</p>
+                      </div>
+                      <span className="rounded-full bg-blue-50 px-2 py-1 text-xs text-blue-600">
+                        {run.matchedSuppliersCount} Matches
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-red-100 bg-white shadow-sm">
+                <div className="border-b border-red-100 px-6 py-4">
+                  <h2 className="text-lg font-semibold text-red-700">AI Failures</h2>
+                </div>
+                <div className="divide-y divide-[#F1F5F9]">
+                  {aiFailures.map((f, i) => (
+                    <div key={i} className="px-6 py-4">
+                      <p className="text-sm text-red-600 font-mono break-all">{f.errorMessage || "Unknown error"}</p>
+                      <p className="text-xs text-[#94A3B8]">{f.timestamp}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {tab === "taxonomy" && (
+            <div className="rounded-xl border border-[#BFDBFE] bg-white shadow-sm">
+              <div className="border-b border-[#E2E8F0] px-6 py-4 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-[#1E1B4B]">Categories</h2>
+                <button className="text-sm text-[#0061A7] font-medium transition hover:underline">+ Add Category</button>
+              </div>
+              <div className="divide-y divide-[#F1F5F9]">
+                {categories.map((c) => (
+                  <div key={c.id} className="flex items-center justify-between px-6 py-4">
+                    <p className="font-medium text-[#1E1B4B]">{c.name}</p>
+                    <div className="flex gap-3">
+                      <button className="text-xs text-[#64748B] transition hover:text-[#4721DF]">Edit</button>
+                      <button className="text-xs text-red-600 transition hover:text-red-700">Delete</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
 
           {metrics && (
             <div className="mt-6 rounded-xl border border-[#BFDBFE] bg-white p-6 shadow-sm">

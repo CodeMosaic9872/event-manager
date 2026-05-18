@@ -4,6 +4,16 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ProtectedRoute } from "@/shared/components/protected-route";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
+import {
+  useGetAdminSuppliersQuery,
+  useGetAdminUsersQuery,
+  useGetAdminJobsQuery,
+  useGetAdminIncompleteSuppliersQuery,
+  useApproveSupplierMutation,
+  useRejectSupplierMutation,
+} from "@/shared/api/api";
+import { useAppSelector } from "@/store/hooks";
+import { useState } from "react";
 
 const KPI_CARDS = [
   {
@@ -52,19 +62,58 @@ const PENDING_APPROVALS = [
 
 export default function AdminPage() {
   const router = useRouter();
+  const sessionUser = useAppSelector((s) => s.auth.user);
+  const isAuthHydrated = useAppSelector((s) => s.auth.isHydrated);
+  const skip = !isAuthHydrated || !sessionUser;
 
-  const onCardAction = (title: string) => {
-    if (title === "Total suppliers" || title === "Pending approvals") {
-      router.push("/admin/suppliers");
-      return;
-    }
+  const { data: allSuppliers = [] } = useGetAdminSuppliersQuery({ page: 1, limit: 1000 }, { skip });
+  const { data: allUsers = [] } = useGetAdminUsersQuery({ page: 1, limit: 1000 }, { skip });
+  const { data: allJobs = [] } = useGetAdminJobsQuery({ page: 1, limit: 1000 }, { skip });
+  const { data: pendingSuppliers = [], isLoading: loadingPending } = useGetAdminIncompleteSuppliersQuery({ page: 1, limit: 10 }, { skip });
 
-    if (title === "Active users") {
-      router.push("/users");
-      return;
-    }
+  const [approveSupplier] = useApproveSupplierMutation();
+  const [rejectSupplier] = useRejectSupplierMutation();
 
-    router.push("/admin");
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
+
+  const KPI_CARDS = [
+    {
+      title: "Total suppliers",
+      value: allSuppliers.length.toLocaleString(),
+      delta: "Active records",
+      action: "To view the supplier table",
+      icon: "/icons/total-suppliers.svg",
+      href: "/admin/suppliers",
+    },
+    {
+      title: "Total jobs",
+      value: allJobs.length.toLocaleString(),
+      delta: "Active tenders",
+      action: "View all jobs",
+      icon: "/icons/total-revenue.svg",
+      href: "/admin/dashboard",
+    },
+    {
+      title: "Pending approvals",
+      value: pendingSuppliers.length.toString(),
+      delta: "Requires review",
+      action: "To view the full report",
+      icon: "/icons/pending-approvals.svg",
+      href: "/admin/suppliers",
+    },
+    {
+      title: "Active users",
+      value: allUsers.length.toLocaleString(),
+      delta: "Registered accounts",
+      action: "View user list",
+      icon: "/icons/active-users.svg",
+      href: "/admin/dashboard",
+    },
+  ];
+
+  const onCardAction = (href: string) => {
+    router.push(href);
   };
 
   const onQuickAction = (action: string) => {
@@ -72,22 +121,22 @@ export default function AdminPage() {
       router.push("/admin/suppliers");
       return;
     }
-
+    if (action === "AI chat management") {
+      router.push("/admin/dashboard?tab=ai");
+      return;
+    }
     if (action === "Adding a concept page") {
       router.push("/admin/concepts/add");
       return;
     }
-
     if (action === "Premium package management") {
       router.push("/admin/premium-packages");
       return;
     }
-
     if (action === "I added products to the store.") {
       router.push("/admin/store/products/add");
       return;
     }
-
     router.push("/admin");
   };
 
@@ -132,7 +181,7 @@ export default function AdminPage() {
                 {card.delta ? <p className="mt-2 text-right text-sm text-black">{card.delta}</p> : null}
                 <button
                   type="button"
-                  onClick={() => onCardAction(card.title)}
+                  onClick={() => onCardAction(card.href)}
                   className="mt-2 inline-flex cursor-pointer flex-row-reverse items-center gap-2 text-sm text-[#0061A7]"
                 >
                   <span aria-hidden>←</span>
@@ -220,40 +269,50 @@ export default function AdminPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {PENDING_APPROVALS.map((row) => (
-                    <tr key={row.supplier} className="border-t border-black/10">
-                      <td className="px-4 py-4">{row.supplier}</td>
-                      <td className="px-4 py-4">{row.category}</td>
-                      <td className="px-4 py-4">{row.date}</td>
-                      <td className="px-4 py-4">
-                        <button
-                          type="button"
-                          onClick={() => router.push("/admin/suppliers")}
-                          className="cursor-pointer rounded-full bg-[#6AB7FF] px-3 py-1 text-xs text-[#201C44]"
-                        >
-                          To watch
-                        </button>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex justify-end gap-2">
-                          <button
-                            type="button"
-                            onClick={() => router.push("/admin/suppliers")}
-                            className="cursor-pointer rounded-lg bg-[#201C44] px-3 py-1 text-xs text-white"
-                          >
-                            Approval
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => router.push("/admin/suppliers")}
-                            className="cursor-pointer rounded-lg border border-rose-200 bg-black/5 px-3 py-1 text-xs text-rose-700"
-                          >
-                            Rejection
-                          </button>
-                        </div>
-                      </td>
+                  {loadingPending ? (
+                    <tr>
+                      <td colSpan={5} className="py-12 text-center text-sm text-[#444650]">Loading pending reviews...</td>
                     </tr>
-                  ))}
+                  ) : pendingSuppliers.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-12 text-center text-sm text-[#444650]">No suppliers awaiting review.</td>
+                    </tr>
+                  ) : (
+                    pendingSuppliers.map((row) => (
+                      <tr key={row.id} className="border-t border-black/10">
+                        <td className="px-4 py-4">{row.businessName}</td>
+                        <td className="px-4 py-4">General</td>
+                        <td className="px-4 py-4">—</td>
+                        <td className="px-4 py-4">
+                          <button
+                            type="button"
+                            onClick={() => router.push(`/marketplace/${row.id}`)}
+                            className="cursor-pointer rounded-full bg-[#6AB7FF] px-3 py-1 text-xs text-[#201C44]"
+                          >
+                            To watch
+                          </button>
+                        </td>
+                        <td className="px-4 py-4">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() => approveSupplier(row.id)}
+                              className="cursor-pointer rounded-lg bg-[#201C44] px-3 py-1 text-xs text-white transition hover:bg-[#151238]"
+                            >
+                              Approval
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setRejectingId(row.id)}
+                              className="cursor-pointer rounded-lg border border-rose-200 bg-white px-3 py-1 text-xs text-rose-700 transition hover:bg-rose-50"
+                            >
+                              Rejection
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
               </div>
@@ -312,7 +371,45 @@ export default function AdminPage() {
 
           </div>
         </div>
+
+        {rejectingId && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+            <div className="w-full max-w-[400px] rounded-2xl bg-white p-6 shadow-xl">
+              <h3 className="text-lg font-semibold text-[#1E1B4B]">Reject Supplier</h3>
+              <textarea
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                placeholder="Reason (optional)"
+                rows={3}
+                className="mt-3 w-full rounded-xl border border-[#E2E8F0] px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#3B82F6]/30"
+              />
+              <div className="mt-4 flex justify-end gap-2">
+                <button
+                  onClick={() => { setRejectingId(null); setRejectReason(""); }}
+                  className="rounded-lg border border-[#E2E8F0] px-4 py-2 text-sm text-[#64748B]"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    rejectSupplier({
+                      id: rejectingId,
+                      reason: rejectReason || undefined,
+                      adminUserId: sessionUser?.id,
+                    });
+                    setRejectingId(null);
+                    setRejectReason("");
+                  }}
+                  className="rounded-lg bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700"
+                >
+                  Reject
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
+
     </ProtectedRoute>
   );
 }

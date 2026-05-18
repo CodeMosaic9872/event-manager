@@ -18,16 +18,19 @@ export function createTaxonomyEndpoints(builder: EndpointBuilder<any, any, any>)
       query: () => ({ url: "/v1/taxonomy/event-types", params: { limit: 100 } }),
       transformResponse: extractItems,
       transformErrorResponse: () => [],
+      providesTags: ["Taxonomy"],
     }),
     getCategories: builder.query<Category[], void>({
       query: () => ({ url: "/v1/taxonomy/categories", params: { limit: 100 } }),
       transformResponse: extractItems,
       transformErrorResponse: () => [],
+      providesTags: ["Taxonomy"],
     }),
     getSubcategories: builder.query<Subcategory[], string>({
       query: (categoryId) => ({ url: `/v1/taxonomy/categories/${categoryId}/subcategories`, params: { limit: 100 } }),
       transformResponse: extractItems,
       transformErrorResponse: () => [],
+      providesTags: ["Taxonomy"],
     }),
   };
 }

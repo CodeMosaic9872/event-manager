@@ -169,6 +169,42 @@ export type AdminDashboardQueryParams = {
   growthMonths?: number;
 };
 
+export type AdminAiUsageStats = {
+  totalRequests: number;
+  tokensUsed: number;
+  costEstimate?: number;
+};
+
+export type AdminMatchingRun = {
+  id: string;
+  jobId: string;
+  status: string;
+  matchedSuppliersCount: number;
+  createdAt: string;
+};
+
+export type AdminTaxonomyCategoryPayload = {
+  name: string;
+  nameEn?: string;
+  key?: string;
+  icon?: string;
+};
+
+export type AdminTaxonomySubcategoryPayload = {
+  categoryId: string;
+  name: string;
+  nameEn?: string;
+  key?: string;
+};
+
+export type AdminTaxonomyFilterPayload = {
+  categoryId: string;
+  subcategoryId?: string;
+  name: string;
+  key: string;
+  type: string;
+  options?: any[];
+};
 function unwrapDataArray<T>(response: unknown): T[] {
   if (Array.isArray(response)) return response;
   if (response && typeof response === "object") {
@@ -386,5 +422,81 @@ export function createAdminEndpoints(builder: EndpointBuilder<any, any, any>) {
       transformResponse: (response: unknown) => unwrapDashboard(response),
       providesTags: ["AdminDashboard"],
     }),
+    updateReferralReward: builder.mutation<void, { id: string; status: string }>({
+      query: ({ id, status }) => ({
+        url: `/v1/admin/referrals/rewards/${id}`,
+        method: "PATCH",
+        body: { status },
+      }),
+      invalidatesTags: ["AdminReferrals"],
+    }),
+    getAdminAiUsage: builder.query<AdminAiUsageStats, void>({
+      query: () => ({ url: "/v1/admin/ai/usage" }),
+      providesTags: ["AdminAi"],
+    }),
+    getAdminAiFailures: builder.query<any[], void>({
+      query: () => ({ url: "/v1/admin/ai/failures" }),
+      transformResponse: (response: unknown) => unwrapDataArray(response),
+      providesTags: ["AdminAi"],
+    }),
+    getAdminAiConversations: builder.query<any[], void>({
+      query: () => ({ url: "/v1/admin/ai/conversations" }),
+      transformResponse: (response: unknown) => unwrapDataArray(response),
+      providesTags: ["AdminAi"],
+    }),
+    getAdminNotificationHealth: builder.query<any, void>({
+      query: () => ({ url: "/v1/admin/notifications/providers/health" }),
+      providesTags: ["AdminNotifications"],
+    }),
+    getAdminMatchingRuns: builder.query<AdminMatchingRun[], void>({
+      query: () => ({ url: "/v1/admin/automations/matching" }),
+      transformResponse: (response: unknown) => unwrapDataArray<AdminMatchingRun>(response),
+      providesTags: ["AdminAutomations"],
+    }),
+    triggerMatching: builder.mutation<void, { jobId?: string }>({
+      query: (body) => ({
+        url: "/v1/admin/automations/matching/trigger",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["AdminAutomations"],
+    }),
+    createCategory: builder.mutation<void, AdminTaxonomyCategoryPayload>({
+      query: (body) => ({ url: "/v1/admin/taxonomy/categories", method: "POST", body }),
+      invalidatesTags: ["Taxonomy"],
+    }),
+    updateCategory: builder.mutation<void, { id: string; data: AdminTaxonomyCategoryPayload }>({
+      query: ({ id, data }) => ({ url: `/v1/admin/taxonomy/categories/${id}`, method: "PATCH", body: data }),
+      invalidatesTags: ["Taxonomy"],
+    }),
+    deleteCategory: builder.mutation<void, string>({
+      query: (id) => ({ url: `/v1/admin/taxonomy/categories/${id}/delete`, method: "POST" }),
+      invalidatesTags: ["Taxonomy"],
+    }),
+    createSubcategory: builder.mutation<void, AdminTaxonomySubcategoryPayload>({
+      query: (body) => ({ url: "/v1/admin/taxonomy/subcategories", method: "POST", body }),
+      invalidatesTags: ["Taxonomy"],
+    }),
+    updateSubcategory: builder.mutation<void, { id: string; data: AdminTaxonomySubcategoryPayload }>({
+      query: ({ id, data }) => ({ url: `/v1/admin/taxonomy/subcategories/${id}`, method: "PATCH", body: data }),
+      invalidatesTags: ["Taxonomy"],
+    }),
+    deleteSubcategory: builder.mutation<void, string>({
+      query: (id) => ({ url: `/v1/admin/taxonomy/subcategories/${id}/delete`, method: "POST" }),
+      invalidatesTags: ["Taxonomy"],
+    }),
+    createFilterDefinition: builder.mutation<void, AdminTaxonomyFilterPayload>({
+      query: (body) => ({ url: "/v1/admin/taxonomy/filter-definitions", method: "POST", body }),
+      invalidatesTags: ["Taxonomy"],
+    }),
+    updateFilterDefinition: builder.mutation<void, { id: string; data: AdminTaxonomyFilterPayload }>({
+      query: ({ id, data }) => ({ url: `/v1/admin/taxonomy/filter-definitions/${id}`, method: "PATCH", body: data }),
+      invalidatesTags: ["Taxonomy"],
+    }),
+    deleteFilterDefinition: builder.mutation<void, string>({
+      query: (id) => ({ url: `/v1/admin/taxonomy/filter-definitions/${id}/delete`, method: "POST" }),
+      invalidatesTags: ["Taxonomy"],
+    }),
   };
 }
+
