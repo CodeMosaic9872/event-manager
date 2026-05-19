@@ -15,50 +15,12 @@ import {
 import { useAppSelector } from "@/store/hooks";
 import { useState } from "react";
 
-const KPI_CARDS = [
-  {
-    title: "Total suppliers",
-    value: "1,240",
-    delta: "5.2%+ from last month",
-    action: "To view the supplier table",
-    icon: "/icons/total-suppliers.svg",
-  },
-  {
-    title: "Total revenue",
-    value: "₪450,230",
-    delta: "12%+ from last month",
-    action: "To view the full report",
-    icon: "/icons/total-revenue.svg",
-  },
-    {
-      title: "Pending approvals",
-      value: "12",
-      delta: "",
-      action: "To view the full report",
-      icon: "/icons/pending-approvals.svg",
-    },
-      {
-    title: "Active users",
-    value: "8,500",
-    delta: "0.5%- from last month",
-    action: "Export to Excel",
-    icon: "/icons/active-users.svg",
-  },
-] as const;
-
 const SUPPLIER_METRICS = [
-  { month: "June", total: "Total 124", metric: "Phone clicks", icon: "/icons/phone.svg" },
-  { month: "June", total: "Total 56", metric: "Sending a message", icon: "/icons/message.svg" },
-  { month: "June", total: "Total 456", metric: "Profile views", icon: "/icons/eye.svg" },
-  { month: "June", total: "Total 21 (income ₪2,000)", metric: "Number of job offers closed", icon: "/icons/cash.svg" },
-] as const;
-
-const PENDING_APPROVALS = [
-  { supplier: "Roy Levy Event Photography", category: "Photography", date: "12/10/2023" },
-  { supplier: "DJ Cosmic", category: "Music", date: "14/10/2023" },
-  { supplier: "Catering Blessing", category: "Catering", date: "15/10/2023" },
-  { supplier: "DJ Max", category: "Music", date: "10/16/2023" },
-] as const;
+  { month: 'יוני', total: 'סה"כ 124', metric: 'לחיצות טלפון', icon: '/icons/phone.svg' },
+  { month: 'יוני', total: 'סה"כ 56', metric: 'שליחת הודעה', icon: '/icons/message.svg' },
+  { month: 'יוני', total: 'סה"כ 456', metric: 'צפיות בפרופיל', icon: '/icons/eye.svg' },
+  { month: 'יוני', total: 'סה"כ 21 (הכנסות ₪2,000)', metric: 'הצעות עבודה סגורות', icon: '/icons/cash.svg' },
+];
 
 export default function AdminPage() {
   const router = useRouter();
@@ -79,36 +41,35 @@ export default function AdminPage() {
 
   const KPI_CARDS = [
     {
-      title: "Total suppliers",
+      title: 'סה"כ ספקים',
       value: (allSuppliers?.items?.length ?? 0).toLocaleString(),
-      delta: "Active records",
-      action: "To view the supplier table",
-      icon: "/icons/total-suppliers.svg",
-      href: "/admin/suppliers",
+      delta: 'רשומות פעילות',
+      action: 'לצפייה בטבלת ספקים',
+      icon: '/icons/total-suppliers.svg',
+      href: '/admin/suppliers',
     },
     {
-      title: "Total jobs",
+      title: 'סה"כ עבודות',
       value: allJobs.length.toLocaleString(),
-      delta: "Active tenders",
-      action: "View all jobs",
-      icon: "/icons/total-revenue.svg",
-      href: "/admin/dashboard",
+      delta: 'מכרזים פעילים',
+      action: "לצפייה בדוח המלא'",
+      icon: '/icons/total-revenue.svg',
+      href: '/admin/dashboard',
     },
     {
-      title: "Pending approvals",
+      title: 'ממתינים לאישור',
       value: pendingSuppliers.length.toString(),
-      delta: "Requires review",
-      action: "To view the full report",
-      icon: "/icons/pending-approvals.svg",
-      href: "/admin/suppliers",
+      action: 'לצפייה בדוח מלא',
+      icon: '/icons/pending-approvals.svg',
+      href: '/admin/suppliers',
     },
     {
-      title: "Active users",
+      title: 'משתמשים פעילים',
       value: allUsers.length.toLocaleString(),
-      delta: "Registered accounts",
-      action: "View user list",
-      icon: "/icons/active-users.svg",
-      href: "/admin/dashboard",
+      delta: 'חשבונות רשומים',
+      action: 'ייצוא לאקסל',
+      icon: '/icons/active-users.svg',
+      href: '/admin/dashboard',
     },
   ];
 
@@ -117,27 +78,27 @@ export default function AdminPage() {
   };
 
   const onQuickAction = (action: string) => {
-    if (action === "Add a provider") {
-      router.push("/admin/suppliers");
+    if (action === 'הוספת ספק') {
+      router.push('/admin/suppliers');
       return;
     }
-    if (action === "AI chat management") {
-      router.push("/admin/dashboard?tab=ai");
+    if (action === "ניהול צ'אט AI") {
+      router.push('/admin/dashboard?tab=ai');
       return;
     }
-    if (action === "Adding a concept page") {
-      router.push("/admin/concepts/add");
+    if (action === 'הוספת דף קונספט') {
+      router.push('/admin/concepts/add');
       return;
     }
-    if (action === "Premium package management") {
-      router.push("/admin/premium-packages");
+    if (action === 'ניהול חבילות פרימיום') {
+      router.push('/admin/premium-packages');
       return;
     }
-    if (action === "I added products to the store.") {
-      router.push("/admin/store/products/add");
+    if (action === 'הוספת מוצרים לחנות') {
+      router.push('/admin/store/products/add');
       return;
     }
-    router.push("/admin");
+    router.push('/admin');
   };
 
   return (
@@ -153,13 +114,15 @@ export default function AdminPage() {
             <div className="relative w-full max-w-[288px]">
               <input
                 className="h-[42px] w-full rounded-xl border border-white/20 bg-black/5 px-4 pr-10 text-right text-sm"
-                placeholder="Search for suppliers or events..."
+                placeholder="חפש ספקים או אירועים..."
               />
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-lg">⌕</span>
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
+                <Image src="/icons/search.svg" alt="search" width={18} height={18} />
+              </span>
             </div>
             <div className="text-right">
-              <h1 className="text-3xl leading-tight text-black sm:text-[40px] sm:leading-10">Good morning, Omri and Nimrod</h1>
-              <p className="mt-1 text-sm text-black">Here&apos;s what&apos;s happening on your event platform today.</p>
+              <h1 className="text-3xl leading-tight font-semibold text-black sm:text-[40px] sm:leading-10">בוקר טוב, עומרי ונמרוד</h1>
+              <p className="mt-1 text-sm text-black">הנה מה שקורה בפלטפורמת האירועים שלך היום.</p>
             </div>
           </div>
 
@@ -174,15 +137,15 @@ export default function AdminPage() {
                     <Image src={card.icon} alt="" width={22} height={16} />
                   </span>
                   <div className="text-right">
-                    <p className="text-sm leading-5 text-black">{card.title}</p>
-                    <p className="text-3xl leading-tight text-black sm:text-[42px] sm:leading-10">{card.value}</p>
+                    <p className="text-sm leading-5 font-semibold text-black">{card.title}</p>
+                    <p className="text-3xl leading-tight font-bold text-black sm:text-[42px] sm:leading-10">{card.value}</p>
                   </div>
                 </div>
                 {card.delta ? <p className="mt-2 text-right text-sm text-black">{card.delta}</p> : null}
                 <button
                   type="button"
                   onClick={() => onCardAction(card.href)}
-                  className="mt-2 inline-flex cursor-pointer flex-row-reverse items-center gap-2 text-sm text-[#0061A7]"
+                  className="mt-2 inline-flex cursor-pointer flex-row-reverse items-center gap-2 text-sm font-bold text-[#0061A7]"
                 >
                   <span aria-hidden>←</span>
                   {card.action}
@@ -191,49 +154,49 @@ export default function AdminPage() {
             ))}
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-[0.72fr_1.28fr]">
-          <section
+          <div className="grid gap-6 lg:grid-cols-2">
+            <section
               className="rounded-xl border border-[#4721DF] bg-[#D3E2F5] p-6 shadow-[0px_0px_20px_rgba(91,33,182,0.3)]"
               dir="ltr"
             >
               <div className="flex items-center justify-between gap-4 text-[#0061A7]">
-                <span className="text-sm">Monthly / Annual</span>
-                <div className="flex items-center gap-2 text-sm">
-                  <span>Search for a provider by name</span>
-                  <span aria-hidden>⌕</span>
-                </div>
-                <h2 className="text-right text-[28px] text-[#201C44]">Supplier data</h2>
+                  <span className="text-sm font-semibold">חודשי / שנתי</span>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="font-semibold">חפש ספק לפי שם</span>
+                    <Image src="/icons/search.svg" alt="search" width={18} height={18} className="inline-block" />
+                  </div>
+                  <h2 className="text-right text-[28px] font-semibold text-[#201C44]">נתוני ספקים</h2>
               </div>
               <div className="mt-6 space-y-6">
                 {SUPPLIER_METRICS.map((row) => (
                   <div key={row.metric} className="flex items-center justify-between gap-4">
-                    <span className="inline-flex size-10 items-center justify-center rounded-xl bg-[#6AB7FF]">
+                    <div className="flex flex-1 items-center justify-between gap-4 text-[#201C44]">
+                      <span className="w-20 text-center text-sm">{row.month}</span>
+                      <span className="min-w-0 flex-1 text-center text-base">{row.total}</span>
+                      <span className="text-sm">{row.metric}</span>
+                        <span className="inline-flex size-10 items-center justify-center rounded-xl bg-[#6AB7FF]">
                       <Image src={row.icon} alt="" width={20} height={20} />
                     </span>
-                    <div className="flex flex-1 items-center justify-between gap-4 text-[#201C44]">
-                      <span className="w-20 text-left text-sm">{row.month}</span>
-                      <span className="min-w-0 flex-1 text-center text-base">{row.total}</span>
-                      <span className="w-52 text-right text-sm">{row.metric}</span>
                     </div>
                   </div>
                 ))}
               </div>
             </section>
-            <section className="rounded-xl border border-[#4721DF] bg-[#D3E2F5] p-6 shadow-[0px_0px_20px_rgba(91,33,182,0.3)]">
-              <h2 className="text-right text-[28px] text-[#201C44]">Quick Actions Area</h2>
+            <section className="font-bold rounded-xl border border-[#4721DF] bg-[#D3E2F5] p-6 shadow-[0px_0px_20px_rgba(91,33,182,0.3)]">
+              <h2 className="text-right text-[28px] text-[#201C44]">אזור פעולות מהירות</h2>
               <div className="mt-6 grid gap-6 sm:grid-cols-2">
                 {[
-                  "Premium package management",
-                  "Add a provider",
-                  "AI chat management",
-                  "Adding a concept page",
-                  "I added products to the store.",
+                  "הוספת ספק",
+                  "ניהול חבילות פרימיום",
+                  "הוספת דף קונספט",
+                  "ניהול צ'אט AI",
+                  "הוספת מוצרים לחנות",
                 ].map((item) => (
                   <button
                     key={item}
                     type="button"
                     onClick={() => onQuickAction(item)}
-                    className="h-[61px] cursor-pointer rounded-[99px] border-2 border-[#201C44] px-5 text-sm text-[#201C44]"
+                    className="h-[61px] cursor-pointer rounded-[99px] border-2 border-[#201C44] px-5 text-sm font-bold text-[#201C44]"
                   >
                     {item}
                   </button>
@@ -243,94 +206,94 @@ export default function AdminPage() {
           </div>
 
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-          <section className="overflow-hidden rounded-2xl border border-white/20 bg-white/5 backdrop-blur-[6px]">
+            <section className="overflow-hidden rounded-2xl border border-white/20 bg-white/5 backdrop-blur-[6px]">
               <div className="flex flex-row-reverse items-center justify-between border-b border-black/10 px-6 py-5">
                 <button
                   type="button"
-                  onClick={() => router.push("/admin/suppliers")}
-                  className="cursor-pointer text-sm text-[#201C44]"
+                  onClick={() => router.push('/admin/suppliers')}
+                  className="cursor-pointer text-sm font-semibold text-[#201C44]"
                 >
-                  Show all
+                  הצג הכל
                 </button>
                 <div className="text-right">
-                  <h3 className="text-[28px] leading-7 text-black">Pending approvals</h3>
-                  <p className="text-sm text-black">New suppliers who have joined and are awaiting review</p>
+                  <h3 className="text-[28px] leading-7 font-semibold text-black">אישורים ממתינים</h3>
+                  <p className="text-sm text-black">ספקים חדשים שהצטרפו וממתינים לבדיקה</p>
                 </div>
               </div>
               <div className="overflow-x-auto">
-              <table className="w-full min-w-[720px] text-right text-sm">
-                <thead className="bg-black/5 text-[#5A5A5A]">
-                  <tr>
-                    <th className="px-4 py-3">Supplier name</th>
-                    <th className="px-4 py-3">category</th>
-                    <th className="px-4 py-3">Joining date</th>
-                    <th className="px-4 py-3">To view details</th>
-                    <th className="px-4 py-3">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loadingPending ? (
+                <table className="w-full min-w-[720px] text-right text-sm">
+                  <thead className="bg-black/5 text-[#5A5A5A]">
                     <tr>
-                      <td colSpan={5} className="py-12 text-center text-sm text-[#444650]">Loading pending reviews...</td>
+                      <th className="px-4 py-3 font-semibold">שם ספק</th>
+                      <th className="px-4 py-3 font-semibold">קטגוריה</th>
+                      <th className="px-4 py-3 font-semibold">תאריך הצטרפות</th>
+                      <th className="px-4 py-3 font-semibold">לצפייה בפרטים</th>
+                      <th className="px-4 py-3 font-semibold">פעולות</th>
                     </tr>
-                  ) : pendingSuppliers.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="py-12 text-center text-sm text-[#444650]">No suppliers awaiting review.</td>
-                    </tr>
-                  ) : (
-                    pendingSuppliers.map((row) => (
-                      <tr key={row.id} className="border-t border-black/10">
-                        <td className="px-4 py-4">{row.businessName}</td>
-                        <td className="px-4 py-4">General</td>
-                        <td className="px-4 py-4">—</td>
-                        <td className="px-4 py-4">
-                          <button
-                            type="button"
-                            onClick={() => router.push(`/marketplace/${row.id}`)}
-                            className="cursor-pointer rounded-full bg-[#6AB7FF] px-3 py-1 text-xs text-[#201C44]"
-                          >
-                            To watch
-                          </button>
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="flex justify-end gap-2">
-                            <button
-                              type="button"
-                              onClick={() => approveSupplier(row.id)}
-                              className="cursor-pointer rounded-lg bg-[#201C44] px-3 py-1 text-xs text-white transition hover:bg-[#151238]"
-                            >
-                              Approval
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setRejectingId(row.id)}
-                              className="cursor-pointer rounded-lg border border-rose-200 bg-white px-3 py-1 text-xs text-rose-700 transition hover:bg-rose-50"
-                            >
-                              Rejection
-                            </button>
-                          </div>
-                        </td>
+                  </thead>
+                  <tbody>
+                    {loadingPending ? (
+                      <tr>
+                        <td colSpan={5} className="py-12 text-center text-sm text-[#444650]">טוען ביקורות ממתינות…</td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : pendingSuppliers.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="py-12 text-center text-sm text-[#444650]">אין ספקים הממתינים לבדיקה.</td>
+                      </tr>
+                    ) : (
+                      pendingSuppliers.map((row) => (
+                        <tr key={row.id} className="border-t border-black/10">
+                          <td className="px-4 py-4">{row.businessName}</td>
+                          <td className="px-4 py-4">כללי</td>
+                          <td className="px-4 py-4">—</td>
+                          <td className="px-4 py-4">
+                            <button
+                              type="button"
+                              onClick={() => router.push(`/marketplace/${row.id}`)}
+                              className="cursor-pointer rounded-full bg-[#6AB7FF] px-3 py-1 text-xs text-[#201C44]"
+                            >
+                              לצפייה
+                            </button>
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="flex justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => approveSupplier(row.id)}
+                                className="cursor-pointer rounded-lg bg-[#201C44] px-3 py-1 text-xs text-white transition hover:bg-[#151238]"
+                              >
+                                אישור
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setRejectingId(row.id)}
+                                className="cursor-pointer rounded-lg border border-rose-200 bg-white px-3 py-1 text-xs text-rose-700 transition hover:bg-rose-50"
+                              >
+                                דחייה
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
             </section>
             <section className="w-full rounded-2xl border border-white/20 bg-white/5 p-5 backdrop-blur-[6px] lg:w-[360px]">
-              <div className="text-right">
-                <h3 className="text-[24px] leading-7 text-black">Platform growth</h3>
-                <p className="mt-1 text-sm text-black">Monthly activity tracking</p>
+              <div className="text-right mb-12">
+                  <h3 className="text-[24px] leading-7 font-semibold text-black">צמיחת הפלטפורמה</h3>
+                  <p className="text-sm text-black">מעקב חודשי אחר פעילות</p>
               </div>
 
               <div className="mt-5">
                 <div className="flex h-[82px] items-end justify-between gap-2 px-1">
                   {[
-                    { month: "MAY", outer: "h-[95px]", inner: "h-[79px]", innerColor: "bg-[#201C44]" },
-                    { month: "APRIL", outer: "h-[63px]", inner: "h-[32px]", innerColor: "bg-[#4721DF]" },
-                    { month: "MARCH", outer: "h-[71px]", inner: "h-[57px]", innerColor: "bg-[#4721DF]" },
-                    { month: "FEBRUARY", outer: "h-[38px]", inner: "h-[25px]", innerColor: "bg-[#4721DF]" },
-                    { month: "JANUARY", outer: "h-[24px]", inner: "h-[12px]", innerColor: "bg-[#4721DF]" },
+                    { month: 'מאי', outer: 'h-[95px]', inner: 'h-[79px]', innerColor: 'bg-[#201C44]' },
+                    { month: 'אפריל', outer: 'h-[63px]', inner: 'h-[32px]', innerColor: 'bg-[#4721DF]' },
+                    { month: 'מרץ', outer: 'h-[71px]', inner: 'h-[57px]', innerColor: 'bg-[#4721DF]' },
+                    { month: 'פברואר', outer: 'h-[38px]', inner: 'h-[25px]', innerColor: 'bg-[#4721DF]' },
+                    { month: 'ינואר', outer: 'h-[24px]', inner: 'h-[12px]', innerColor: 'bg-[#4721DF]' },
                   ].map((bar) => (
                     <div key={bar.month} className="flex w-full flex-col items-center gap-1.5">
                       <div className={`relative w-full min-w-[36px] rounded-t-[8px] bg-[rgba(91,33,182,0.2)] ${bar.outer}`}>
@@ -344,16 +307,16 @@ export default function AdminPage() {
 
               <div className="mt-4 space-y-3">
                 {[
-                  { value: "45+", label: "New suppliers", dot: "bg-[#201C44] shadow-[0px_1px_2px_#EC5B13]" },
-                  { value: "1,240+", label: "New users", dot: "bg-[#4721DF] shadow-[0px_1px_2px_#5B21B6]" },
-                  { value: "892+", label: "Completed events", dot: "bg-[#201C44] shadow-[0px_1px_2px_#FBBF24]" },
+                  { value: '45+', label: 'ספקים חדשים', dot: 'bg-[#201C44] shadow-[0px_1px_2px_#EC5B13]' },
+                  { value: '1,240+', label: 'משתמשים חדשים', dot: 'bg-[#4721DF] shadow-[0px_1px_2px_#5B21B6]' },
+                  { value: '892+', label: 'אירועים שהושלמו', dot: 'bg-[#201C44] shadow-[0px_1px_2px_#FBBF24]' },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <span className={`size-2 rounded-full ${item.dot}`} />
                       <span className="text-sm text-black">{item.label}</span>
                     </div>
-                    <span dir="ltr" className="text-4 font-bold text-black" style={{ unicodeBidi: "isolate" }}>
+                    <span dir="ltr" className="text-4 font-bold text-black" style={{ unicodeBidi: 'isolate' }}>
                       {item.value}
                     </span>
                   </div>
@@ -362,54 +325,52 @@ export default function AdminPage() {
 
               <button
                 type="button"
-                onClick={() => router.push("/admin/suppliers")}
-                className="mt-6 h-[46px] w-full rounded-xl border border-white/20 bg-black/5 text-sm text-black"
+                onClick={() => router.push('/admin/suppliers')}
+                className="mt-6 h-[46px] w-full rounded-xl border border-white/20 bg-black/5 text-sm font-semibold text-black"
               >
-                Detailed activity report
+                דוח פעילות מפורט
               </button>
             </section>
-
           </div>
         </div>
 
         {rejectingId && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
             <div className="w-full max-w-[400px] rounded-2xl bg-white p-6 shadow-xl">
-              <h3 className="text-lg font-semibold text-[#1E1B4B]">Reject Supplier</h3>
+              <h3 className="text-lg font-semibold text-[#1E1B4B]">דחיית ספק</h3>
               <textarea
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
-                placeholder="Reason (optional)"
+                placeholder="סיבה (אופציונלי)"
                 rows={3}
                 className="mt-3 w-full rounded-xl border border-[#E2E8F0] px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#3B82F6]/30"
               />
               <div className="mt-4 flex justify-end gap-2">
                 <button
-                  onClick={() => { setRejectingId(null); setRejectReason(""); }}
-                  className="rounded-lg border border-[#E2E8F0] px-4 py-2 text-sm text-[#64748B]"
+                  onClick={() => { setRejectingId(null); setRejectReason(''); }}
+                  className="rounded-lg border border-[#E2E8F0] px-4 py-2 text-sm font-semibold text-[#64748B]"
                 >
-                  Cancel
+                  ביטול
                 </button>
                 <button
                   onClick={() => {
                     rejectSupplier({
-                      id: rejectingId,
+                      id: rejectingId!,
                       reason: rejectReason || undefined,
                       adminUserId: sessionUser?.id,
                     });
                     setRejectingId(null);
-                    setRejectReason("");
+                    setRejectReason('');
                   }}
-                  className="rounded-lg bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700"
+                  className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
                 >
-                  Reject
+                  דחייה
                 </button>
               </div>
             </div>
           </div>
         )}
       </section>
-
     </ProtectedRoute>
   );
 }

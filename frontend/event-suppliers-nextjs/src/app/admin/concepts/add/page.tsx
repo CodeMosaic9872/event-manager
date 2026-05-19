@@ -316,8 +316,8 @@ export default function AdminAddConceptPage() {
             <div className={cardSurface}>
               <SectionTitle>Supplier selection</SectionTitle>
               <div className="relative mt-6">
-                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-lg text-[#64748B]" aria-hidden>
-                  ⌕
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#64748B]" aria-hidden>
+                  <Image src="/icons/search.svg" alt="search" width={18} height={18} />
                 </span>
                 <input
                   value={supplierQuery}
