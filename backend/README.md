@@ -17,6 +17,20 @@ NestJS + Prisma foundation for the event supplier marketplace backend.
 6. Start API:
    - `npm run start:dev`
 
+## API documentation (Swagger)
+
+- **Swagger UI:** `http://localhost:3001/docs` (uses `PORT` from `.env`, default `3001`)
+- Bearer auth: use an admin JWT from `/v1/auth/login` for `admin/*` routes.
+
+### Admin: add supplier (from UI)
+
+1. `POST /v1/admin/users/supplier` — create ACTIVE user with `SUPPLIER` role (409 if email/phone exists).
+2. `POST /v1/admin/suppliers` — create supplier row (`ownerUserId` from step 1).
+3. `PATCH /v1/admin/suppliers/:id/profile` — categories, labels, social links, address, etc.
+4. `POST /v1/supplier/media/upload/gallery` — multipart `files` + `supplierId` + `mediaType=gallery` (admin Bearer supported).
+
+See [frontend docs](../frontend/event-suppliers-nextjs/docs/admin-supplier-onboarding.md) for RTK hook names and field mapping.
+
 ## Endpoints
 
 - `GET /v1/health`

@@ -1,11 +1,46 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
+import { SmsService } from '../../sms/sms.service';
 import { toAdminPagination } from '../common/admin-pagination.util';
 
 @Injectable()
 export class AdminUsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly smsService: SmsService,
+  ) {}
+
+  async createSupplierUser(payload: { email: string; phone: string }) {
+    const email = payload.email.trim().toLowerCase();
+    const phone = this.smsService.normalizeIsraeliMobile(payload.phone);
+
+    const existingByEmail = await this.prisma.user.findUnique({ where: { email } });
+    const existingByPhone = await this.prisma.user.findUnique({ where: { phone } });
+
+    if (existingByEmail || existingByPhone) {
+      throw new ConflictException('User already exists');
+    }
+
+    const created = await this.prisma.user.create({
+      data: {
+        email,
+        phone,
+        status: 'ACTIVE',
+        roles: { create: [{ role: 'SUPPLIER' }] },
+      },
+      include: { roles: true },
+    });
+
+    return {
+      id: created.id,
+      email: created.email!,
+      phone: created.phone!,
+      status: created.status,
+      roles: created.roles.map((r) => r.role),
+      createdAt: created.createdAt.toISOString(),
+    };
+  }
 
   async listUsers(page?: number, limit?: number) {
     const pg = toAdminPagination(page, limit);

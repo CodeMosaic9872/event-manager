@@ -84,19 +84,62 @@ export type CreateMediaUploadUrlPayload = { fileName: string; contentType: strin
 export type CreateMediaUploadUrlResponse = { uploadUrl: string; key: string; publicUrl?: string };
 export type CompleteMediaUploadPayload = { key: string; mediaType: string; sortOrder?: number };
 export type CompleteMediaUploadResponse = { id: string; url: string; mediaType: string };
+export type SupplierCategoryAssignment = {
+  categoryId: string;
+  subcategoryId?: string | null;
+};
+
 export type UpsertSupplierProfilePayload = {
   businessName: string;
   slug: string;
   description?: string;
+  email?: string;
   phone?: string;
   website?: string;
   socialLinks?: SocialLink[];
   subcategories?: string[];
+  categories?: SupplierCategoryAssignment[];
   serviceAreas?: string[];
   labelsRules?: string[];
   labelsNiche?: string[];
   address?: string;
   extraLanguage?: string;
+  gallery?: string[];
+};
+
+export type CreateAdminSupplierUserPayload = {
+  email: string;
+  phone: string;
+};
+
+export type AdminSupplierUserCreated = {
+  id: string;
+  email: string;
+  phone: string;
+  status: string;
+  roles: string[];
+  createdAt: string;
+};
+
+export type CreateAdminSupplierPayload = {
+  ownerUserId: string;
+  businessName: string;
+  slug: string;
+  description?: string;
+  contactEmail?: string;
+  publicPhone?: string;
+  serviceAreas?: string[];
+  approvalStatus?: "DRAFT" | "PENDING" | "APPROVED" | "REJECTED";
+};
+
+export type AdminSupplierCrud = {
+  id: string;
+  ownerUserId: string;
+  businessName: string;
+  slug: string;
+  approvalStatus: string;
+  isActive: boolean;
+  isVerified: boolean;
 };
 export type SocialLink = { platform: string; url: string };
 export type ServiceAreaItem = { regionCode: string; cityCode?: string };

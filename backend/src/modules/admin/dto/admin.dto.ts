@@ -35,6 +35,25 @@ export class CreateAdminDto {
   phone!: string;
 }
 
+/** Body for `POST /v1/admin/users/supplier` — admin-provisioned supplier login (no OTP). */
+export class CreateAdminSupplierUserDto {
+  @ApiProperty({
+    description: 'Supplier login email (used later with /auth/login or OTP)',
+    example: 'supplier@example.co.il',
+  })
+  @IsEmail()
+  email!: string;
+
+  @ApiProperty({
+    description: 'Israeli mobile number (normalized server-side)',
+    example: '0501234567',
+  })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(32)
+  phone!: string;
+}
+
 export class ApproveSupplierDto {
   @ApiPropertyOptional({ description: 'Admin user id performing approval', example: 'usr_admin_123' })
   @IsOptional()

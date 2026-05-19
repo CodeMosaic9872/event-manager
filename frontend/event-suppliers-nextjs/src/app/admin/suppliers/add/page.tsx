@@ -1,17 +1,53 @@
 "use client";
 
 import Image from "next/image";
-import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
+import {
+  type Dispatch,
+  type SetStateAction,
+  ChangeEvent,
+  FormEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useRouter } from "next/navigation";
 import { MarketingModal } from "@/shared/components/marketing-modal";
 import { ProtectedRoute } from "@/shared/components/protected-route";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
 
 import {
+  useCreateAdminSupplierMutation,
+  useCreateAdminSupplierUserMutation,
   useGetCategoriesQuery,
   useGetSubcategoriesQuery,
+  useUpdateAdminSupplierProfileMutation,
   useUploadGalleryFilesMutation,
 } from "@/shared/api/api";
+import type {
+  SupplierCategoryAssignment,
+  UpsertSupplierProfilePayload,
+} from "@/shared/api/types";
+import {
+  EMAIL_PATTERN,
+  inputWithFieldError,
+  normalizeIsraeliMobileLocal,
+  validateAdminSupplierForm,
+} from "@/shared/lib/form-validation";
+import { HeAuth } from "@/shared/lib/he-ui";
+
+function extractApiErrorMessage(err: unknown, fallback: string): string {
+  if (err && typeof err === "object" && "data" in err) {
+    const data = (err as { data?: unknown }).data;
+    if (data && typeof data === "object") {
+      const message =
+        (data as { message?: string }).message ??
+        (data as { error?: { message?: string } }).error?.message;
+      if (typeof message === "string" && message.trim()) return message;
+    }
+  }
+  return fallback;
+}
 
 function SuccessBadgeCheckIcon() {
   return (
@@ -86,11 +122,25 @@ function toggleInSet(set: Set<string>, key: string, setter: (next: Set<string>) 
   setter(next);
 }
 
+function FieldError({ message }: { message?: string }) {
+  if (!message) return null;
+  return <p className="text-right text-xs leading-4 text-red-600">{message}</p>;
+}
+
+function clearFieldError(setter: Dispatch<SetStateAction<Record<string, string>>>, key: string) {
+  setter((prev) => {
+    if (!prev[key]) return prev;
+    const next = { ...prev };
+    delete next[key];
+    return next;
+  });
+}
+
 export default function AdminAddSupplierPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const { data: categoriesData = [] } = useGetCategoriesQuery();
-  const [uploadGallery] = useUploadGalleryFilesMutation();
+  const [uploadGallery, { isLoading: isUploadingGallery }] = useUploadGalleryFilesMutation();
 
   const [businessName, setBusinessName] = useState("");
   const [categoryId, setCategoryId] = useState("");
@@ -101,14 +151,10 @@ export default function AdminAddSupplierPage() {
 
   const { data: subcategoriesData = [] } = useGetSubcategoriesQuery(categoryId, { skip: !categoryId });
 
-  const [selectedAreas, setSelectedAreas] = useState<Set<string>>(() => new Set(["מרכז", "צפון"]));
+  const [selectedAreas, setSelectedAreas] = useState<Set<string>>(() => new Set());
   const [selectedSubcategoryIds, setSelectedSubcategoryIds] = useState<Set<string>>(() => new Set());
-  const [selectedRules, setSelectedRules] = useState<Set<string>>(
-    () => new Set(["מילואימניק", "ספק משרד הביטחון"]),
-  );
-  const [selectedNicheLabels, setSelectedNicheLabels] = useState<Set<string>>(
-    () => new Set(["קייטרינג בשרי", "קייטרינג חלבי"]),
-  );
+  const [selectedRules, setSelectedRules] = useState<Set<string>>(() => new Set());
+  const [selectedNicheLabels, setSelectedNicheLabels] = useState<Set<string>>(() => new Set());
   const [systemTime, setSystemTime] = useState("");
   const [language, setLanguage] = useState("");
   const [address, setAddress] = useState("");
@@ -122,15 +168,27 @@ export default function AdminAddSupplierPage() {
     facebook: "",
   });
 
-  const [uploadedGalleryImages, setUploadedGalleryImages] = useState<string[]>([]);
+  const [pendingGalleryFiles, setPendingGalleryFiles] = useState<File[]>([]);
+  const [galleryPreviewUrls, setGalleryPreviewUrls] = useState<string[]>([]);
+  const [galleryError, setGalleryError] = useState("");
   const [successOpen, setSuccessOpen] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+
+  const [createSupplierUser, { isLoading: isCreatingUser }] = useCreateAdminSupplierUserMutation();
+  const [createAdminSupplier, { isLoading: isCreatingSupplier }] = useCreateAdminSupplierMutation();
+  const [updateAdminProfile, { isLoading: isUpdatingProfile }] = useUpdateAdminSupplierProfileMutation();
+
+  const isSaving = isCreatingUser || isCreatingSupplier || isUpdatingProfile || isUploadingGallery;
 
   useEffect(() => {
     return () => {
-      for (const url of uploadedGalleryImages) URL.revokeObjectURL(url);
+      for (const url of galleryPreviewUrls) {
+        if (url.startsWith("blob:")) URL.revokeObjectURL(url);
+      }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [galleryPreviewUrls]);
 
   const inputClass =
     "h-11 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-right text-sm leading-5 text-black outline-none placeholder:text-black/60";
@@ -142,24 +200,146 @@ export default function AdminAddSupplierPage() {
   const labelClassNoTrack = "text-right text-base leading-5 font-bold text-black";
   const sectionLabelClass = "text-right text-base leading-5 font-bold text-black";
 
-  const galleryPick = async (e: ChangeEvent<HTMLInputElement>) => {
+  const liveEmailError = useMemo(() => {
+    const trimmed = email.trim();
+    if (!trimmed) return null;
+    if (!EMAIL_PATTERN.test(trimmed)) return HeAuth.validEmail;
+    return null;
+  }, [email]);
+
+  const livePhoneError = useMemo(() => {
+    const trimmed = phone.trim();
+    if (!trimmed) return null;
+    if (!normalizeIsraeliMobileLocal(trimmed)) {
+      return "מספר הטלפון חייב להיות 10 ספרות בפורמט ישראלי (05XXXXXXXX).";
+    }
+    return null;
+  }, [phone]);
+
+  const displayError = (key: string, live?: string | null) =>
+    fieldErrors[key] ?? (submitAttempted ? live : null) ?? undefined;
+
+  const galleryPick = (e: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
-    
-    try {
-      const response = await uploadGallery({ files }).unwrap();
-      const nextUrls = response.items.map((item) => item.url);
-      setUploadedGalleryImages((prev) => [...prev, ...nextUrls].slice(0, 12));
-    } catch (err) {
-      console.error("Gallery upload failed:", err);
+    setGalleryError("");
+
+    const room = Math.max(0, 12 - pendingGalleryFiles.length);
+    const toAdd = files.slice(0, room);
+    if (!toAdd.length) {
+      setGalleryError("ניתן להעלות עד 12 תמונות לגלריה.");
+      e.target.value = "";
+      return;
     }
-    
+
+    const previews = toAdd.map((file) => URL.createObjectURL(file));
+    setPendingGalleryFiles((prev) => [...prev, ...toAdd]);
+    setGalleryPreviewUrls((prev) => [...prev, ...previews]);
     e.target.value = "";
   };
 
-  const onSubmit = (e: FormEvent) => {
+  const removeGalleryAt = (index: number) => {
+    setPendingGalleryFiles((prev) => prev.filter((_, i) => i !== index));
+    setGalleryPreviewUrls((prev) => {
+      const url = prev[index];
+      if (url?.startsWith("blob:")) URL.revokeObjectURL(url);
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
+  const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setSuccessOpen(true);
+    setSubmitError("");
+    setGalleryError("");
+    setSubmitAttempted(true);
+
+    const validation = validateAdminSupplierForm({
+      businessName,
+      categoryId,
+      email,
+      phone,
+      description,
+      digitalLinks,
+    });
+
+    if (Object.keys(validation.fieldErrors).length > 0) {
+      setFieldErrors(validation.fieldErrors);
+      setSubmitError("נא לתקן את השדות המסומנים לפני השמירה.");
+      return;
+    }
+
+    setFieldErrors({});
+
+    const trimmedName = businessName.trim();
+    const trimmedEmail = email.trim();
+    const trimmedPhone = validation.normalizedPhone!;
+    const slug = validation.slug;
+    const socialLinks = Object.entries(digitalLinks)
+      .filter(([key, url]) => key !== "website" && url.trim())
+      .map(([platform, url]) => ({ platform, url: url.trim() }));
+
+    const categories: SupplierCategoryAssignment[] = Array.from(selectedSubcategoryIds).map(
+      (subcategoryId) => ({
+        categoryId,
+        subcategoryId,
+      }),
+    );
+    if (categories.length === 0 && categoryId) {
+      categories.push({ categoryId, subcategoryId: null });
+    }
+
+    const fullAddress = [address.trim(), centralLocation.trim()].filter(Boolean).join(", ") || undefined;
+    const serviceAreas = Array.from(selectedAreas);
+
+    const profilePayload: UpsertSupplierProfilePayload = {
+      businessName: trimmedName,
+      slug,
+      description: description.trim() || undefined,
+      email: trimmedEmail,
+      phone: trimmedPhone,
+      website: digitalLinks.website.trim() || undefined,
+      socialLinks: socialLinks.length > 0 ? socialLinks : undefined,
+      categories,
+      serviceAreas,
+      labelsRules: Array.from(selectedRules),
+      labelsNiche: Array.from(selectedNicheLabels),
+      address: fullAddress,
+      extraLanguage: language || undefined,
+    };
+
+    try {
+      const user = await createSupplierUser({ email: trimmedEmail, phone: trimmedPhone }).unwrap();
+
+      const supplier = await createAdminSupplier({
+        ownerUserId: user.id,
+        businessName: trimmedName,
+        slug,
+        description: description.trim() || undefined,
+        contactEmail: trimmedEmail,
+        publicPhone: trimmedPhone,
+        serviceAreas,
+        approvalStatus: "DRAFT",
+      }).unwrap();
+
+      await updateAdminProfile({ supplierId: supplier.id, body: profilePayload }).unwrap();
+
+      if (pendingGalleryFiles.length > 0) {
+        await uploadGallery({
+          files: pendingGalleryFiles,
+          supplierId: supplier.id,
+          mediaType: "gallery",
+        }).unwrap();
+      }
+
+      setSuccessOpen(true);
+    } catch (err) {
+      const msg = extractApiErrorMessage(err, "השמירה נכשלה. נסה שוב.");
+      if (msg.toLowerCase().includes("already exists") || msg.includes("כבר קיים")) {
+        setSubmitError("משתמש עם אימייל או טלפון זה כבר קיים במערכת.");
+      } else {
+        setSubmitError(msg);
+      }
+    }
   };
 
   const breadcrumbClass = "text-xs leading-4 tracking-[1.2px] uppercase";
@@ -174,7 +354,7 @@ export default function AdminAddSupplierPage() {
 
         <div className="relative z-10 mx-auto w-full max-w-[988px]">
           {/* Breadcrumb + Title */}
-          <div className="mb-6 flex flex-col items-end gap-0">
+          <div className="mb-6 flex flex-col gap-0">
             <div className={`flex items-center gap-[6px] ${breadcrumbClass}`}>
               <span className="text-[#00113A] font-bold">הוספת ספק</span>
               <span className="text-[#757682]">›</span>
@@ -199,10 +379,19 @@ export default function AdminAddSupplierPage() {
               </label>
               <input
                 value={businessName}
-                onChange={(ev) => setBusinessName(ev.target.value)}
+                onChange={(ev) => {
+                  setBusinessName(ev.target.value);
+                  clearFieldError(setFieldErrors, "businessName");
+                }}
                 placeholder="לדוגמה: קייטרינג גורמה יוקרתי"
-                className="h-11 w-full rounded-2xl bg-white px-3 py-[13px] text-right text-sm leading-[21px] text-black outline-none placeholder:text-black/60"
+                maxLength={120}
+                aria-invalid={Boolean(displayError("businessName"))}
+                className={inputWithFieldError(
+                  "h-11 w-full rounded-2xl border border-black/10 bg-white px-3 py-[13px] text-right text-sm leading-[21px] text-black outline-none placeholder:text-black/60",
+                  displayError("businessName"),
+                )}
               />
+              <FieldError message={displayError("businessName")} />
             </div>
 
             {/* Row 2: Category + Location side by side */}
@@ -214,8 +403,15 @@ export default function AdminAddSupplierPage() {
                 <div className="relative">
                   <select
                     value={categoryId}
-                    onChange={(ev) => setCategoryId(ev.target.value)}
-                    className="h-11 w-full appearance-none rounded-2xl border border-black/10 bg-white px-3 py-[13px] text-right text-sm leading-5 text-[#191C1D] outline-none"
+                    onChange={(ev) => {
+                      setCategoryId(ev.target.value);
+                      clearFieldError(setFieldErrors, "categoryId");
+                    }}
+                    aria-invalid={Boolean(displayError("categoryId"))}
+                    className={inputWithFieldError(
+                      "h-11 w-full appearance-none rounded-2xl border border-black/10 bg-white px-3 py-[13px] text-right text-sm leading-5 text-[#191C1D] outline-none",
+                      displayError("categoryId"),
+                    )}
                   >
                     <option value="">הזן קטגוריה</option>
                     {categoriesData.map((c) => (
@@ -228,6 +424,7 @@ export default function AdminAddSupplierPage() {
                     ▾
                   </span>
                 </div>
+                <FieldError message={displayError("categoryId")} />
               </div>
 
               <div className="flex flex-col gap-2">
@@ -251,13 +448,21 @@ export default function AdminAddSupplierPage() {
                 </label>
                 <input
                   value={email}
-                  onChange={(ev) => setEmail(ev.target.value)}
+                  onChange={(ev) => {
+                    setEmail(ev.target.value);
+                    clearFieldError(setFieldErrors, "email");
+                  }}
                   placeholder="name@gmail.com"
-                  className="h-11 w-full rounded-2xl border border-black/10 bg-white px-3 py-[13px] text-right text-sm leading-[17px] text-black outline-none placeholder:text-black/60"
+                  aria-invalid={Boolean(displayError("email", liveEmailError))}
+                  className={inputWithFieldError(
+                    "h-11 w-full rounded-2xl border border-black/10 bg-white px-3 py-[13px] text-right text-sm leading-[17px] text-black outline-none placeholder:text-black/60",
+                    displayError("email", liveEmailError),
+                  )}
                   dir="ltr"
                   inputMode="email"
                   autoComplete="email"
                 />
+                <FieldError message={displayError("email", liveEmailError)} />
               </div>
 
               <div className="flex flex-col gap-2">
@@ -266,12 +471,23 @@ export default function AdminAddSupplierPage() {
                 </label>
                 <input
                   value={phone}
-                  onChange={(ev) => setPhone(ev.target.value)}
-                  placeholder="050-0000000"
-                  className="h-11 w-full rounded-2xl border border-black/10 bg-white px-3 py-[13px] text-right text-sm leading-[17px] text-black outline-none placeholder:text-black/60"
+                  onChange={(ev) => {
+                    const digits = ev.target.value.replace(/\D/g, "").slice(0, 10);
+                    setPhone(digits);
+                    clearFieldError(setFieldErrors, "phone");
+                  }}
+                  placeholder="0501234567"
+                  maxLength={10}
+                  aria-invalid={Boolean(displayError("phone", livePhoneError))}
+                  className={inputWithFieldError(
+                    "h-11 w-full rounded-2xl border border-black/10 bg-white px-3 py-[13px] text-right text-sm leading-[17px] text-black outline-none placeholder:text-black/60",
+                    displayError("phone", livePhoneError),
+                  )}
                   dir="ltr"
                   inputMode="tel"
+                  autoComplete="tel"
                 />
+                <FieldError message={displayError("phone", livePhoneError)} />
               </div>
             </div>
 
@@ -283,14 +499,20 @@ export default function AdminAddSupplierPage() {
               <div className="relative">
                 <textarea
                   value={description}
-                  onChange={(ev) => setDescription(ev.target.value)}
+                  onChange={(ev) => {
+                    setDescription(ev.target.value.slice(0, 500));
+                    clearFieldError(setFieldErrors, "description");
+                  }}
                   placeholder="תאר/י את השירות שלך, מה מייחד אותך ומה הלקוחות יקבלו..."
-                  className={textareaClass}
+                  maxLength={500}
+                  aria-invalid={Boolean(displayError("description"))}
+                  className={inputWithFieldError(textareaClass, displayError("description"))}
                 />
                 <span className="absolute bottom-3 left-3 text-[10px] leading-[15px] text-black">
                   {description.length} / 500
                 </span>
               </div>
+              <FieldError message={displayError("description")} />
             </div>
 
             {/* Subcategories */}
@@ -345,19 +567,27 @@ export default function AdminAddSupplierPage() {
                     { key: "facebook" as const, label: "קישור לפייסבוק" },
                   ] as const
                 ).map((f) => (
-                  <div key={f.key} className="relative">
-                    <input
-                      value={digitalLinks[f.key]}
-                      onChange={(ev) =>
-                        setDigitalLinks((prev) => ({ ...prev, [f.key]: ev.target.value }))
-                      }
-                      placeholder={f.label}
-                      className={socialInputClass}
-                      dir="ltr"
-                    />
-                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2" aria-hidden>
-                      <Image src={`/icons/attach_file.svg`} alt="" width={16} height={16} />
-                    </span>
+                  <div key={f.key} className="flex flex-col gap-1">
+                    <div className="relative">
+                      <input
+                        value={digitalLinks[f.key]}
+                        onChange={(ev) => {
+                          setDigitalLinks((prev) => ({ ...prev, [f.key]: ev.target.value }));
+                          clearFieldError(setFieldErrors, `link_${f.key}`);
+                        }}
+                        placeholder={f.label}
+                        aria-invalid={Boolean(displayError(`link_${f.key}`))}
+                        className={inputWithFieldError(
+                          socialInputClass,
+                          displayError(`link_${f.key}`),
+                        )}
+                        dir="ltr"
+                      />
+                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2" aria-hidden>
+                        <Image src={`/icons/attach_file.svg`} alt="" width={16} height={16} />
+                      </span>
+                    </div>
+                    <FieldError message={displayError(`link_${f.key}`)} />
                   </div>
                 ))}
               </div>
@@ -481,63 +711,60 @@ export default function AdminAddSupplierPage() {
                   <span className="text-sm leading-5 font-bold">הוסף תמונה</span>
                 </button>
 
-                {["/avatars/1.jpg", "/avatars/2.jpg"].map((src, i) => (
+                {galleryPreviewUrls.map((src, i) => (
                   <div
-                    key={src}
+                    key={`${src}-${i}`}
                     className="relative aspect-square min-h-30 overflow-hidden rounded-2xl border border-[#F1F5F9] bg-slate-100 sm:min-h-36 lg:min-h-0"
-                  >
-                    <Image
-                      src={src}
-                      alt=""
-                      fill
-                      sizes="(max-width:640px) 45vw, (max-width:1024px) 30vw, 200px"
-                      className="object-cover"
-                      unoptimized
-                    />
-                    {i === 0 && uploadedGalleryImages.length === 0 ? (
-                      <span className="absolute right-3 top-3 rounded-lg bg-[#3B82F6] px-2 py-1 text-[10px] leading-[15px] font-bold text-white font-assistant">
-                        תמונת פרופיל ראשית
-                      </span>
-                    ) : null}
-                  </div>
-                ))}
-                {uploadedGalleryImages.slice(0, 2).map((src) => (
-                  <div
-                    key={src}
-                    className="relative aspect-square min-h-30 overflow-hidden rounded-2xl border-4 border-[#3B82F6] bg-slate-100 shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1)] sm:min-h-36 lg:min-h-0"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={src} alt="" className="h-full w-full object-cover" />
-                    <span className="absolute right-3 top-3 rounded-lg bg-[#3B82F6] px-2 py-1 text-[10px] leading-[15px] font-bold text-white">
-                      תמונת פרופיל ראשית
-                    </span>
+                    {i === 0 ? (
+                      <span className="absolute right-3 top-3 rounded-lg bg-[#3B82F6] px-2 py-1 text-[10px] leading-[15px] font-bold text-white">
+                        תמונת פרופיל ראשית
+                      </span>
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={() => removeGalleryAt(i)}
+                      className="absolute left-2 top-2 flex size-7 items-center justify-center rounded-full bg-black/60 text-sm text-white"
+                      aria-label="הסר תמונה"
+                    >
+                      ×
+                    </button>
                   </div>
                 ))}
               </div>
             </section>
 
             {/* Bottom Buttons */}
-            <div className="mt-10 flex flex-col-reverse items-center justify-center gap-[18px] sm:flex-row sm:gap-[18px]">
-              <button
-                type="submit"
-                className="w-full cursor-pointer rounded-[99px] bg-[linear-gradient(90deg,#00113A_0%,#002366_100%)] px-10 py-[13px] text-base leading-6 font-bold text-white sm:w-auto"
-              >
-                שמור ספק
-              </button>
-              <button
-                type="button"
-                onClick={() => router.push("/admin/suppliers/registration-payment")}
-                className="w-full cursor-pointer rounded-[99px] bg-[#201C44] px-10 py-[13px] text-base leading-6 font-bold text-white sm:w-auto"
-              >
-                הכנסת אמצעי תשלום
-              </button>
-              <button
-                type="button"
-                onClick={() => router.push("/admin/suppliers")}
-                className="w-full cursor-pointer rounded-[99px] border border-[#C5C6D2] px-8 py-[13px] text-base leading-6 font-normal text-[#00113A] sm:w-auto"
-              >
-                ביטול
-              </button>
+            <div className="mt-10 flex flex-col items-center gap-4">
+              {galleryError ? <p className="text-sm text-red-600">{galleryError}</p> : null}
+              {submitError ? (
+                <p className="text-sm text-red-600">{submitError}</p>
+              ) : null}
+              <div className="flex flex-col-reverse items-center justify-center gap-[18px] sm:flex-row sm:gap-[18px]">
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="w-full cursor-pointer rounded-[99px] bg-[linear-gradient(90deg,#00113A_0%,#002366_100%)] px-10 py-[13px] text-base leading-6 font-bold text-white disabled:opacity-60 sm:w-auto"
+                >
+                  {isSaving ? "שומר..." : "שמור ספק"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => router.push("/admin/suppliers/registration-payment")}
+                  className="w-full cursor-pointer rounded-[99px] bg-[#201C44] px-10 py-[13px] text-base leading-6 font-bold text-white sm:w-auto"
+                >
+                  הכנסת אמצעי תשלום
+                </button>
+                <button
+                  type="button"
+                  onClick={() => router.push("/admin/suppliers")}
+                  className="w-full cursor-pointer rounded-[99px] border border-[#C5C6D2] px-8 py-[13px] text-base leading-6 font-normal text-[#00113A] sm:w-auto"
+                >
+                  ביטול
+                </button>
+              </div>
             </div>
           </form>
         </div>
@@ -555,7 +782,7 @@ export default function AdminAddSupplierPage() {
             role="dialog"
             aria-modal
             aria-labelledby="admin-add-supplier-success-title"
-            className="relative w-full max-w-2xl rounded-[24px] border border-[rgba(134,85,246,0.2)] bg-[#EBF2FA] p-6 text-center shadow-[0px_8px_32px_rgba(0,0,0,0.37)] backdrop-blur-[6px] sm:p-8"
+            className="relative w-full max-w-2xl rounded-[24px] border border-[rgba(134,85,246,0.2)] bg-[#EBF2FA] p-6 text-center shadow-[0px_8px_32px_rgba(0,0,0,0.1)] backdrop-blur-[6px] sm:p-8"
             style={{ fontFamily: marketingPloniFont }}
           >
             <button

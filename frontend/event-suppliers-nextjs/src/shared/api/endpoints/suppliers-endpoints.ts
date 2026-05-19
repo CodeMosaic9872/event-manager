@@ -123,11 +123,16 @@ export function createSuppliersEndpoints(builder: EndpointBuilder<any, any, any>
         return response as CompleteMediaUploadResponse;
       },
     }),
-    uploadGalleryFiles: builder.mutation<UploadGalleryResponse, { files: File[]; sortOrder?: number }>({
-      query: ({ files, sortOrder }) => {
+    uploadGalleryFiles: builder.mutation<
+      UploadGalleryResponse,
+      { files: File[]; supplierId?: string; sortOrder?: number; mediaType?: string }
+    >({
+      query: ({ files, supplierId, sortOrder, mediaType = "gallery" }) => {
         const formData = new FormData();
         files.forEach((file) => formData.append("files", file));
+        if (supplierId) formData.append("supplierId", supplierId);
         if (sortOrder !== undefined) formData.append("sortOrder", String(sortOrder));
+        formData.append("mediaType", mediaType);
         return { url: "/v1/supplier/media/upload/gallery", method: "POST", body: formData };
       },
       transformResponse: (response: unknown) => {

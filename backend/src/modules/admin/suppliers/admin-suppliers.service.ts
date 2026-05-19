@@ -4,6 +4,8 @@ import { randomBytes } from 'crypto';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { AutomationService } from '../../notifications/automation.service';
 import { SmsService } from '../../sms/sms.service';
+import { SuppliersService } from '../../suppliers/suppliers.service';
+import type { UpsertSupplierProfileDto } from '../../suppliers/dto/upsert-supplier-profile.dto';
 import { toAdminPagination } from '../common/admin-pagination.util';
 import type { AdminListSuppliersQueryDto } from '../dto/admin.dto';
 
@@ -48,7 +50,18 @@ export class AdminSuppliersService {
     private readonly prisma: PrismaService,
     private readonly automationService: AutomationService,
     private readonly smsService: SmsService,
+    private readonly suppliersService: SuppliersService,
   ) {}
+
+  async updateSupplierProfile(supplierId: string, payload: UpsertSupplierProfileDto) {
+    const supplier = await this.prisma.supplier.findFirst({
+      where: { id: supplierId, deletedAt: null },
+    });
+    if (!supplier) {
+      throw new NotFoundException('Supplier not found');
+    }
+    return this.suppliersService.upsertProfile(supplier.ownerUserId, payload);
+  }
 
   private normalizeServiceAreaStrings(values: string[]): string[] {
     const out: string[] = [];

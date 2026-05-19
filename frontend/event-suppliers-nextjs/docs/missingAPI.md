@@ -5,6 +5,7 @@
 |---------|-----|--------|
 | My Tenders | `GET /v1/users/me/jobs` | ✅ Integrated |
 | My Favorites (suppliers) | `GET /v1/users/me/favorites` | ✅ Hook added, not yet wired in UI |
+| Admin add supplier | `POST /v1/admin/users/supplier`, `POST /v1/admin/suppliers`, `PATCH /v1/admin/suppliers/:id/profile`, gallery upload | ✅ See [admin-supplier-onboarding.md](./admin-supplier-onboarding.md) |
 
 ## Still using demo/mock data ❌
 | Feature | Current | Missing API |

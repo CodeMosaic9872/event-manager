@@ -1,4 +1,12 @@
 import type { EndpointBuilder } from "@reduxjs/toolkit/query";
+import type { SupplierProfileResponse } from "@/shared/types";
+import type {
+  AdminSupplierCrud,
+  AdminSupplierUserCreated,
+  CreateAdminSupplierPayload,
+  CreateAdminSupplierUserPayload,
+  UpsertSupplierProfilePayload,
+} from "@/shared/api/types";
 
 /** Query params shared by several admin list endpoints (OpenAPI: page, limit). */
 export type AdminListQueryParams = {
@@ -347,6 +355,42 @@ export function createAdminEndpoints(builder: EndpointBuilder<any, any, any>) {
     featureSupplier: builder.mutation<void, string>({
       query: (id) => ({ url: `/v1/admin/suppliers/${id}/feature`, method: "POST" }),
       invalidatesTags: ["AdminSuppliers"],
+    }),
+    createAdminSupplierUser: builder.mutation<AdminSupplierUserCreated, CreateAdminSupplierUserPayload>({
+      query: (body) => ({ url: "/v1/admin/users/supplier", method: "POST", body }),
+      transformResponse: (response: unknown) => {
+        const data = unwrapData<AdminSupplierUserCreated>(response);
+        if (data?.id) return data;
+        return response as AdminSupplierUserCreated;
+      },
+      invalidatesTags: ["AdminUsers", "AdminSuppliers"],
+    }),
+    createAdminSupplier: builder.mutation<AdminSupplierCrud, CreateAdminSupplierPayload>({
+      query: (body) => ({ url: "/v1/admin/suppliers", method: "POST", body }),
+      transformResponse: (response: unknown) => {
+        const data = unwrapData<AdminSupplierCrud>(response);
+        if (data?.id) return data;
+        return response as AdminSupplierCrud;
+      },
+      invalidatesTags: ["AdminSuppliers", "AdminDashboard"],
+    }),
+    updateAdminSupplierProfile: builder.mutation<
+      SupplierProfileResponse,
+      { supplierId: string; body: UpsertSupplierProfilePayload }
+    >({
+      query: ({ supplierId, body }) => ({
+        url: `/v1/admin/suppliers/${supplierId}/profile`,
+        method: "PATCH",
+        body,
+      }),
+      transformResponse: (response: unknown) => {
+        if (response && typeof response === "object") {
+          const r = response as Record<string, unknown>;
+          if (r.data) return r.data as SupplierProfileResponse;
+        }
+        return response as SupplierProfileResponse;
+      },
+      invalidatesTags: ["AdminSuppliers", "Suppliers"],
     }),
     getAdminJobs: builder.query<AdminJobItem[], AdminListQueryParams | void>({
       query: (params) => ({

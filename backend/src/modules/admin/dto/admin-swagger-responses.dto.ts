@@ -1,6 +1,27 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { JobDetailResponseDto } from '../../job-board/dto/job-board-response.dto';
 
+/** Response from `POST /v1/admin/users/supplier`. */
+export class AdminSupplierUserCreatedDto {
+  @ApiProperty({ example: 'usr_abc123' })
+  id!: string;
+
+  @ApiProperty({ example: 'supplier@example.co.il' })
+  email!: string;
+
+  @ApiProperty({ example: '+972501234567' })
+  phone!: string;
+
+  @ApiProperty({ example: 'ACTIVE' })
+  status!: string;
+
+  @ApiProperty({ example: ['SUPPLIER'], type: [String] })
+  roles!: string[];
+
+  @ApiProperty({ example: '2026-05-19T12:00:00.000Z' })
+  createdAt!: string;
+}
+
 export class AdminUserRoleRowDto {
   @ApiProperty({ example: 'USER' })
   role!: string;

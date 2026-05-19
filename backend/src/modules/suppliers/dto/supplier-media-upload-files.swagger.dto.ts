@@ -14,13 +14,14 @@ export class SupplierMediaUploadFilesMultipartDto {
 
   @ApiPropertyOptional({
     description:
-      'Supplier id — **required** when the request has no `Authorization: Bearer` (onboarding). Ignored or must match the authenticated supplier when Bearer is present.',
+      'Supplier id — **required** without Bearer (onboarding). With **SUPPLIER** Bearer, must match the caller’s supplier. With **ADMIN** Bearer, targets this supplier (admin add-supplier flow).',
+    example: 'sup_abc123',
   })
   supplierId?: string;
 
   @ApiPropertyOptional({
-    description: 'Stored on each `SupplierMedia.mediaType`. Defaults to `image`.',
-    example: 'image',
+    description: 'Stored on each `SupplierMedia.mediaType`. Use `gallery` for marketplace gallery. Defaults to `image`.',
+    example: 'gallery',
     default: 'image',
   })
   mediaType?: string;

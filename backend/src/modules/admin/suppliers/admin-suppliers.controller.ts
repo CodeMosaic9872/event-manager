@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiCreatedResponse, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import { ApiBody, ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam } from '@nestjs/swagger';
 import { ApiOkEnvelopeData, ApiOkEnvelopePaginatedItems } from '../../../common/swagger/api-response.decorators';
 import { AdminControllerAuth } from '../common/admin-controller.decorator';
 import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
@@ -22,6 +22,8 @@ import {
   AdminSupplierFilterOptionsDto,
   AdminSupplierStatsDto,
 } from '../dto/admin-swagger-responses.dto';
+import { UpsertSupplierProfileDto } from '../../suppliers/dto/upsert-supplier-profile.dto';
+import { SupplierProfileResponseDto } from '../../suppliers/dto/suppliers-response.dto';
 import { AdminSuppliersService } from './admin-suppliers.service';
 
 @AdminControllerAuth()
@@ -71,7 +73,12 @@ export class AdminSuppliersController {
   }
 
   @Post('suppliers')
-  @ApiOperation({ summary: 'Create a supplier for an existing user (admin)' })
+  @ApiOperation({
+    summary: 'Create a supplier row for an existing user (admin)',
+    description:
+      'Creates (or restores) the supplier profile for `ownerUserId` from `POST /v1/admin/users/supplier` or an existing user.\n\n' +
+      'Use `PATCH /v1/admin/suppliers/{id}/profile` afterward for categories, labels, social links, and gallery URLs.',
+  })
   @ApiCreatedResponse({ type: AdminSupplierCrudDto })
   createSupplier(@Body() body: CreateAdminSupplierDto) {
     return this.adminSuppliersService.createSupplier(body);
@@ -82,6 +89,24 @@ export class AdminSuppliersController {
   @ApiOkEnvelopeData(AdminSupplierListItemDto)
   getSupplier(@Param('id') id: string) {
     return this.adminSuppliersService.getSupplier(id);
+  }
+
+  @Patch('suppliers/:id/profile')
+  @ApiOperation({
+    summary: 'Update supplier marketplace profile (admin)',
+    description:
+      'Admin path to the same profile fields as `PATCH /v1/supplier/profile`: categories, service areas, social links, labels, address, gallery URLs, etc.\n\n' +
+      'Call after `POST /v1/admin/suppliers` once the supplier row exists.',
+  })
+  @ApiParam({ name: 'id', description: 'Supplier id', example: 'sup_abc123' })
+  @ApiBody({ type: UpsertSupplierProfileDto })
+  @ApiOkResponse({
+    description: 'Updated public supplier profile aggregate',
+    type: SupplierProfileResponseDto,
+  })
+  @ApiNotFoundResponse({ description: 'Supplier not found' })
+  updateSupplierProfile(@Param('id') id: string, @Body() body: UpsertSupplierProfileDto) {
+    return this.adminSuppliersService.updateSupplierProfile(id, body);
   }
 
   @Patch('suppliers/:id')

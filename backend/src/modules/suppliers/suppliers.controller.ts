@@ -82,6 +82,20 @@ import {
   UpdateSupplierReviewDto,
 } from './dto/supplier-reviews.dto';
 
+/** When an admin uploads for a specific supplier, resolve by `supplierId` instead of the admin's user id. */
+function resolveMediaUploadOwnerUserId(
+  user: AuthUser | undefined,
+  supplierId?: string,
+): string | undefined {
+  if (!user?.id || user.id.startsWith('anonymous:')) {
+    return undefined;
+  }
+  if (user.roles.includes('ADMIN') && supplierId?.trim()) {
+    return undefined;
+  }
+  return user.id;
+}
+
 @ApiTags('Suppliers')
 @ApiProtectedErrors()
 @Controller()
@@ -242,7 +256,10 @@ export class SuppliersController {
   @ApiOperation({
     summary: 'Upload supplier media file (multipart) and create media record',
     description:
-      '**Auth:** Optional Bearer. With Bearer, the file is attached to the caller’s supplier. Without Bearer, form field `supplierId` is **required** (draft/onboarding).\n\n' +
+      '**Auth:** Optional Bearer.\n' +
+      '- **SUPPLIER** Bearer: attaches to the caller’s supplier.\n' +
+      '- **ADMIN** Bearer + `supplierId`: attaches to that supplier (admin add-supplier flow).\n' +
+      '- No Bearer: `supplierId` is **required** (onboarding).\n\n' +
       '`attachKosher` / `attachForm3010`: when true, also saves the uploaded public URL on the supplier row (`kosher` / `form_3010`).\n\n' +
       '**Multipart parts:** `file` (required binary), optional `supplierId`, `mediaType`, `sortOrder`, `attachKosher`, `attachForm3010`. Max file size **20 MB**.',
   })
@@ -276,8 +293,7 @@ export class SuppliersController {
     if (parsedSortOrder !== undefined && Number.isNaN(parsedSortOrder)) {
       throw new BadRequestException('sortOrder must be a number');
     }
-    const ownerUserId =
-      user?.id && !user.id.startsWith('anonymous:') ? user.id : undefined;
+    const ownerUserId = resolveMediaUploadOwnerUserId(user, body.supplierId);
     return this.suppliersService.uploadMediaFile({
       ownerUserId,
       supplierId: body.supplierId,
@@ -295,7 +311,9 @@ export class SuppliersController {
   @ApiOperation({
     summary: 'Upload multiple files to the supplier gallery in one request',
     description:
-      'Multipart form part **`files`** (repeat the field or use an array) — up to **24** files, **20 MB** each. Same auth rules as `POST /supplier/media/upload-file`: Bearer attaches to your supplier; without Bearer, `supplierId` is required. Shared `mediaType` (default `image`) and optional starting `sortOrder` apply to every created `SupplierMedia` row (`sortOrder` increments per file). Does not set `kosher` / `form_3010`; use single-file upload for that.',
+      'Multipart form part **`files`** (repeat the field or use an array) — up to **24** files, **20 MB** each.\n\n' +
+      '**Auth:** same as `POST /supplier/media/upload-file` (SUPPLIER own profile, **ADMIN** + `supplierId`, or unauthenticated onboarding with `supplierId`).\n\n' +
+      'Use `mediaType=gallery` for marketplace gallery rows. Optional starting `sortOrder` applies to the first file; subsequent files increment by 1.',
   })
   @ApiBody({ type: SupplierMediaUploadFilesMultipartDto })
   @ApiOkResponse({
@@ -325,8 +343,7 @@ export class SuppliersController {
     if (parsedSortOrder !== undefined && Number.isNaN(parsedSortOrder)) {
       throw new BadRequestException('sortOrder must be a number');
     }
-    const ownerUserId =
-      user?.id && !user.id.startsWith('anonymous:') ? user.id : undefined;
+    const ownerUserId = resolveMediaUploadOwnerUserId(user, body.supplierId);
     return this.suppliersService.uploadMediaFiles({
       ownerUserId,
       supplierId: body.supplierId,

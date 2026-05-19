@@ -1,15 +1,33 @@
-import { Controller, Get, Query } from '@nestjs/common';
-import { ApiOperation } from '@nestjs/swagger';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { ApiConflictResponse, ApiCreatedResponse, ApiOperation } from '@nestjs/swagger';
 import { ApiOkEnvelopePaginatedItems } from '../../../common/swagger/api-response.decorators';
 import { AdminControllerAuth } from '../common/admin-controller.decorator';
 import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
+import { CreateAdminSupplierUserDto } from '../dto/admin.dto';
+import { AdminSupplierUserCreatedDto, AdminUserRecordDto } from '../dto/admin-swagger-responses.dto';
 import { AdminUsersService } from './admin-users.service';
-import { AdminUserRecordDto } from '../dto/admin-swagger-responses.dto';
 
 @AdminControllerAuth()
 @Controller('admin')
 export class AdminUsersController {
   constructor(private readonly adminUsersService: AdminUsersService) {}
+
+  @Post('users/supplier')
+  @ApiOperation({
+    summary: 'Provision a supplier login user (admin, no OTP)',
+    description:
+      'Creates an **ACTIVE** user with the **SUPPLIER** role so an admin can attach a supplier profile via `POST /v1/admin/suppliers`.\n\n' +
+      'The supplier signs in later using the normal OTP flow (`POST /v1/auth/request-otp` → `POST /v1/auth/login`) with this email or phone.\n\n' +
+      'Returns **409 Conflict** if a user already exists with the same email **or** phone.',
+  })
+  @ApiCreatedResponse({
+    description: 'Created supplier user',
+    type: AdminSupplierUserCreatedDto,
+  })
+  @ApiConflictResponse({ description: 'User already exists (email or phone)' })
+  createSupplierUser(@Body() body: CreateAdminSupplierUserDto) {
+    return this.adminUsersService.createSupplierUser(body);
+  }
 
   @Get('users')
   @ApiOperation({ summary: 'List all users including incomplete and unpaid' })
