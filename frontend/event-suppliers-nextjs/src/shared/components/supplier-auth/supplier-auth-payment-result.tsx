@@ -8,11 +8,13 @@ import { SupplierJoinGlassCard } from "@/shared/components/supplier-join/supplie
 import { MarketingPageShell } from "@/shared/components/marketing-page-shell";
 import { getSafeInternalRedirectPath } from "@/shared/lib/safe-redirect-path";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
+import { useGetSubscriptionPlansQuery } from "@/shared/api/api";
 import {
-  SUPPLIER_PLAN_CHECKOUT,
-  computeVatLineShekels,
-  parseStoredSupplierPlanId,
-} from "@/shared/lib/supplier-join-plan";
+  getCheckoutTotals,
+  parseStoredSupplierPlan,
+  resolveStoredPlan,
+  subscriptionPlanToCheckout,
+} from "@/shared/lib/subscription-plan";
 
 export type SupplierPaymentOutcome = "success" | "failure";
 
@@ -90,39 +92,33 @@ function FailureGlyph() {
 }
 
 function usePurchaseSummaryLines(): SummaryLine[] {
+  const { data: plans = [] } = useGetSubscriptionPlansQuery();
+
   return useMemo(() => {
-    const planId = parseStoredSupplierPlanId();
-    if (planId) {
-      const def = SUPPLIER_PLAN_CHECKOUT[planId];
-      if (def) {
-        const { total } = computeVatLineShekels(def.pretaxSubtotal);
-        return [
-          { value: "Premium Plus", label: "סוג מנוי", icon: "plan" },
-          {
-            value: `₪ ${total.toLocaleString("en-US", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}`,
-            label: "סכום לתשלום",
-            icon: "amount",
-          },
-          { value: "XXXX-XXXX-XXXX", label: "מספר אישור", icon: "approval" },
-        ];
-      }
+    const stored = parseStoredSupplierPlan();
+    const match = resolveStoredPlan(plans, stored);
+    if (match) {
+      const checkout = subscriptionPlanToCheckout(match);
+      const { total } = getCheckoutTotals(checkout);
+      return [
+        { value: checkout.summaryTitle, label: "סוג מנוי", icon: "plan" },
+        {
+          value: `₪ ${total.toLocaleString("he-IL", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+          })}`,
+          label: "סכום לתשלום",
+          icon: "amount",
+        },
+        { value: "XXXX-XXXX-XXXX", label: "מספר אישור", icon: "approval" },
+      ];
     }
     return [
-      { value: "Premium Plus", label: "סוג מנוי", icon: "plan" },
-      {
-        value: `₪ ${(1300).toLocaleString("en-US", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })}`,
-        label: "סכום לתשלום",
-        icon: "amount",
-      },
+      { value: "—", label: "סוג מנוי", icon: "plan" },
+      { value: "—", label: "סכום לתשלום", icon: "amount" },
       { value: "XXXX-XXXX-XXXX", label: "מספר אישור", icon: "approval" },
     ];
-  }, []);
+  }, [plans]);
 }
 
 

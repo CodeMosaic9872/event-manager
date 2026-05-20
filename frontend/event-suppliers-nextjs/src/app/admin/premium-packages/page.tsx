@@ -1,60 +1,28 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AdminPremiumPlanEditCard } from "@/shared/components/admin/admin-premium-plan-edit-card";
 import { MarketingPageShell } from "@/shared/components/marketing-page-shell";
 import { ProtectedRoute } from "@/shared/components/protected-route";
-import type { SupplierPlanId } from "@/shared/lib/supplier-join-plan";
-import { SUPPLIER_PLAN_CHECKOUT } from "@/shared/lib/supplier-join-plan";
+import { useGetSubscriptionPlansQuery } from "@/shared/api/api";
+import type { SubscriptionPlanDto } from "@/shared/api/types/subscription-plan";
+import {
+  formatPlanBadge,
+  periodCaptionForMonths,
+} from "@/shared/lib/subscription-plan";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
 
-const FEATURE_SMS = "קבלת סמס לגבי הצעות עבודה בזמן אמת";
+const PLAN_KEY_ORDER = ["two_year", "annual", "six_month"] as const;
 
-const PLAN_ORDER: SupplierPlanId[] = ["two_year", "annual", "six_month"];
-
-const PLAN_META: Record<
-  SupplierPlanId,
-  {
-    badge?: string;
-    featured?: boolean;
-    ctaVariant: "outline" | "filled";
-    periodCaption: string;
-    monthlyCaption: string;
-    months: number;
-    defaultTitle: string;
-  }
-> = {
-  two_year: {
-    badge: "המשתלם ביותר",
-    ctaVariant: "outline",
-    periodCaption: "/ שנתיים",
-    monthlyCaption: "/ פר חודש",
-    months: 24,
-    defaultTitle: "שנתיים - שותפים באש ובמים",
-  },
-  annual: {
-    badge: "הנבחר ביותר",
-    featured: true,
-    ctaVariant: "filled",
-    periodCaption: "/ שנה",
-    monthlyCaption: "/ פר חודש",
-    months: 12,
-    defaultTitle: "שנה - שותפים לדרך",
-  },
-  six_month: {
-    ctaVariant: "outline",
-    periodCaption: "/ חצי שנה",
-    monthlyCaption: "/ פר חודש",
-    months: 6,
-    defaultTitle: "חצי שנה - קשר לא מחייב",
-  },
-};
-
-const PLAN_SAVE_LABEL: Record<SupplierPlanId, string> = {
-  two_year: "שנתיים",
-  annual: "שנה",
-  six_month: "חצי שנה",
-};
+function sortPlans(plans: SubscriptionPlanDto[]): SubscriptionPlanDto[] {
+  return [...plans].sort((a, b) => {
+    const ai = PLAN_KEY_ORDER.indexOf(a.key as (typeof PLAN_KEY_ORDER)[number]);
+    const bi = PLAN_KEY_ORDER.indexOf(b.key as (typeof PLAN_KEY_ORDER)[number]);
+    const ao = ai >= 0 ? ai : a.sortOrder;
+    const bo = bi >= 0 ? bi : b.sortOrder;
+    return ao - bo || a.sortOrder - b.sortOrder;
+  });
+}
 
 function BreadcrumbChevron({ className = "" }: { className?: string }) {
   return (
@@ -64,26 +32,30 @@ function BreadcrumbChevron({ className = "" }: { className?: string }) {
   );
 }
 
-function buildInitialDrafts(): Record<SupplierPlanId, { title: string; pretax: number }> {
-  return {
-    two_year: {
-      title: PLAN_META.two_year.defaultTitle,
-      pretax: SUPPLIER_PLAN_CHECKOUT.two_year.pretaxSubtotal,
-    },
-    annual: {
-      title: PLAN_META.annual.defaultTitle,
-      pretax: SUPPLIER_PLAN_CHECKOUT.annual.pretaxSubtotal,
-    },
-    six_month: {
-      title: PLAN_META.six_month.defaultTitle,
-      pretax: SUPPLIER_PLAN_CHECKOUT.six_month.pretaxSubtotal,
-    },
-  };
+function parsePretax(plan: SubscriptionPlanDto): number {
+  const n = Number.parseFloat(plan.pretaxAmount);
+  return Number.isFinite(n) ? Math.round(n) : 0;
 }
 
 export default function AdminPremiumPackagesPage() {
-  const [drafts, setDrafts] = useState(buildInitialDrafts);
+  const { data: plans = [], isLoading, isError, refetch } = useGetSubscriptionPlansQuery();
+  const sortedPlans = useMemo(() => sortPlans(plans), [plans]);
+
+  const [drafts, setDrafts] = useState<Record<string, { title: string; pretax: number }>>({});
   const [saveHint, setSaveHint] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (sortedPlans.length === 0) return;
+    setDrafts((prev) => {
+      const next = { ...prev };
+      for (const plan of sortedPlans) {
+        if (!next[plan.id]) {
+          next[plan.id] = { title: plan.name, pretax: parsePretax(plan) };
+        }
+      }
+      return next;
+    });
+  }, [sortedPlans]);
 
   const dismissHint = useCallback(() => setSaveHint(null), []);
 
@@ -93,9 +65,8 @@ export default function AdminPremiumPackagesPage() {
     return () => window.clearTimeout(t);
   }, [saveHint]);
 
-  const onSave = useCallback((id: SupplierPlanId) => {
-    const label = PLAN_SAVE_LABEL[id];
-    setSaveHint(`נשמרו שינויים עבור ${label} (ממשק בלבד — חיבור API בהמשך).`);
+  const onSave = useCallback((plan: SubscriptionPlanDto) => {
+    setSaveHint(`נשמרו שינויים עבור ${plan.name} (ממשק בלבד — חיבור שמירה לשרת בהמשך).`);
   }, []);
 
   return (
@@ -109,7 +80,10 @@ export default function AdminPremiumPackagesPage() {
       >
         <div className="w-full min-w-0" style={{ fontFamily: marketingPloniFont }}>
           <header className="mb-8 flex w-full min-w-0 flex-col gap-3 text-right">
-            <nav className="flex flex-wrap items-center justify-start gap-2 uppercase leading-4 tracking-[1.2px]" aria-label="מיקום בעמוד">
+            <nav
+              className="flex flex-wrap items-center justify-start gap-2 uppercase leading-4 tracking-[1.2px]"
+              aria-label="מיקום בעמוד"
+            >
               <span className="text-xs font-normal text-[#757682]">ניהול מערכת</span>
               <BreadcrumbChevron />
               <span className="text-xs font-normal text-[#757682]">פעולות מהירות</span>
@@ -140,36 +114,70 @@ export default function AdminPremiumPackagesPage() {
           ) : null}
 
           <div className="rounded-[24px] border border-[rgba(134,85,246,0.2)] bg-[rgba(71,33,223,0.07)] p-6 shadow-[0px_8px_32px_rgba(0,0,0,0.37)] backdrop-blur-[6px] sm:p-8 lg:p-10">
-            <div
-              className="grid w-full min-w-0 grid-cols-1 gap-6 sm:gap-7 lg:auto-rows-fr lg:grid-cols-3 lg:items-stretch"
-              dir="ltr"
-            >
-              {PLAN_ORDER.map((id) => {
-                const meta = PLAN_META[id];
-                const d = drafts[id];
-                return (
-                  <AdminPremiumPlanEditCard
-                    key={id}
-                    badge={meta.badge}
-                    featured={meta.featured}
-                    title={d.title}
-                    onTitleChange={(title) =>
-                      setDrafts((prev) => ({ ...prev, [id]: { ...prev[id], title } }))
-                    }
-                    pretaxShekels={d.pretax}
-                    onPretaxChange={(pretax) =>
-                      setDrafts((prev) => ({ ...prev, [id]: { ...prev[id], pretax } }))
-                    }
-                    months={meta.months}
-                    periodCaption={meta.periodCaption}
-                    monthlyCaption={meta.monthlyCaption}
-                    featureLines={[FEATURE_SMS]}
-                    ctaVariant={meta.ctaVariant}
-                    onSave={() => onSave(id)}
-                  />
-                );
-              })}
-            </div>
+            {isLoading ? (
+              <div
+                className="grid min-h-[320px] grid-cols-1 gap-6 lg:grid-cols-3"
+                aria-busy
+                aria-label="טוען חבילות"
+              >
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="h-[400px] animate-pulse rounded-2xl bg-white/20" />
+                ))}
+              </div>
+            ) : isError || sortedPlans.length === 0 ? (
+              <div className="flex flex-col items-center gap-4 py-12 text-center">
+                <p className="text-base text-[#00113A]">לא ניתן לטעון חבילות מהשרת.</p>
+                <button
+                  type="button"
+                  onClick={() => refetch()}
+                  className="rounded-full border border-[#4721DF] px-6 py-2 text-sm font-bold text-[#4721DF]"
+                >
+                  נסה שוב
+                </button>
+              </div>
+            ) : (
+              <div
+                className="grid w-full min-w-0 grid-cols-1 gap-6 sm:gap-7 lg:auto-rows-fr lg:grid-cols-3 lg:items-stretch"
+                dir="ltr"
+              >
+                {sortedPlans.map((plan) => {
+                  const d = drafts[plan.id];
+                  if (!d) return null;
+                  const badge = formatPlanBadge(plan.badge);
+                  return (
+                    <AdminPremiumPlanEditCard
+                      key={plan.id}
+                      badge={badge}
+                      featured={plan.isFeatured}
+                      title={d.title}
+                      onTitleChange={(title) =>
+                        setDrafts((prev) => ({
+                          ...prev,
+                          [plan.id]: { ...prev[plan.id], title },
+                        }))
+                      }
+                      pretaxShekels={d.pretax}
+                      onPretaxChange={(pretax) =>
+                        setDrafts((prev) => ({
+                          ...prev,
+                          [plan.id]: { ...prev[plan.id], pretax },
+                        }))
+                      }
+                      months={plan.billingMonths}
+                      periodCaption={periodCaptionForMonths(plan.billingMonths)}
+                      monthlyCaption="/ פר חודש"
+                      featureLines={
+                        plan.features?.length
+                          ? plan.features
+                          : ["קבלת סמס לגבי הצעות עבודה בזמן אמת"]
+                      }
+                      ctaVariant={plan.isFeatured ? "filled" : "outline"}
+                      onSave={() => onSave(plan)}
+                    />
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </MarketingPageShell>

@@ -2,11 +2,8 @@
 
 import Image from "next/image";
 import type { SupplierPlanCheckoutDefinition } from "@/shared/lib/supplier-join-plan";
-import {
-  SUPPLIER_JOIN_PROGRAM_FEATURES,
-  computeVatLineShekels,
-  formatIls,
-} from "@/shared/lib/supplier-join-plan";
+import { SUPPLIER_JOIN_PROGRAM_FEATURES, formatIls } from "@/shared/lib/supplier-join-plan";
+import { getCheckoutTotals } from "@/shared/lib/subscription-plan";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
 
 type Props = {
@@ -63,8 +60,14 @@ export function SupplierJoinCheckoutSummary({
   variant = "default",
 }: Props) {
   const font = styleFont ?? marketingPloniFont;
-  const { pretax, vat, total } = computeVatLineShekels(plan.pretaxSubtotal);
+  const { pretax, vat, total } = getCheckoutTotals(plan);
+  const featureLines =
+    plan.features?.length ? plan.features : SUPPLIER_JOIN_PROGRAM_FEATURES;
   const isAdmin = variant === "admin";
+  const vatPercentLabel =
+    plan.vatShekels != null && plan.pretaxSubtotal > 0
+      ? `מע"מ (${Math.round((plan.vatShekels / plan.pretaxSubtotal) * 100)}%)`
+      : 'מע"מ (18%)';
 
   return (
     <div
@@ -127,7 +130,7 @@ export function SupplierJoinCheckoutSummary({
               מה כלול בתוכנית:
             </h4>
             <ul className="flex w-full flex-col gap-3">
-              {SUPPLIER_JOIN_PROGRAM_FEATURES.map((line) => (
+              {featureLines.map((line) => (
                 <FeatureBullet key={line}>{line}</FeatureBullet>
               ))}
             </ul>
@@ -142,7 +145,7 @@ export function SupplierJoinCheckoutSummary({
                 </span>
               </div>
               <div className="flex w-full flex-row items-baseline justify-between gap-4 text-[14px] font-normal leading-5 text-black">
-                <span className="min-w-0 shrink text-right">מע&quot;מ (18%)</span>
+                <span className="min-w-0 shrink text-right">{vatPercentLabel}</span>
                 <span className="shrink-0 tabular-nums" dir="ltr">
                   {formatIls(vat)}
                 </span>

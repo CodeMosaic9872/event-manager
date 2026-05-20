@@ -4,11 +4,17 @@ import { SupplierJoinCheckoutSummary } from "@/shared/components/supplier-join/s
 import { SupplierJoinPaymentPanel } from "@/shared/components/supplier-join/supplier-join-payment-panel";
 import { MarketingPageShell } from "@/shared/components/marketing-page-shell";
 import { ProtectedRoute } from "@/shared/components/protected-route";
-import { SUPPLIER_PLAN_CHECKOUT } from "@/shared/lib/supplier-join-plan";
+import { useGetSubscriptionPlansQuery } from "@/shared/api/api";
+import {
+  defaultFeaturedPlan,
+  subscriptionPlanToCheckout,
+} from "@/shared/lib/subscription-plan";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
 
 export default function AdminSupplierRegistrationPaymentPage() {
-  const plan = SUPPLIER_PLAN_CHECKOUT.annual;
+  const { data: plans = [], isLoading } = useGetSubscriptionPlansQuery();
+  const selected = defaultFeaturedPlan(plans);
+  const checkoutPlan = selected ? subscriptionPlanToCheckout(selected) : null;
 
   return (
     <ProtectedRoute roles={["admin"]}>
@@ -32,26 +38,35 @@ export default function AdminSupplierRegistrationPaymentPage() {
             </p>
           </header>
 
-          {/*
-            Figma: summary ~40% + payment ~60% at 1100px; stack on small screens.
-            dir=ltr keeps summary on the left and payment on the right at lg+.
-          */}
-          <div
-            className="grid w-full min-w-0 grid-cols-1 items-start gap-6 sm:gap-8 lg:grid-cols-[minmax(0,2.5fr)_minmax(0,3.5fr)]"
-            dir="ltr"
-          >
-            <SupplierJoinCheckoutSummary
-              plan={plan}
-              styleFont={marketingPloniFont}
-              variant="admin"
-            />
-            <SupplierJoinPaymentPanel
-              styleFont={marketingPloniFont}
-              successRedirectPath="/admin"
-              showSecurityFooter={false}
-              termsFooterPlain
-            />
-          </div>
+          {isLoading || !checkoutPlan ? (
+            <div
+              className="grid min-h-[280px] w-full grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-[minmax(0,2.5fr)_minmax(0,3.5fr)]"
+              aria-busy
+              aria-label="טוען מסלול מנוי"
+            >
+              <div className="h-64 animate-pulse rounded-[24px] bg-slate-200/80" />
+              <div className="h-64 animate-pulse rounded-[24px] bg-slate-200/80" />
+            </div>
+          ) : (
+            <div
+              className="grid w-full min-w-0 grid-cols-1 items-start gap-6 sm:gap-8 lg:grid-cols-[minmax(0,2.5fr)_minmax(0,3.5fr)]"
+              dir="ltr"
+            >
+              <SupplierJoinCheckoutSummary
+                plan={checkoutPlan}
+                styleFont={marketingPloniFont}
+                variant="admin"
+              />
+              <SupplierJoinPaymentPanel
+                styleFont={marketingPloniFont}
+                planId={checkoutPlan.id}
+                planKey={checkoutPlan.key}
+                successRedirectPath="/admin"
+                showSecurityFooter={false}
+                termsFooterPlain
+              />
+            </div>
+          )}
         </div>
       </MarketingPageShell>
     </ProtectedRoute>

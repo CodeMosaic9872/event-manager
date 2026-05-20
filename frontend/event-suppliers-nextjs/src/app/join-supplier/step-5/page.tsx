@@ -2,36 +2,51 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { SupplierJoinCheckoutSummary } from "@/shared/components/supplier-join/supplier-join-checkout-summary";
 import { SupplierJoinPaymentPanel } from "@/shared/components/supplier-join/supplier-join-payment-panel";
 import { MarketingPageShell } from "@/shared/components/marketing-page-shell";
+import { useGetSubscriptionPlansQuery } from "@/shared/api/api";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
+import type { SupplierPlanCheckoutDefinition } from "@/shared/lib/supplier-join-plan";
 import {
-  SUPPLIER_PLAN_CHECKOUT,
-  type SupplierPlanId,
-  parseStoredSupplierPlanId,
-} from "@/shared/lib/supplier-join-plan";
+  parseStoredSupplierPlan,
+  resolveStoredPlan,
+  subscriptionPlanToCheckout,
+} from "@/shared/lib/subscription-plan";
 
 export default function JoinSupplierStep5Page() {
   const router = useRouter();
-  const [planId, setPlanId] = useState<SupplierPlanId | null | undefined>(
+  const { data: plans = [], isLoading: plansLoading } = useGetSubscriptionPlansQuery();
+  const [stored, setStored] = useState<ReturnType<typeof parseStoredSupplierPlan> | undefined>(
     undefined,
   );
 
   useEffect(() => {
     queueMicrotask(() => {
-      const id = parseStoredSupplierPlanId();
-      if (!id) {
+      const s = parseStoredSupplierPlan();
+      if (!s) {
         router.replace("/join-supplier/step-4");
-        setPlanId(null);
+        setStored(null);
         return;
       }
-      setPlanId(id);
+      setStored(s);
     });
   }, [router]);
 
-  if (planId === undefined) {
+  const checkoutPlan: SupplierPlanCheckoutDefinition | null = useMemo(() => {
+    if (stored === undefined || stored === null || plansLoading) return null;
+    const match = resolveStoredPlan(plans, stored);
+    if (!match) return null;
+    return subscriptionPlanToCheckout(match);
+  }, [stored, plans, plansLoading]);
+
+  useEffect(() => {
+    if (stored === null || plansLoading || checkoutPlan) return;
+    router.replace("/join-supplier/step-4");
+  }, [stored, plansLoading, checkoutPlan, router]);
+
+  if (stored === undefined || plansLoading || !checkoutPlan) {
     return (
       <MarketingPageShell
         showBackgroundImage
@@ -47,12 +62,6 @@ export default function JoinSupplierStep5Page() {
       </MarketingPageShell>
     );
   }
-
-  if (planId === null) {
-    return null;
-  }
-
-  const plan = SUPPLIER_PLAN_CHECKOUT[planId];
 
   return (
     <MarketingPageShell
@@ -91,18 +100,19 @@ export default function JoinSupplierStep5Page() {
           </div>
         </header>
 
-        {/* Design: 1100px row, 439.66px summary + 32px gap + 628.33px payment — side-by-side from xl */}
         <div
           className="grid w-full grid-cols-1 gap-8 xl:grid-cols-[439px_628px] xl:gap-8"
           dir="rtl"
           lang="he"
         >
           <SupplierJoinCheckoutSummary
-            plan={plan}
+            plan={checkoutPlan}
             styleFont={marketingPloniFont}
           />
           <SupplierJoinPaymentPanel
             styleFont={marketingPloniFont}
+            planId={checkoutPlan.id}
+            planKey={checkoutPlan.key}
             paymentSuccessHref="/join-supplier/payment-result?payment=success"
           />
         </div>

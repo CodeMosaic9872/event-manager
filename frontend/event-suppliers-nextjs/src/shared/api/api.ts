@@ -7,6 +7,7 @@ import { createJobsEndpoints } from "@/shared/api/endpoints/jobs-endpoints";
 import { createSuppliersEndpoints } from "@/shared/api/endpoints/suppliers-endpoints";
 import { createTaxonomyEndpoints } from "@/shared/api/endpoints/taxonomy-endpoints";
 import { createAdminEndpoints } from "@/shared/api/endpoints/admin-endpoints";
+import { createPlansEndpoints } from "@/shared/api/endpoints/plans-endpoints";
 
 const baseUrl =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -37,7 +38,8 @@ const baseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> =
     !url.startsWith("/v1/suppliers") &&
     !url.startsWith("/v1/search/") &&
     !url.startsWith("/v1/taxonomy/") &&
-    !url.startsWith("/v1/jobs")
+    !url.startsWith("/v1/jobs") &&
+    !url.startsWith("/v1/plans")
   ) {
     return { error: { status: 401, data: { message: "No token available" } } };
   }
@@ -99,7 +101,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 export const api = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Suppliers", "Jobs", "Notifications", "Auth", "AdminSuppliers", "AdminJobs", "AdminUsers", "AdminReferrals", "AdminNotifications", "AdminAutomations", "AdminDashboard", "AdminAi", "Taxonomy"],
+  tagTypes: ["Suppliers", "Jobs", "Notifications", "Auth", "Plans", "AdminSuppliers", "AdminJobs", "AdminUsers", "AdminReferrals", "AdminNotifications", "AdminAutomations", "AdminDashboard", "AdminAi", "Taxonomy"],
   keepUnusedDataFor: 60,
   refetchOnReconnect: true,
   endpoints: (builder) => ({
@@ -109,6 +111,7 @@ export const api = createApi({
     ...createJobsEndpoints(builder),
     ...createAiAndNotificationEndpoints(builder),
     ...createAdminEndpoints(builder),
+    ...createPlansEndpoints(builder),
   }),
 });
 
@@ -199,4 +202,6 @@ export const {
   useCreateFilterDefinitionMutation,
   useUpdateFilterDefinitionMutation,
   useDeleteFilterDefinitionMutation,
+  useGetSubscriptionPlansQuery,
+  useGetSubscriptionPlanByKeyQuery,
 } = api;

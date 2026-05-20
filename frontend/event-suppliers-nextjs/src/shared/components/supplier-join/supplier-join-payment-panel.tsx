@@ -32,6 +32,9 @@ type Props = {
   successRedirectPath?: string;
   loginRedirectPath?: string;
   submitLabel?: string;
+  /** Selected subscription from `GET /v1/plans` (for checkout session creation). */
+  planId?: string;
+  planKey?: string;
   /** When set, logged-in supplier is sent here after submit instead of `successRedirectPath` (e.g. join payment result). */
   paymentSuccessHref?: string;
   /** Figma admin checkout omits the SSL / PCI strip below the form. */
@@ -47,6 +50,8 @@ export function SupplierJoinPaymentPanel({
   successRedirectPath = "/supplier/dashboard",
   loginRedirectPath,
   submitLabel = "בצע תשלום עכשיו",
+  planId: _planId,
+  planKey: _planKey,
   paymentSuccessHref,
   showSecurityFooter = true,
   termsFooterPlain = false,
