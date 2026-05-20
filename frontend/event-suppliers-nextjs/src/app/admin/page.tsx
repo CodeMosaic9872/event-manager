@@ -94,10 +94,6 @@ export default function AdminPage() {
       router.push('/admin/premium-packages');
       return;
     }
-    if (action === 'הוספת מוצרים לחנות') {
-      router.push('/admin/store/products/add');
-      return;
-    }
     router.push('/admin');
   };
 
@@ -190,7 +186,6 @@ export default function AdminPage() {
                   "ניהול חבילות פרימיום",
                   "הוספת דף קונספט",
                   "ניהול צ'אט AI",
-                  "הוספת מוצרים לחנות",
                 ].map((item) => (
                   <button
                     key={item}

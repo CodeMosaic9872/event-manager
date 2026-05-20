@@ -1,11 +1,11 @@
 /** Supplier join Step 4 plan ids — persisted in `sessionStorage` under `supplierJoinPlan`. */
 export type SupplierPlanId = "two_year" | "annual" | "six_month";
 
-const VAT_RATE = 0.17;
+const VAT_RATE = 0.18;
 
 export const SUPPLIER_JOIN_PROGRAM_FEATURES = [
   "חשיפה בתוצאות החיפוש",
-  "שימוש וקידום אקטיביים ע״י המפיק AI ללידים מדויקים",
+  'שימוש וקידום אקטיביים ע"י המפיק AI ללידים מדויקים',
   "קבלת סמס בזמן אמת על הצעות עבודה רלוונטיות",
 ] as const;
 
@@ -14,7 +14,7 @@ export type SupplierPlanCheckoutDefinition = {
   summaryTitle: string;
   /** Small caption under total (e.g. For one year). */
   totalPeriodNote: string;
-  /** Pretax subscription amount in ILS (whole shekels). VAT is computed at 17%. */
+  /** Pretax subscription amount in ILS (whole shekels). VAT is computed at 18%. */
   pretaxSubtotal: number;
 };
 

@@ -7,9 +7,6 @@ import { marketingPloniFont } from "@/shared/lib/marketing-typography";
 export function SupplierPlanVerifiedFeatureRow({ children }: { children: ReactNode }) {
   return (
     <div className="flex flex-row items-center gap-3">
-      <span className="min-w-0 flex-1 text-right text-[14px] font-normal leading-5 text-black">
-        {children}
-      </span>
       <Image
         src="/icons/verified.svg"
         alt=""
@@ -19,6 +16,9 @@ export function SupplierPlanVerifiedFeatureRow({ children }: { children: ReactNo
         unoptimized
         aria-hidden
       />
+      <span className="min-w-0 flex-1 text-right text-[14px] font-medium leading-5 text-black">
+        {children}
+      </span>
     </div>
   );
 }

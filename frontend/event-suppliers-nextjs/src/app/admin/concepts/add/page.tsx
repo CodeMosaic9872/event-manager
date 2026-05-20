@@ -1,49 +1,72 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArticleSpecIcon } from "@/shared/components/event-concept-article/article-spec-icon";
+import { MarketingPageShell } from "@/shared/components/marketing-page-shell";
 import { ProtectedRoute } from "@/shared/components/protected-route";
 import { marketingPloniFont } from "@/shared/lib/marketing-typography";
 
-const EVENT_TYPES = ["Corporate gala", "Wedding", "Conference", "Private party"] as const;
+const EVENT_TYPES = ["חתונה", "אירוע עסקי", "כנס", "מסיבה פרטית"] as const;
 
 const SUPPLIERS = [
   {
-    id: "sharon",
-    name: "Sharon Photography",
-    category: "DOCUMENTATION",
-    image: "/icons/camera-blue.svg",
-  },
-  {
     id: "taimim",
-    name: "Taimim Catering",
-    category: "HIGH-END CULINARY",
+    name: "קייטרינג 'טעמים'",
+    category: "קולינריה עילית",
     image: "/avatars/2.jpg",
+    rating: true,
   },
   {
     id: "dj-alon",
-    name: "DJ Alon Cohen",
-    category: "MUSIC & ATMOSPHERE",
+    name: "דיג'יי אלון כהן",
+    category: "מוזיקה ואווירה",
     image: "/avatars/3.jpg",
+    rating: true,
+  },
+  {
+    id: "sharon",
+    name: "שרון פוטוגרפי",
+    category: "תיעוד ויזואלי",
+    image: "/avatars/1.jpg",
+    rating: true,
   },
 ] as const;
 
+const GALLERY_SEED = ["/avatars/4.jpg", "/avatars/5.jpg"] as const;
+
 function SectionTitle({ children }: { children: ReactNode }) {
   return (
-    <h2 className="border-r-4 border-[#8655F6] pr-3 text-right text-xl font-normal leading-7 text-[#201C44]">
+    <h2 className="border-r-4 border-[#4721DF] pr-6 text-right text-xl font-bold leading-8 text-[#00113A] sm:text-2xl">
       {children}
     </h2>
   );
 }
 
+function FieldLabel({ children }: { children: ReactNode }) {
+  return (
+    <label className="mb-2 block text-right text-[12px] font-bold uppercase leading-4 tracking-[1.2px] text-[#444650]">
+      {children}
+    </label>
+  );
+}
+
+function StarIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="#FBBF24" aria-hidden className="shrink-0">
+      <path d="M6 1.2l1.4 2.9 3.1.5-2.25 2.2.53 3.1L6 8.4 3.22 9.9l.53-3.1L1.5 4.6l3.1-.5L6 1.2z" />
+    </svg>
+  );
+}
+
 function RichTextToolbar() {
   const btn =
-    "flex size-9 items-center justify-center rounded-lg border border-[#E2E8F0] bg-white text-sm font-semibold text-[#475569] transition hover:bg-slate-50";
+    "flex size-9 items-center justify-center rounded-sm text-sm font-semibold text-[#191C1D] transition hover:bg-black/5";
   return (
-    <div className="flex flex-wrap justify-end gap-2 border-b border-[#E2E8F0] pb-2" dir="ltr">
+    <div className="flex flex-wrap gap-2 border-b border-[#C5C6D2]/20 px-2 py-2" dir="rtl">
       <button type="button" className={btn} aria-label="Bold">
         B
       </button>
@@ -51,15 +74,40 @@ function RichTextToolbar() {
         I
       </button>
       <button type="button" className={btn} aria-label="Bullet list">
-        •≡
+        •
       </button>
       <button type="button" className={btn} aria-label="Numbered list">
         1.
       </button>
       <button type="button" className={btn} aria-label="Link">
-        Link
+        ↗
       </button>
     </div>
+  );
+}
+
+function SupplierCheck({ selected }: { selected: boolean }) {
+  return (
+    <span
+      className={`flex size-8 shrink-0 items-center justify-center rounded-xl border-2 transition ${
+        selected
+          ? "border-[#4721DF] bg-[#4721DF] text-white shadow-md"
+          : "border-[#C5C6D2] bg-white"
+      }`}
+      aria-hidden
+    >
+      {selected ? (
+        <svg width="13" height="10" viewBox="0 0 13 10" fill="none">
+          <path
+            d="M1 5L4.5 8.5L12 1"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      ) : null}
+    </span>
   );
 }
 
@@ -67,8 +115,8 @@ export default function AdminAddConceptPage() {
   const router = useRouter();
   const galleryInputRef = useRef<HTMLInputElement | null>(null);
 
+  const [productName, setProductName] = useState("");
   const [marketingHeadline, setMarketingHeadline] = useState("");
-  const [conceptName, setConceptName] = useState("");
   const [eventType, setEventType] = useState("");
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
@@ -86,10 +134,12 @@ export default function AdminAddConceptPage() {
     };
   }, [galleryUrls]);
 
-  const inputClass =
-    "h-[50px] w-full rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-right text-sm leading-6 text-[#1E293B] outline-none focus:ring-2 focus:ring-[#8655F6]/25";
   const cardSurface =
-    "rounded-[24px] border border-[#8655F6]/20 bg-[rgba(255,255,255,0.85)] p-6 shadow-[0px_8px_32px_rgba(0,0,0,0.12)] backdrop-blur-[6px] sm:p-8";
+    "flex w-full min-w-0 flex-col gap-6 rounded-[20px] border border-[#4721DF] bg-[#D3E2F5] p-6 shadow-[0px_20px_40px_rgba(0,17,58,0.04)] sm:gap-8 sm:p-8 lg:p-10";
+  const inputClass =
+    "h-14 w-full min-w-0 rounded bg-[#F3F4F5] px-4 text-right text-base leading-6 text-[#1E293B] outline-none placeholder:text-[#6B7280] focus:ring-2 focus:ring-[#4721DF]/25";
+  const bentoClass =
+    "flex min-w-0 flex-col gap-4 rounded-lg border border-[rgba(0,17,58,0.1)] bg-[rgba(0,17,58,0.05)] p-6 sm:p-8";
 
   const toggleSupplier = (id: string) => {
     setSelectedSupplierIds((prev) => {
@@ -108,7 +158,7 @@ export default function AdminAddConceptPage() {
     e.target.value = "";
   };
 
-  const onPublish = (e: FormEvent) => {
+  const onSubmit = (e: FormEvent) => {
     e.preventDefault();
     router.push("/admin");
   };
@@ -116,164 +166,169 @@ export default function AdminAddConceptPage() {
   const filteredSuppliers = SUPPLIERS.filter(
     (s) =>
       !supplierQuery.trim() ||
-      s.name.toLowerCase().includes(supplierQuery.toLowerCase()) ||
-      s.category.toLowerCase().includes(supplierQuery.toLowerCase()),
+      s.name.includes(supplierQuery) ||
+      s.category.includes(supplierQuery),
   );
 
   return (
     <ProtectedRoute roles={["admin"]}>
-      <section
+      <MarketingPageShell
+        showBackgroundImage
         dir="rtl"
-        className="relative mx-auto min-h-screen w-full max-w-[1440px] overflow-x-hidden px-4 pb-16 pt-24 sm:px-6"
-        style={{ fontFamily: marketingPloniFont }}
+        lang="he"
+        className="min-h-screen"
+        contentClassName="!max-w-[1184px] !items-stretch !px-4 !pb-16 !pt-24 sm:!px-6 sm:!pt-28 lg:!px-0 lg:!pt-32"
       >
-
-        <div className="relative z-10 mx-auto w-full max-w-[1100px]">
-          <header className="mb-8 text-right">
-            <p className="text-xs uppercase tracking-[1.2px] text-[#757682]">
-              System management · Quick actions · Adding a concept page
-            </p>
-            <h1 className="mt-2 text-3xl font-normal leading-10 tracking-[-0.02em] text-[#00113A] sm:text-[36px]">
-              Adding a concept page
+        <div
+          className="flex w-full min-w-0 flex-col gap-8 sm:gap-12"
+          style={{ fontFamily: marketingPloniFont }}
+        >
+          <header className="flex w-full min-w-0 flex-col items-start gap-2">
+            <nav
+              className="flex w-full min-w-0 flex-wrap items-center justify-start gap-x-2 gap-y-1 text-[12px] leading-4 tracking-[1.2px]"
+              aria-label="breadcrumb"
+            >
+              <Link href="/admin" className="uppercase text-[#757682] hover:underline">
+                ניהול מערכת
+              </Link>
+              <span className="text-[#757682]" aria-hidden>
+                ›
+              </span>
+              <span className="uppercase text-[#757682]">פעולות מהירות</span>
+              <span className="text-[#757682]" aria-hidden>
+                ›
+              </span>
+              <span className="font-bold uppercase text-[#00113A]">הוספת מוצר לחנות</span>
+            </nav>
+            <h1 className="w-full min-w-0 text-pretty text-right text-2xl font-bold leading-tight tracking-[-0.03em] text-[#00113A] sm:text-3xl sm:leading-10 lg:text-[36px]">
+              הוספת מוצר לחנות
             </h1>
           </header>
 
-          <form onSubmit={onPublish} className="flex flex-col gap-8">
-            <div className={cardSurface}>
-              <SectionTitle>Basic information</SectionTitle>
+          <form onSubmit={onSubmit} className="flex w-full min-w-0 flex-col gap-8 sm:gap-12">
+            {/* מידע בסיסי */}
+            <section className={cardSurface}>
+              <SectionTitle>מידע בסיסי</SectionTitle>
 
-              <div className="mt-6 flex flex-col gap-6">
-                <div>
-                  <label className="mb-2 block text-right text-xs font-normal uppercase tracking-wide text-[#64748B]">
-                    Marketing headline (character limit 80 total)
-                  </label>
-                  <input
-                    value={marketingHeadline}
-                    onChange={(ev) => setMarketingHeadline(ev.target.value.slice(0, 80))}
-                    placeholder="Secondary title"
-                    maxLength={80}
-                    className={inputClass}
-                  />
-                </div>
-
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div>
-                    <label className="mb-2 block text-right text-xs font-normal uppercase tracking-wide text-[#64748B]">
-                      Concept name (character limit 28 total)
-                    </label>
+              <div className="flex w-full min-w-0 flex-col gap-6">
+                <div className="grid w-full min-w-0 grid-cols-1 gap-6 md:grid-cols-2">
+                  <div className="min-w-0">
+                    <FieldLabel>שם המוצר</FieldLabel>
                     <input
-                      value={conceptName}
-                      onChange={(ev) => setConceptName(ev.target.value.slice(0, 28))}
-                      placeholder="Concept name"
-                      maxLength={28}
+                      value={productName}
+                      onChange={(ev) => setProductName(ev.target.value.slice(0, 120))}
+                      placeholder="שם המוצר"
                       className={inputClass}
                     />
                   </div>
-                  <div>
-                    <label className="mb-2 block text-right text-xs font-normal uppercase tracking-wide text-[#64748B]">
-                      Event type
-                    </label>
-                    <div className="relative">
-                      <select
-                        value={eventType}
-                        onChange={(ev) => setEventType(ev.target.value)}
-                        className={`${inputClass} appearance-none`}
-                      >
-                        <option value="">Select event type</option>
-                        {EVENT_TYPES.map((t) => (
-                          <option key={t} value={t}>
-                            {t}
-                          </option>
-                        ))}
-                      </select>
-                      <span
-                        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]"
-                        aria-hidden
-                      >
-                        ▾
-                      </span>
-                    </div>
+                  <div className="min-w-0">
+                    <FieldLabel>כותרת שיווקית</FieldLabel>
+                    <input
+                      value={marketingHeadline}
+                      onChange={(ev) => setMarketingHeadline(ev.target.value.slice(0, 80))}
+                      placeholder="כותרת משנית"
+                      maxLength={80}
+                      className={inputClass}
+                    />
                   </div>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-[#E2E8F0] bg-white/90 p-4 shadow-sm">
-                    <div className="flex flex-row-reverse items-start gap-3">
-                      <div className="flex flex-1 flex-col gap-1 text-right">
-                        <span className="text-xs font-normal uppercase tracking-wide text-[#64748B]">
-                          Estimated budget
-                        </span>
-                        <span className="text-lg font-normal text-[#0F172A]" dir="ltr">
-                          ₪150,000
-                        </span>
-                      </div>
-                      <span className="inline-flex size-10 items-center justify-center rounded-xl bg-[#E8F1FE] text-[#2B3A67]">
-                        <ArticleSpecIcon icon="wallet" />
-                      </span>
-                    </div>
+                <div className="w-full min-w-0 md:max-w-[calc(50%-0.75rem)]">
+                  <FieldLabel>סוג אירוע</FieldLabel>
+                  <div className="relative">
+                    <select
+                      value={eventType}
+                      onChange={(ev) => setEventType(ev.target.value)}
+                      className={`${inputClass} appearance-none pe-10`}
+                    >
+                      <option value="">בחר סוג אירוע</option>
+                      {EVENT_TYPES.map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                    </select>
+                    <span
+                      className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#6B7280]"
+                      aria-hidden
+                    >
+                      ▾
+                    </span>
                   </div>
-                  <div className="rounded-2xl border border-[#E2E8F0] bg-white/90 p-4 shadow-sm">
-                    <div className="flex flex-row-reverse items-start gap-3">
-                      <div className="flex flex-1 flex-col gap-1 text-right">
-                        <span className="text-xs font-normal uppercase tracking-wide text-[#64748B]">
-                          Audience size
-                        </span>
-                        <span className="text-lg font-normal text-[#0F172A]">250 people</span>
-                      </div>
-                      <span className="inline-flex size-10 items-center justify-center rounded-xl bg-[#E8F1FE] text-[#2B3A67]">
+                </div>
+
+                <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className={bentoClass}>
+                    <div className="flex flex-row items-center gap-3">
+                      <span className="text-[12px] font-bold uppercase leading-4 tracking-[1.2px] text-[#4721DF]">
+                        כמות קהל
+                      </span>
+                      <span className="text-[#4721DF]">
                         <ArticleSpecIcon icon="users" />
                       </span>
                     </div>
+                    <p className="text-right text-[30px] font-bold leading-[44px] text-black">
+                      250 איש
+                    </p>
+                  </div>
+                  <div className={bentoClass}>
+                    <div className="flex flex-row items-center gap-3">
+                      <span className="text-[12px] font-bold uppercase leading-4 tracking-[1.2px] text-[#4721DF]">
+                        תקציב משוער
+                      </span>
+                      <span className="text-[#4721DF]">
+                        <ArticleSpecIcon icon="wallet" />
+                      </span>
+                    </div>
+                    <p className="text-right text-[30px] font-bold leading-[44px] text-black" dir="ltr">
+                      <span className="text-xl font-bold text-[#757682]">₪</span>{" "}
+                      150,000
+                    </p>
                   </div>
                 </div>
 
-                <div>
-                  <label className="mb-2 block text-right text-xs font-normal uppercase tracking-wide text-[#64748B]">
-                    Place / location
-                  </label>
+                <div className="min-w-0">
+                  <FieldLabel>מקום / לוקיישן</FieldLabel>
                   <div className="relative">
-                    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#64748B]">
+                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#757682]">
                       <ArticleSpecIcon icon="map-pin" />
                     </span>
                     <input
                       value={location}
                       onChange={(ev) => setLocation(ev.target.value)}
-                      placeholder="Search for a location or enter an address"
-                      className={`${inputClass} pr-11`}
+                      placeholder="חפש מיקום או הזן כתובת"
+                      className={`${inputClass} pe-12`}
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="mb-2 block text-right text-xs font-normal uppercase tracking-wide text-[#64748B]">
-                    Detailed description
-                  </label>
-                  <div className="overflow-hidden rounded-2xl border border-[#E2E8F0] bg-white">
-                    <div className="px-3 pt-3">
-                      <RichTextToolbar />
-                    </div>
+                <div className="min-w-0">
+                  <FieldLabel>תיאור מפורט</FieldLabel>
+                  <div className="overflow-hidden rounded bg-[#F3F4F5] p-1">
+                    <RichTextToolbar />
                     <textarea
                       value={description}
                       onChange={(ev) => setDescription(ev.target.value)}
-                      placeholder="Describe the atmosphere, design, and overall experience."
+                      placeholder="תאר את האווירה, העיצוב והחוויה הכוללת..."
                       rows={6}
-                      className="min-h-[160px] w-full resize-y border-0 bg-transparent px-4 py-3 text-right text-sm leading-6 text-[#1E293B] outline-none focus:ring-0"
+                      className="min-h-[176px] w-full resize-y border-0 bg-transparent px-4 py-4 text-right text-base leading-6 text-[#1E293B] outline-none placeholder:text-[#6B7280] focus:ring-0"
                     />
                   </div>
                 </div>
               </div>
-            </div>
+            </section>
 
-            <div className={cardSurface}>
-              <div className="flex flex-row-reverse items-center justify-between gap-4">
-                <SectionTitle>Photo gallery management</SectionTitle>
+            {/* ניהול גלריית תמונות */}
+            <section className={cardSurface}>
+              <div className="flex w-full min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <SectionTitle>ניהול גלריית תמונות</SectionTitle>
                 <button
                   type="button"
                   onClick={() => galleryInputRef.current?.click()}
-                  className="inline-flex shrink-0 flex-row-reverse items-center gap-2 rounded-[99px] border border-[#C5C6D2] bg-white px-4 py-2 text-sm text-[#00113A]"
+                  className="inline-flex shrink-0 flex-row items-center justify-center gap-2 self-start rounded bg-[#D2E4FF] px-6 py-3 text-[14px] font-bold leading-5 text-[#4721DF] transition hover:opacity-90 sm:self-center"
                 >
-                  <Image src="/icons/upload.svg" alt="" width={18} height={18} unoptimized />
-                  Upload files
+                  <span>העלה קבצים</span>
+                  <Image src="/icons/upload.svg" alt="" width={14} height={14} unoptimized aria-hidden />
                 </button>
               </div>
               <input
@@ -284,49 +339,69 @@ export default function AdminAddConceptPage() {
                 className="hidden"
                 onChange={onGalleryPick}
               />
-              <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3" dir="ltr">
+              <div
+                className="grid w-full min-w-0 grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-[repeat(auto-fill,minmax(140px,1fr))]"
+                dir="rtl"
+              >
                 <button
                   type="button"
                   onClick={() => galleryInputRef.current?.click()}
-                  className="flex min-h-[140px] flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[#CBD5E1] bg-[rgba(255,255,255,0.6)] text-[#94A3B8] transition hover:bg-white/90"
+                  className="flex aspect-square w-full min-w-0 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-black bg-transparent text-black transition hover:bg-black/5"
                 >
-                  <Image src="/icons/upload.svg" alt="" width={28} height={28} className="opacity-70" unoptimized />
-                  <span className="text-sm font-medium">ADD NEW</span>
+                  <Image
+                    src="/icons/upload.svg"
+                    alt=""
+                    width={33}
+                    height={24}
+                    className="opacity-80"
+                    unoptimized
+                    aria-hidden
+                  />
+                  <span className="text-[12px] font-bold uppercase leading-4 tracking-[1.2px]">
+                    הוסף חדש
+                  </span>
                 </button>
-                {["/avatars/1.jpg", "/avatars/4.jpg"].map((src) => (
-                  <div
-                    key={src}
-                    className="relative min-h-[140px] overflow-hidden rounded-2xl border border-[#E2E8F0] bg-slate-100"
-                  >
-                    <Image src={src} alt="" fill sizes="200px" className="object-cover" unoptimized />
-                  </div>
-                ))}
                 {galleryUrls.map((src) => (
                   <div
                     key={src}
-                    className="relative min-h-[140px] overflow-hidden rounded-2xl border border-[#8655F6]/40 bg-slate-100"
+                    className="relative aspect-square w-full min-w-0 overflow-hidden rounded-lg border border-[#4721DF]/40 bg-slate-200"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={src} alt="" className="h-full w-full object-cover" />
+                    <img src={src} alt="" className="size-full object-cover" />
+                  </div>
+                ))}
+                {GALLERY_SEED.map((src) => (
+                  <div
+                    key={src}
+                    className="relative aspect-square w-full min-w-0 overflow-hidden rounded-lg bg-slate-200"
+                  >
+                    <Image src={src} alt="" fill sizes="170px" className="object-cover" unoptimized />
                   </div>
                 ))}
               </div>
-            </div>
+            </section>
 
-            <div className={cardSurface}>
-              <SectionTitle>Supplier selection</SectionTitle>
-              <div className="relative mt-6">
-                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#64748B]" aria-hidden>
-                  <Image src="/icons/search.svg" alt="search" width={18} height={18} />
-                </span>
-                <input
-                  value={supplierQuery}
-                  onChange={(ev) => setSupplierQuery(ev.target.value)}
-                  placeholder="Search for a product by name..."
-                  className={`${inputClass} pr-10`}
-                />
+            {/* נבחרת ספקים */}
+            <section className={`${cardSurface} gap-8 sm:gap-10`}>
+              <div className="flex w-full min-w-0 flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <SectionTitle>נבחרת ספקים</SectionTitle>
+                <div className="relative w-full min-w-0 lg:max-w-sm">
+                  <span
+                    className="pointer-events-none absolute top-1/2 -translate-y-1/2 inset-s-4 text-[#757682]"
+                    aria-hidden
+                  >
+                    <Image src="/icons/search.svg" alt="" width={18} height={18} unoptimized />
+                  </span>
+                  <input
+                    value={supplierQuery}
+                    onChange={(ev) => setSupplierQuery(ev.target.value)}
+                    placeholder="חפש ספק לפי שם, קטגוריה או דירוג..."
+                    className="h-11 w-full rounded-lg border-0 bg-white ps-12 pe-4 text-right text-sm leading-5 text-[#1E293B] shadow-sm outline-none placeholder:text-[#6B7280] focus:ring-2 focus:ring-[#4721DF]/25"
+                  />
+                </div>
               </div>
-              <div className="mt-4 flex gap-4 overflow-x-auto pb-2 pt-1" dir="ltr">
+
+              <div className="grid w-full min-w-0 grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {filteredSuppliers.map((s) => {
                   const selected = selectedSupplierIds.has(s.id);
                   return (
@@ -334,59 +409,60 @@ export default function AdminAddConceptPage() {
                       key={s.id}
                       type="button"
                       onClick={() => toggleSupplier(s.id)}
-                      className={`flex w-[220px] shrink-0 flex-col rounded-2xl border-2 bg-white p-4 text-left shadow-sm transition ${
-                        selected ? "border-[#8655F6] shadow-[0_0_0_1px_rgba(134,85,246,0.2)]" : "border-[#E2E8F0]"
+                      className={`flex w-full min-w-0 flex-row items-center justify-between gap-4 rounded-2xl bg-white p-6 text-right transition ${
+                        selected
+                          ? "border-2 border-[#4721DF] shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1)]"
+                          : "border border-transparent shadow-sm"
                       }`}
                     >
-                      <div className="flex flex-row items-start gap-3">
-                        <span
-                          className={`mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border-2 ${
-                            selected
-                              ? "border-[#8655F6] bg-[#8655F6] text-white"
-                              : "border-[#CBD5E1] bg-white"
-                          }`}
-                          aria-hidden
-                        >
-                          {selected ? "✓" : ""}
-                        </span>
+                      <div className="flex min-w-0 flex-1 flex-row items-center gap-5">
+                        <div className="relative size-16 shrink-0 overflow-hidden rounded-lg bg-[#F3F4F5] shadow-inner">
+                          <Image
+                            src={s.image}
+                            alt=""
+                            fill
+                            sizes="64px"
+                            className="object-cover"
+                            unoptimized
+                          />
+                        </div>
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-[#0F172A]">{s.name}</p>
-                          <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-[#64748B]">
-                            {s.category}
+                          <p className="truncate text-base font-bold leading-6 text-[#172554]">
+                            {s.name}
                           </p>
+                          <div className="mt-1 flex flex-row items-center gap-1">
+                            {s.rating ? <StarIcon /> : null}
+                            <span className="text-[12px] font-bold uppercase leading-4 tracking-[-0.3px] text-[#444650]">
+                              {s.category}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <div className="relative mt-3 h-20 w-full overflow-hidden rounded-xl bg-slate-100">
-                        {s.image.endsWith(".svg") ? (
-                          <Image src={s.image} alt="" fill className="object-contain p-4" unoptimized />
-                        ) : (
-                          <Image src={s.image} alt="" fill sizes="220px" className="object-cover" unoptimized />
-                        )}
-                      </div>
+                      <SupplierCheck selected={selected} />
                     </button>
                   );
                 })}
               </div>
-            </div>
+            </section>
 
-            <div className="flex flex-row-reverse flex-wrap items-center justify-end gap-4 pt-2">
+            <div className="flex w-full min-w-0 flex-wrap items-center justify-end gap-4 pt-2">
+              <button
+                type="submit"
+                className="rounded-[99px] bg-[#201C44] px-10 py-5 text-[14px] font-bold uppercase leading-5 tracking-[1.4px] text-white transition hover:opacity-95 sm:px-12"
+              >
+                הוסף מוצר לחנות
+              </button>
               <button
                 type="button"
                 onClick={() => router.push("/admin")}
-                className="rounded-[99px] border border-[#201C44] bg-white px-8 py-3 text-base text-[#201C44]"
+                className="rounded-[99px] border border-black bg-transparent px-10 py-5 text-[14px] font-bold uppercase leading-5 tracking-[1.4px] text-black transition hover:bg-black/5 sm:px-12"
               >
-                CANCELLATION
-              </button>
-              <button
-                type="submit"
-                className="rounded-[99px] bg-[linear-gradient(90deg,#00113A_0%,#4721DF_100%)] px-10 py-3 text-base text-white shadow-md"
-              >
-                PUBLISH A CONCEPT NOW
+                ביטול
               </button>
             </div>
           </form>
         </div>
-      </section>
+      </MarketingPageShell>
     </ProtectedRoute>
   );
 }
